@@ -1,0 +1,409 @@
+﻿using System;
+using System.Collections.Generic;
+using CASPartResource;
+using Destrospean.DestrospeanCASPEditor;
+using Gtk;
+using s3pi.Interfaces;
+
+public partial class MainWindow: Window
+{
+    public Dictionary<IResourceIndexEntry, CASPart> CASParts;
+
+    public IPackage CurrentPackage;
+
+    public Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>> PreloadedImages;
+
+    public ListStore ResourceListStore;
+
+    public MainWindow() : base(WindowType.Toplevel)
+    {
+        Build();
+        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
+        if (string.IsNullOrEmpty(scaleEnvironmentVariable))
+        {
+            return;
+        }
+        var scale = float.Parse(scaleEnvironmentVariable);
+        var widgets = new Widget[]
+            {
+                this,
+                CASPartCheckButtonHBox,
+                Image,
+                MainHBox,
+                PresetNotebook
+            };
+        foreach (var widget in widgets)
+        {
+            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * scale));
+        }
+        CellRendererText instanceCell = new CellRendererText(), tagCell = new CellRendererText();
+        TreeViewColumn instanceColumn = new TreeViewColumn()
+            {
+                Title = "Instance"
+            }, tagColumn = new TreeViewColumn()
+            {
+                Title = "Type"
+            };
+        tagColumn.PackStart(tagCell, true);
+        tagColumn.AddAttribute(tagCell, "text", 0);
+        instanceColumn.PackStart(instanceCell, true);
+        instanceColumn.AddAttribute(instanceCell, "text", 1);
+        ResourceTreeView.AppendColumn(tagColumn);
+        ResourceTreeView.AppendColumn(instanceColumn);
+        ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
+        ResourceTreeView.Model = ResourceListStore;
+        ResourceTreeView.Selection.Changed += (object sender, EventArgs e) => 
+            {
+                Image.Clear();
+                foreach (var child in CASPartCheckButtonHBox.Children)
+                {
+                    CASPartCheckButtonHBox.Remove(child);
+                    child.Dispose();
+                }
+                while (PresetNotebook.NPages > 0)
+                {
+                    PresetNotebook.RemovePage(0);
+                }
+                TreeIter iter;
+                TreeModel model;
+                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                {
+                    var tag = (string)model.GetValue(iter, 0);
+                    var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+                    if (tag == "_IMG")
+                    {
+                        Image.Pixbuf = PreloadedImages[resourceIndexEntry][0];
+                        return;
+                    }
+                    if (tag == "CASP")
+                    {
+                        var casPartResource = (CASPartResource.CASPartResource)model.GetValue(iter, 3);
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(ClothingCategoryFlags), casPartResource.ClothingCategory, "Clothing Category");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(ClothingType), casPartResource.Clothing, "Clothing");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(DataTypeFlags), casPartResource.DataType, "Data Type");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(AgeFlags), casPartResource.AgeGender.Age, "Age Gender", "Age");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(GenderFlags), casPartResource.AgeGender.Gender, "Age Gender", "Gender");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(SpeciesType), casPartResource.AgeGender.Species, "Age Gender", "Species");
+                        AddFlagsToNewVBox(resourceIndexEntry, typeof(HandednessFlags), casPartResource.AgeGender.Handedness, "Age Gender", "Handedness");
+                        CASParts[resourceIndexEntry].Presets.ForEach(AddPresetToNotebook);
+                    };
+                }
+            };
+        PresetNotebook.RemovePage(0);
+    }
+
+    void AddFlagsToNewVBox(IResourceIndexEntry resourceIndexEntry, Type enumType, Enum enumInstance, params string[] propertyPathParts)
+    {
+        var frame = new Frame()
+            {
+                Label = propertyPathParts[propertyPathParts.Length - 1],
+                WidthRequest = propertyPathParts[0] == "Clothing" ? 128 : -1
+            };
+        var scrolledWindow = new ScrolledWindow();
+        var vBox = new VBox();
+        frame.Add(scrolledWindow);
+        scrolledWindow.AddWithViewport(vBox);
+        CASPartCheckButtonHBox.PackStart(frame, true, true, 0);
+        foreach (var flag in Enum.GetValues(enumType))
+        {
+            var checkButton = new CheckButton(flag.ToString())
+                {
+                    Active = enumInstance.HasFlag((Enum)flag),
+                    UseUnderline = false
+                };
+            checkButton.Toggled += (sender, e) =>
+                {
+                    var casPartResource = CASParts[resourceIndexEntry].CASPartResource;
+                    object property = casPartResource;
+                    var propertyInfo = property.GetType().GetProperty(propertyPathParts[0].Replace(" ", ""));
+                    if (propertyPathParts.Length > 1)
+                    {
+                        for (var i = 1; i < propertyPathParts.Length; i++)
+                        {
+                            property = propertyInfo.GetValue(property);
+                            propertyInfo = property.GetType().GetProperty(propertyPathParts[i].Replace(" ", ""));
+                        }
+                    }
+                    try
+                    {
+                        var value = (byte)propertyInfo.GetValue(property);
+                        propertyInfo.SetValue(property, (byte)(value ^ (byte)flag));
+                    }
+                    catch (InvalidCastException)
+                    {
+                    }
+                    try
+                    {
+                        var value = (uint)propertyInfo.GetValue(property);
+                        propertyInfo.SetValue(property, value ^ (uint)flag);
+                    }
+                    catch (InvalidCastException)
+                    {
+                    }
+                    CurrentPackage.ReplaceResource(resourceIndexEntry, casPartResource);
+                };
+            vBox.PackStart(checkButton, false, false, 0);
+        }
+        CASPartCheckButtonHBox.ShowAll();
+    }
+
+    void AddPresetToNotebook(CASPart.Preset preset)
+    {
+        var notebook = new Notebook();
+        var scrolledWindow = new ScrolledWindow();
+        var table = new Table(1, 2, false)
+            {
+                ColumnSpacing = 12
+            };
+        scrolledWindow.AddWithViewport(table);
+        PresetNotebook.AppendPage(notebook, new Label()
+            {
+                Text = "Preset " + (PresetNotebook.NPages + 1).ToString()
+            });
+        notebook.AppendPage(scrolledWindow, new Label()
+            {
+                Text = "Configuration"
+            });
+        var propertyNames = preset.Complate.PropertyNames;
+        propertyNames.Sort();
+        foreach (var name in propertyNames)
+        {
+            string type;
+            if (!preset.Complate.PropertiesTyped.TryGetValue(name, out type))
+            {
+                continue;
+            }
+            Widget valueWidget = null;
+            var alignment = new Alignment(0, .5f, 1, 0)
+                {
+                    HeightRequest = 48
+                };
+            var value = preset.Complate.GetValue(name);
+            switch (type)
+            {
+                case "bool":
+                    var checkButton = new CheckButton()
+                        {
+                            Active = bool.Parse(value),
+                            UseUnderline = false
+                        };
+                    checkButton.Toggled += (sender, e) => preset.Complate.SetValue(name, checkButton.Active.ToString());
+                    valueWidget = checkButton;
+                    break;
+                case "color":
+                    alignment.Xscale = 0;
+                    var rgba = new List<string>(value.Split(',')).ConvertAll(new Converter<string, ushort>(x => (ushort)(float.Parse(x) * ushort.MaxValue)));
+                    var colorButton = new ColorButton()
+                        {
+                            Alpha = rgba[3],
+                            Color = new Gdk.Color()
+                                {
+                                    Blue = rgba[2],
+                                    Green = rgba[1],
+                                    Red = rgba[0]
+                                },
+                            UseAlpha = true
+                        };
+                    colorButton.ColorSet += (sender, e) =>
+                        {
+                            rgba = new List<ushort>()
+                                {
+                                    colorButton.Color.Red,
+                                    colorButton.Color.Green,
+                                    colorButton.Color.Blue,
+                                    colorButton.Alpha
+                                };
+                            var output = "";
+                            foreach (var channel in rgba)
+                            {
+                                output += "," + ((float)channel / ushort.MaxValue).ToString("F4");
+                            }
+                            preset.Complate.SetValue(name, output.Substring(1));
+                        };
+                    valueWidget = colorButton;
+                    break;
+                case "float":
+                    alignment.Xscale = 0;
+                    var spinButton = new SpinButton(new Adjustment(float.Parse(value), .0, 1, .0001, 10, 0), 10, 4);
+                    spinButton.ValueChanged += (sender, e) => preset.Complate.SetValue(name, spinButton.Value.ToString("F4"));
+                    valueWidget = spinButton;
+                    break;
+                case "pattern":
+                    var entry = new Entry()
+                        {
+                            Text = value
+                        };
+                    entry.Changed += (sender, e) => preset.Complate.SetValue(name, entry.Text);
+                    valueWidget = entry;
+                    break;
+                case "texture":
+                    var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
+                    var entries = CurrentPackage.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, List<object>>(x => new List<object>()
+                        {
+                            PreloadedImages[x][1],
+                            ResourceUtils.ReverseEvaluateResourceKey(x)
+                        }));
+                    foreach (var item in entries)
+                    {
+                        listStore.AppendValues(item[0], item[1]);
+                    }
+                    var comboBox = new ComboBox()
+                        {
+                            Active = entries.FindIndex(x => (string)x[1] == value),
+                            Model = listStore
+                        };
+                    var pixbufRenderer = new CellRendererPixbuf()
+                        {
+                            Xpad = 4
+                        };
+                    var textRenderer = new CellRendererText()
+                        {
+                            Xpad = 4
+                        };
+                    comboBox.PackStart(pixbufRenderer, false);
+                    comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
+                    comboBox.PackStart(textRenderer, false);
+                    comboBox.AddAttribute(textRenderer, "text", 1);
+                    comboBox.Changed += (sender, e) => preset.Complate.SetValue(name, (string)entries[comboBox.Active][1]);
+                    valueWidget = comboBox;
+                    break;
+                case "vec2":
+                    var hBox = new HBox();
+                    var xy = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
+                    SpinButton xSpinButton = new SpinButton(new Adjustment(xy[0], .0, 1, .0001, 10, 0), 10, 4), ySpinButton = new SpinButton(new Adjustment(xy[1], .0, 1, .0001, 10, 0), 10, 4);
+                    EventHandler valueChanged = (sender, e) => preset.Complate.SetValue(name, xSpinButton.Value.ToString("F4") + "," + ySpinButton.Value.ToString("F4"));
+                    xSpinButton.ValueChanged += valueChanged;
+                    ySpinButton.ValueChanged += valueChanged;
+                    hBox.PackStart(xSpinButton, false, false, 0);
+                    hBox.PackStart(ySpinButton, false, false, 0);
+                    valueWidget = hBox;
+                    break;
+            }
+            table.Attach(new Label()
+                {
+                    Text = name,
+                    UseUnderline = false,
+                    Xalign = 0
+                }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            alignment.Add(valueWidget);
+            table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.NRows++;
+        }
+        var patternNames = preset.Complate.PatternNames;
+        patternNames.Sort();
+        foreach (var name in patternNames)
+        {
+            notebook.AppendPage(new HPaned(), new Label()
+                {
+                    Text = name
+                });
+        }
+
+        PresetNotebook.ShowAll();
+    }
+
+    public void RefreshWidgets()
+    {
+        CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
+        PreloadedImages = new Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>>();
+        Image.Clear();
+        ResourceListStore.Clear();
+        foreach (var child in CASPartCheckButtonHBox.Children)
+        {
+            CASPartCheckButtonHBox.Remove(child);
+            child.Dispose();
+        }
+        while (PresetNotebook.NPages > 0)
+        {
+            PresetNotebook.RemovePage(0);
+        }
+        if (CurrentPackage == null)
+        {
+            return;
+        }
+        var resourceList = CurrentPackage.GetResourceList;
+        resourceList.Sort((a, b) => ResourceUtils.GetResourceTypeTag(b).CompareTo(ResourceUtils.GetResourceTypeTag(a)));
+        foreach (var resourceIndexEntry in resourceList)
+        {
+            var resource = s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
+            var tag = ResourceUtils.GetResourceTypeTag(resourceIndexEntry);
+            switch (tag)
+            {
+                case "_IMG":
+                case "CASP":
+                    ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry, resource);
+                    break;
+            }
+            if (tag == "_IMG")
+            {
+                PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>()
+                    {
+                        ImageUtils.Preload_IMG(Image, resource)
+                    });
+                PreloadedImages[resourceIndexEntry].Add(PreloadedImages[resourceIndexEntry][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                continue;
+            }
+            var casPartResource = resource as CASPartResource.CASPartResource;
+            if (casPartResource != null)
+            {
+                CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, casPartResource, casPartResource.Presets));
+            }
+        }
+        ResourceTreeView.Selection.SelectPath(new TreePath("0"));
+        ShowAll();
+    }
+
+    protected void OnDeleteEvent(object sender, DeleteEventArgs a)
+    {
+        Application.Quit();
+        a.RetVal = true;
+    }
+
+    protected void OnCloseActionActivated(object sender, EventArgs e)
+    {
+        CurrentPackage = null;
+        RefreshWidgets();
+    }
+
+    protected void OnNewActionActivated(object sender, EventArgs e)
+    {
+    }
+
+    protected void OnOpenActionActivated(object sender, EventArgs e)
+    {
+        FileChooserDialog fileChooser = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        if (fileChooser.Run() == (int)ResponseType.Accept)
+        {
+            try
+            {
+                var package = s3pi.Package.Package.OpenPackage(0, fileChooser.Filename, true);
+                CurrentPackage = package;
+                RefreshWidgets();
+            }
+            catch (System.IO.InvalidDataException ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+        fileChooser.Destroy();
+    }
+
+    protected void OnQuitActionActivated(object sender, EventArgs e)
+    {
+        Application.Quit();
+    }
+
+    protected void OnSaveActionActivated(object sender, EventArgs e)
+    {
+        foreach (var casPartKvp in CASParts)
+        {
+            casPartKvp.Value.SavePresets();
+            CurrentPackage.ReplaceResource(casPartKvp.Key, casPartKvp.Value.CASPartResource);
+        }
+        CurrentPackage.SavePackage();
+    }
+
+    protected void OnSaveAsActionActivated(object sender, EventArgs e)
+    {
+    }
+}
