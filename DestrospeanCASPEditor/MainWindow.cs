@@ -7,34 +7,31 @@ using s3pi.Interfaces;
 
 public partial class MainWindow: Window
 {
-    public Dictionary<IResourceIndexEntry, CASPart> CASParts;
+    public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
     public IPackage CurrentPackage;
 
-    public Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>> PreloadedImages;
-
-    public ListStore ResourceListStore;
+    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
 
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
-        if (string.IsNullOrEmpty(scaleEnvironmentVariable))
+        if (!string.IsNullOrEmpty(scaleEnvironmentVariable))
         {
-            return;
-        }
-        var scale = float.Parse(scaleEnvironmentVariable);
-        var widgets = new Widget[]
+            var scale = float.Parse(scaleEnvironmentVariable);
+            var widgets = new Widget[]
+                {
+                    this,
+                    CASPartCheckButtonHBox,
+                    Image,
+                    MainHBox,
+                    PresetNotebook
+                };
+            foreach (var widget in widgets)
             {
-                this,
-                CASPartCheckButtonHBox,
-                Image,
-                MainHBox,
-                PresetNotebook
-            };
-        foreach (var widget in widgets)
-        {
-            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * scale));
+                widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * scale));
+            }
         }
         CellRendererText instanceCell = new CellRendererText(), tagCell = new CellRendererText();
         TreeViewColumn instanceColumn = new TreeViewColumn()
@@ -50,7 +47,6 @@ public partial class MainWindow: Window
         instanceColumn.AddAttribute(instanceCell, "text", 1);
         ResourceTreeView.AppendColumn(tagColumn);
         ResourceTreeView.AppendColumn(instanceColumn);
-        ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
         ResourceTreeView.Model = ResourceListStore;
         ResourceTreeView.Selection.Changed += (object sender, EventArgs e) => 
             {
@@ -72,7 +68,7 @@ public partial class MainWindow: Window
                     var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
                     if (tag == "_IMG")
                     {
-                        Image.Pixbuf = PreloadedImages[resourceIndexEntry][0];
+                        Image.Pixbuf = ImageUtils.PreloadedImages[resourceIndexEntry][0];
                         return;
                     }
                     if (tag == "CASP")
@@ -149,27 +145,42 @@ public partial class MainWindow: Window
 
     void AddPresetToNotebook(CASPart.Preset preset)
     {
-        var notebook = new Notebook();
-        var scrolledWindow = new ScrolledWindow();
-        var table = new Table(1, 2, false)
-            {
-                ColumnSpacing = 12
-            };
-        scrolledWindow.AddWithViewport(table);
-        PresetNotebook.AppendPage(notebook, new Label()
+        var subNotebook = new Notebook();
+        PresetNotebook.AppendPage(subNotebook, new Label()
             {
                 Text = "Preset " + (PresetNotebook.NPages + 1).ToString()
             });
-        notebook.AppendPage(scrolledWindow, new Label()
+        List<CASPart.IComplate> complates = new List<CASPart.IComplate>()
             {
-                Text = "Configuration"
-            });
-        var propertyNames = preset.Complate.PropertyNames;
+                preset
+            };
+        complates.AddRange(preset.Patterns);
+        foreach (var complate in complates)
+        {
+            var pattern = complate as CASPart.Pattern;
+            var scrolledWindow = new ScrolledWindow();
+            var table = new Table(1, 2, false)
+                {
+                    ColumnSpacing = 12
+                };
+            scrolledWindow.AddWithViewport(table);
+            subNotebook.AppendPage(scrolledWindow, new Label()
+                {
+                    Text = pattern == null ? "Configuration" : pattern.Name
+                });
+            AddPropertiesToTable(complate, table);
+        }
+        PresetNotebook.ShowAll();
+    }
+
+    public static void AddPropertiesToTable(CASPart.IComplate complate, Table table)
+    {
+        var propertyNames = complate.PropertyNames;
         propertyNames.Sort();
         foreach (var name in propertyNames)
         {
             string type;
-            if (!preset.Complate.PropertiesTyped.TryGetValue(name, out type))
+            if (!complate.PropertiesTyped.TryGetValue(name, out type))
             {
                 continue;
             }
@@ -178,7 +189,7 @@ public partial class MainWindow: Window
                 {
                     HeightRequest = 48
                 };
-            var value = preset.Complate.GetValue(name);
+            var value = complate.GetValue(name);
             switch (type)
             {
                 case "bool":
@@ -187,7 +198,7 @@ public partial class MainWindow: Window
                             Active = bool.Parse(value),
                             UseUnderline = false
                         };
-                    checkButton.Toggled += (sender, e) => preset.Complate.SetValue(name, checkButton.Active.ToString());
+                    checkButton.Toggled += (sender, e) => complate.SetValue(name, checkButton.Active.ToString());
                     valueWidget = checkButton;
                     break;
                 case "color":
@@ -218,14 +229,14 @@ public partial class MainWindow: Window
                             {
                                 output += "," + ((float)channel / ushort.MaxValue).ToString("F4");
                             }
-                            preset.Complate.SetValue(name, output.Substring(1));
+                            complate.SetValue(name, output.Substring(1));
                         };
                     valueWidget = colorButton;
                     break;
                 case "float":
                     alignment.Xscale = 0;
                     var spinButton = new SpinButton(new Adjustment(float.Parse(value), .0, 1, .0001, 10, 0), 10, 4);
-                    spinButton.ValueChanged += (sender, e) => preset.Complate.SetValue(name, spinButton.Value.ToString("F4"));
+                    spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
                     valueWidget = spinButton;
                     break;
                 case "pattern":
@@ -233,14 +244,14 @@ public partial class MainWindow: Window
                         {
                             Text = value
                         };
-                    entry.Changed += (sender, e) => preset.Complate.SetValue(name, entry.Text);
+                    entry.Changed += (sender, e) => complate.SetValue(name, entry.Text);
                     valueWidget = entry;
                     break;
                 case "texture":
                     var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
-                    var entries = CurrentPackage.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, List<object>>(x => new List<object>()
+                    var entries = complate.CurrentPackage.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, List<object>>(x => new List<object>()
                         {
-                            PreloadedImages[x][1],
+                            ImageUtils.PreloadedImages[x][1],
                             ResourceUtils.ReverseEvaluateResourceKey(x)
                         }));
                     foreach (var item in entries)
@@ -264,14 +275,14 @@ public partial class MainWindow: Window
                     comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
                     comboBox.PackStart(textRenderer, false);
                     comboBox.AddAttribute(textRenderer, "text", 1);
-                    comboBox.Changed += (sender, e) => preset.Complate.SetValue(name, (string)entries[comboBox.Active][1]);
+                    comboBox.Changed += (sender, e) => complate.SetValue(name, (string)entries[comboBox.Active][1]);
                     valueWidget = comboBox;
                     break;
                 case "vec2":
                     var hBox = new HBox();
                     var xy = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
                     SpinButton xSpinButton = new SpinButton(new Adjustment(xy[0], .0, 1, .0001, 10, 0), 10, 4), ySpinButton = new SpinButton(new Adjustment(xy[1], .0, 1, .0001, 10, 0), 10, 4);
-                    EventHandler valueChanged = (sender, e) => preset.Complate.SetValue(name, xSpinButton.Value.ToString("F4") + "," + ySpinButton.Value.ToString("F4"));
+                    EventHandler valueChanged = (sender, e) => complate.SetValue(name, xSpinButton.Value.ToString("F4") + "," + ySpinButton.Value.ToString("F4"));
                     xSpinButton.ValueChanged += valueChanged;
                     ySpinButton.ValueChanged += valueChanged;
                     hBox.PackStart(xSpinButton, false, false, 0);
@@ -289,23 +300,12 @@ public partial class MainWindow: Window
             table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
         }
-        var patternNames = preset.Complate.PatternNames;
-        patternNames.Sort();
-        foreach (var name in patternNames)
-        {
-            notebook.AppendPage(new HPaned(), new Label()
-                {
-                    Text = name
-                });
-        }
-
-        PresetNotebook.ShowAll();
     }
 
     public void RefreshWidgets()
     {
-        CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
-        PreloadedImages = new Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>>();
+        CASParts.Clear();
+        ImageUtils.PreloadedImages.Clear();
         Image.Clear();
         ResourceListStore.Clear();
         foreach (var child in CASPartCheckButtonHBox.Children)
@@ -336,11 +336,8 @@ public partial class MainWindow: Window
             }
             if (tag == "_IMG")
             {
-                PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>()
-                    {
-                        ImageUtils.Preload_IMG(Image, resource)
-                    });
-                PreloadedImages[resourceIndexEntry].Add(PreloadedImages[resourceIndexEntry][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                ImageUtils.PreloadImage(Image, CurrentPackage, resourceIndexEntry);
+                ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
                 continue;
             }
             var casPartResource = resource as CASPartResource.CASPartResource;

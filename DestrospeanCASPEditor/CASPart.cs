@@ -19,16 +19,38 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             CASPartResource = casPartResource;
             CurrentPackage = package;
-            Presets = presets.ConvertAll(new System.Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            Presets = presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
         }
 
-        public class Complate
+        public interface IComplate
         {
-            readonly XmlDocument XmlDocument;
+            IPackage CurrentPackage
+            {
+                get;
+            }
 
-            readonly Dictionary<string, Dictionary<string, XmlNode>> PatternPropertiesXmlNodes;
+            Dictionary<string, string> PropertiesTyped
+            {
+                get;
+            }
 
-            readonly Dictionary<string, XmlNode> PropertiesXmlNodes;
+            List<string> PropertyNames
+            {
+                get;
+            }
+                
+            string GetValue(string propertyName);
+
+            void SetValue(string propertyName, string newValue);
+        }
+
+        public class Complate : IComplate
+        {
+            readonly XmlDocument mXmlDocument;
+
+            readonly Dictionary<string, string> mPropertiesTyped;
+
+            readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
 
             public IPackage CurrentPackage
             {
@@ -42,59 +64,51 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return new List<string>(PatternPropertiesXmlNodes.Keys);
+                    return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.Name));
                 }
             }
+
+            public readonly List<Pattern> Patterns;
 
             public readonly Preset Preset;
 
-            public List<List<string>> PatternPropertyNames
+            public Dictionary<string, string> PropertiesTyped
             {
                 get
                 {
-                    return new List<Dictionary<string, XmlNode>>(PatternPropertiesXmlNodes.Values).ConvertAll(new Converter<Dictionary<string, XmlNode>, List<string>>(x => new List<string>(x.Keys)));
+                    return mPropertiesTyped;
                 }
             }
-
-            public readonly Dictionary<string, string> PropertiesTyped;
 
             public List<string> PropertyNames
             {
                 get
                 {
-                    return new List<string>(PropertiesXmlNodes.Keys);
+                    return new List<string>(mPropertiesXmlNodes.Keys);
                 }
             }
 
             public Complate(Preset preset, XmlNode complateXmlNode)
             {
                 Preset = preset;
-                XmlDocument = new XmlDocument();
-                XmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, ResourceUtils.EvaluateResourceKey(CurrentPackage, complateXmlNode)).Stream).ReadToEnd());
-                PatternPropertiesXmlNodes = new Dictionary<string, Dictionary<string, XmlNode>>();
-                PropertiesXmlNodes = new Dictionary<string, XmlNode>();
+                mXmlDocument = new XmlDocument();
+                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, ResourceUtils.EvaluateResourceKey(CurrentPackage, complateXmlNode)).Stream).ReadToEnd());
+                Patterns = new List<Pattern>();
+                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in complateXmlNode.ChildNodes)
                 {
                     var childNode = (XmlNode)child;
                     if (childNode.Name == "value")
                     {
-                        AddPropertyXmlNode(childNode.Attributes["key"].Value, childNode);
+                        mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
                     }
                     if (childNode.Name == "pattern")
                     {
-                        PatternPropertiesXmlNodes.Add(childNode.Attributes["variable"].Value, new Dictionary<string, XmlNode>());
-                        foreach (var grandchild in childNode.ChildNodes)
-                        {
-                            var grandchildNode = (XmlNode)grandchild;
-                            if (grandchildNode.Name == "value")
-                            {
-                                AddPatternPropertyXmlNode(childNode.Attributes["variable"].Value, grandchildNode.Attributes["key"].Value, grandchildNode);
-                            }
-                        }
+                        Patterns.Add(new Pattern(this, childNode));
                     }
                 }
-                PropertiesTyped = new Dictionary<string, string>();
-                foreach (var child in XmlDocument.SelectSingleNode("complate").ChildNodes)
+                mPropertiesTyped = new Dictionary<string, string>();
+                foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                 {
                     var childNode = (XmlNode)child;
                     if (childNode.Name == "variables")
@@ -111,69 +125,104 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            void AddPatternPropertyXmlNode(int patternIndex, string propertyName, XmlNode xmlNode)
-            {
-                new List<Dictionary<string, XmlNode>>(PatternPropertiesXmlNodes.Values)[patternIndex].Add(propertyName, xmlNode);
-            }
-
-            void AddPatternPropertyXmlNode(string patternName, string propertyName, XmlNode xmlNode)
-            {
-                PatternPropertiesXmlNodes[patternName].Add(propertyName, xmlNode);
-            }
-
-            void AddPropertyXmlNode(string propertyName, XmlNode xmlNode)
-            {
-                PropertiesXmlNodes.Add(propertyName, xmlNode);
-            }
-
-            public List<string> GetPatternPropertyNames(int patternIndex)
-            {
-                return PatternPropertyNames[patternIndex];
-            }
-
-            public List<string> GetPatternPropertyNames(string patternName)
-            {
-                return PatternPropertyNames[PatternNames.IndexOf(patternName)];
-            }
-
-            public string GetPatternValue(int patternIndex, string propertyName)
-            {
-                return new List<Dictionary<string, XmlNode>>(PatternPropertiesXmlNodes.Values)[patternIndex][propertyName].Attributes["value"].Value;
-            }
-
-            public string GetPatternValue(string patternName, string propertyName)
-            {
-                return PatternPropertiesXmlNodes[patternName][propertyName].Attributes["value"].Value;
-            }
-
             public string GetValue(string propertyName)
             {
-                return PropertiesXmlNodes[propertyName].Attributes["value"].Value;
-            }
-
-            public void SetPatternValue(int patternIndex, string propertyName, string newValue)
-            {
-                new List<Dictionary<string, XmlNode>>(PatternPropertiesXmlNodes.Values)[patternIndex][propertyName].Attributes["value"].Value = newValue;
-            }
-
-            public void SetPatternValue(string patternName, string propertyName, string newValue)
-            {
-                PatternPropertiesXmlNodes[patternName][propertyName].Attributes["value"].Value = newValue;
+                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
             }
 
             public void SetValue(string propertyName, string newValue)
             {
-                PropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
+                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
             }
         }
 
-        public class Preset
+        public class Pattern : IComplate
+        {
+            readonly XmlDocument mXmlDocument;
+
+            readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
+
+            public readonly Complate Complate;
+
+            public IPackage CurrentPackage
+            {
+                get
+                {
+                    return Complate.CurrentPackage;
+                }
+            }
+
+            public readonly string Name;
+
+            readonly Dictionary<string, string> mPropertiesTyped;
+
+            public Dictionary<string, string> PropertiesTyped
+            {
+                get
+                {
+                    return mPropertiesTyped;
+                }
+            }
+
+            public List<string> PropertyNames
+            {
+                get
+                {
+                    return new List<string>(mPropertiesXmlNodes.Keys);
+                }
+            }
+
+            public Pattern(Complate complate, XmlNode patternXmlNode)
+            {
+                Complate = complate;
+                Name = patternXmlNode.Attributes["variable"].Value;
+                mXmlDocument = new XmlDocument();
+                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, ResourceUtils.EvaluateResourceKey(CurrentPackage, patternXmlNode)).Stream).ReadToEnd());
+                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
+                foreach (var child in patternXmlNode.ChildNodes)
+                {
+                    var childNode = (XmlNode)child;
+                    if (childNode.Name == "value")
+                    {
+                        mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
+                    }
+                }
+                mPropertiesTyped = new Dictionary<string, string>();
+                foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+                {
+                    var childNode = (XmlNode)child;
+                    if (childNode.Name == "variables")
+                    {
+                        foreach (var grandchild in childNode.ChildNodes)
+                        {
+                            var grandchildNode = (XmlNode)grandchild;
+                            if (grandchildNode.Name == "param")
+                            {
+                                PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
+                            }
+                        }
+                    }
+                }
+            }
+
+            public string GetValue(string propertyName)
+            {
+                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
+            }
+
+            public void SetValue(string propertyName, string newValue)
+            {
+                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
+            }
+        }
+
+        public class Preset : IComplate
         {
             readonly XmlDocument XmlDocument;
 
-            public readonly CASPart CASPart;
+            readonly Complate Complate;
 
-            public readonly Complate Complate;
+            public readonly CASPart CASPart;
 
             public IPackage CurrentPackage
             {
@@ -182,6 +231,39 @@ namespace Destrospean.DestrospeanCASPEditor
                     return CASPart.CurrentPackage;
                 }
             }
+
+            public List<string> PatternNames
+            {
+                get
+                {
+                    return Complate.PatternNames;
+                }
+            }
+
+            public List<Pattern> Patterns
+            {
+                get
+                {
+                    return Complate.Patterns;
+                }
+            }
+
+            public Dictionary<string, string> PropertiesTyped
+            {
+                get
+                {
+                    return Complate.PropertiesTyped;
+                }
+            }
+
+            public List<string> PropertyNames
+            {
+                get
+                {
+                    return Complate.PropertyNames;
+                }
+            }
+
 
             public System.IO.StringReader XmlFile
             {
@@ -197,6 +279,16 @@ namespace Destrospean.DestrospeanCASPEditor
                 XmlDocument = new XmlDocument();
                 XmlDocument.LoadXml(preset.XmlFile.ReadToEnd());
                 Complate = new Complate(this, XmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
+            }
+
+            public string GetValue(string propertyName)
+            {
+                return Complate.GetValue(propertyName);
+            }
+
+            public void SetValue(string propertyName, string newValue)
+            {
+                Complate.SetValue(propertyName, newValue);
             }
         }
 
@@ -258,9 +350,9 @@ namespace Destrospean.DestrospeanCASPEditor
             Console.WriteLine();
             foreach (var preset in casPart.Presets)
             {
-                foreach (var propertyName in preset.Complate.PropertyNames)
+                foreach (var propertyName in preset.PropertyNames)
                 {
-                    Console.WriteLine(propertyName + ": " + preset.Complate.GetValue(propertyName));
+                    Console.WriteLine(propertyName + ": " + preset.GetValue(propertyName));
                 }
             }
         }

@@ -1,7 +1,11 @@
-﻿namespace Destrospean.DestrospeanCASPEditor
+﻿using System.Collections.Generic;
+
+namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ImageUtils
     {
+        public static readonly Dictionary<s3pi.Interfaces.IResourceIndexEntry, List<Gdk.Pixbuf>> PreloadedImages = new Dictionary<s3pi.Interfaces.IResourceIndexEntry, List<Gdk.Pixbuf>>();
+
         public static Gdk.Pixbuf ConvertToPixbuf(s3pi.Interfaces.IResource imageResource)
         {
             using (System.IO.MemoryStream stream = new System.IO.MemoryStream())
@@ -12,10 +16,13 @@
             }
         }
 
-        public static Gdk.Pixbuf Preload_IMG(Gtk.Image imageWidget, s3pi.Interfaces.IResource imageResource)
+        public static void PreloadImage(Gtk.Image imageWidget, s3pi.Interfaces.IPackage package, s3pi.Interfaces.IResourceIndexEntry resourceIndexEntry)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            return ConvertToPixbuf(imageResource).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear);
+            ImageUtils.PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>()
+                {
+                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear)
+                });
         }
     }
 }
