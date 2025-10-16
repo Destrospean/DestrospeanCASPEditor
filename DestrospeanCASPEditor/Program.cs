@@ -5,8 +5,7 @@
         public static void Main(string[] args)
         {
             Gtk.Application.Init();
-            MainWindow win = new MainWindow();
-            win.Show();
+            new MainWindow().Show();
             Gtk.Application.Run();
         }
     }

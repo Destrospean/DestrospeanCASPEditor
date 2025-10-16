@@ -33,14 +33,14 @@
         <Package isPatch="true" priority="1">p20/DeltaBuild_p20.package</Package>
       </Folder>
       <Folder path="GameData/Shared/Packages">
-        <Package isPatch="true" priority="2">Deltabuild0.package</Package>
-        <Package isPatch="false" priority="0">Fullbuild0.package</Package>
+        <Package isPatch="true" priority="2">DeltaBuild0.package</Package>
+        <Package isPatch="false" priority="0">FullBuild0.package</Package>
       </Folder>
     </GameContent>
     <DDSImages>
       <Folder path="GameData/Shared/Packages">
-        <Package isPatch="true" priority="2">Deltabuild2.package</Package>
-        <Package isPatch="false" priority="0">Fullbuild2.package</Package>
+        <Package isPatch="true" priority="2">DeltaBuild2.package</Package>
+        <Package isPatch="false" priority="0">FullBuild2.package</Package>
       </Folder>
     </DDSImages>
     <Thumbnails>
@@ -60,10 +60,10 @@
       <Folder path="GameData/Shared/DeltaPackages">
         <Package isPatch="true" priority="1">p02/DeltaBuild_p02.package</Package>
       </Folder>
-      <Package isPatch="false" priority="0">GameData/Shared/Packages/Fullbuildep1.package</Package>
+      <Package isPatch="false" priority="0">GameData/Shared/Packages/FullBuildep1.package</Package>
     </GameContent>
     <DDSImages>
-      <Package isPatch="false" priority="0">GameData/Shared/Packages/Fullbuildep1.package</Package>
+      <Package isPatch="false" priority="0">GameData/Shared/Packages/FullBuildep1.package</Package>
     </DDSImages>
     <Thumbnails>
       <Folder path="Thumbnails">

@@ -65,7 +65,6 @@
     </Reference>
     <Reference Include="s3pi.Filetable">
       <HintPath>..\libs\s3pi.Filetable.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.ComplateResource">
       <HintPath>..\libs\s3pi.ComplateResource.dll</HintPath>
@@ -174,6 +173,10 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=c7439020c8fedf87">
+      <Package>monodevelop</Package>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -189,6 +192,8 @@
     <Compile Include="ImageUtils.cs" />
     <Compile Include="CASPart.cs" />
     <Compile Include="ResourceUtils.cs" />
+    <Compile Include="GameFoldersDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

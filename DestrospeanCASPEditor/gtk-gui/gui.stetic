@@ -8,7 +8,7 @@
     <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <widget-library name="../bin/Release/DestrospeanCASPEditor.exe" internal="true" />
   </import>
-  <widget class="Gtk.Window" id="MainWindow" design-size="1080 1134">
+  <widget class="Gtk.Window" id="MainWindow" design-size="1080 540">
     <action-group name="Default">
       <action id="FileAction">
         <property name="Type">Action</property>
@@ -57,10 +57,23 @@
         <property name="StockId">gtk-quit</property>
         <signal name="Activated" handler="OnQuitActionActivated" />
       </action>
+      <action id="SettingsAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Settings</property>
+        <property name="ShortLabel" translatable="yes">Settings</property>
+      </action>
+      <action id="GameFoldersAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Game Folders</property>
+        <property name="ShortLabel" translatable="yes">Game Folders</property>
+        <property name="StockId">gtk-directory</property>
+        <signal name="Activated" handler="OnGameFoldersActionActivated" />
+      </action>
     </action-group>
     <property name="MemberName" />
     <property name="WidthRequest">1080</property>
-    <property name="Title" translatable="yes">MainWindow</property>
+    <property name="HeightRequest">540</property>
+    <property name="Title" translatable="yes">Destrospean's CASP Editor</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="DefaultWidth">1080</property>
     <property name="DefaultHeight">540</property>
@@ -88,6 +101,9 @@
                     <node type="Menuitem" action="SaveAsAction" />
                     <node type="Menuitem" action="CloseAction" />
                     <node type="Menuitem" action="QuitAction" />
+                  </node>
+                  <node type="Menu" action="SettingsAction">
+                    <node type="Menuitem" action="GameFoldersAction" />
                   </node>
                 </node>
               </widget>
@@ -136,7 +152,7 @@
                 <child>
                   <widget class="Gtk.Notebook" id="PresetNotebook">
                     <property name="MemberName" />
-                    <property name="WidthRequest">424</property>
+                    <property name="WidthRequest">432</property>
                     <property name="CanFocus">True</property>
                     <property name="CurrentPage">0</property>
                     <child>
@@ -167,10 +183,46 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.HBox" id="CASPartCheckButtonHBox">
+              <widget class="Gtk.Table" id="CASPartFlagTable">
                 <property name="MemberName" />
-                <property name="HeightRequest">270</property>
-                <property name="Spacing">6</property>
+                <property name="NRows">2</property>
+                <property name="NColumns">6</property>
+                <property name="Homogeneous">True</property>
+                <property name="RowSpacing">6</property>
+                <property name="ColumnSpacing">6</property>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
                 <child>
                   <placeholder />
                 </child>
@@ -181,6 +233,79 @@
               </packing>
             </child>
           </widget>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="Gtk.Dialog" id="Destrospean.DestrospeanCASPEditor.GameFoldersDialog" design-size="480 584">
+    <property name="MemberName" />
+    <property name="WidthRequest">480</property>
+    <property name="HeightRequest">584</property>
+    <property name="Title" translatable="yes">Game Folders</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <property name="Resizable">False</property>
+    <property name="DestroyWithParent">True</property>
+    <property name="Buttons">1</property>
+    <property name="HelpButton">False</property>
+    <child internal-child="VBox">
+      <widget class="Gtk.VBox" id="VBox">
+        <property name="MemberName" />
+        <property name="BorderWidth">2</property>
+        <child>
+          <widget class="Gtk.ScrolledWindow" id="ScrolledWindow">
+            <property name="MemberName" />
+            <property name="CanFocus">True</property>
+            <property name="ShadowType">In</property>
+            <child>
+              <widget class="Gtk.Viewport" id="GtkViewport">
+                <property name="MemberName" />
+                <property name="ShadowType">None</property>
+                <child>
+                  <widget class="Gtk.Table" id="GameFolderTable">
+                    <property name="MemberName" />
+                    <property name="NColumns">2</property>
+                    <property name="RowSpacing">6</property>
+                    <property name="ColumnSpacing">6</property>
+                    <child>
+                      <placeholder />
+                    </child>
+                    <child>
+                      <placeholder />
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">0</property>
+            <property name="AutoSize">True</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+    <child internal-child="ActionArea">
+      <widget class="Gtk.HButtonBox" id="ActionArea">
+        <property name="MemberName" />
+        <property name="Spacing">10</property>
+        <property name="BorderWidth">5</property>
+        <property name="Size">1</property>
+        <property name="LayoutStyle">End</property>
+        <child>
+          <widget class="Gtk.Button" id="ButtonOk">
+            <property name="MemberName" />
+            <property name="CanDefault">True</property>
+            <property name="CanFocus">True</property>
+            <property name="UseStock">True</property>
+            <property name="Type">StockItem</property>
+            <property name="StockId">gtk-ok</property>
+            <property name="ResponseId">-5</property>
+            <property name="label">gtk-ok</property>
+          </widget>
+          <packing>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
         </child>
       </widget>
     </child>

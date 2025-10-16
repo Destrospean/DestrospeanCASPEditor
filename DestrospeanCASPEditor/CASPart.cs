@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Xml;
-using CASPartResource;
-using CASPartResourceExtensions = CASPartResource.Extensions;
 using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
@@ -15,11 +12,14 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public readonly List<Preset> Presets;
 
-        public CASPart(IPackage package, CASPartResource.CASPartResource casPartResource, List<CASPartResource.CASPartResource.Preset> presets)
+        public readonly IResourceIndexEntry ResourceIndexEntry;
+
+        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry)
         {
-            CASPartResource = casPartResource;
+            CASPartResource = (CASPartResource.CASPartResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
             CurrentPackage = package;
-            Presets = presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            ResourceIndexEntry = resourceIndexEntry;
+            Presets = CASPartResource.Presets.ConvertAll(new System.Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
         }
 
         public interface IComplate
@@ -64,7 +64,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.Name));
+                    return Patterns.ConvertAll(new System.Converter<Pattern, string>(x => x.Name));
                 }
             }
 
@@ -91,8 +91,9 @@ namespace Destrospean.DestrospeanCASPEditor
             public Complate(Preset preset, XmlNode complateXmlNode)
             {
                 Preset = preset;
+                var evaluated = ResourceUtils.EvaluateResourceKey(CurrentPackage, complateXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, ResourceUtils.EvaluateResourceKey(CurrentPackage, complateXmlNode)).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in complateXmlNode.ChildNodes)
@@ -140,6 +141,8 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             readonly XmlDocument mXmlDocument;
 
+            readonly Dictionary<string, string> mPropertiesTyped;
+
             readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
 
             public readonly Complate Complate;
@@ -153,8 +156,6 @@ namespace Destrospean.DestrospeanCASPEditor
             }
 
             public readonly string Name;
-
-            readonly Dictionary<string, string> mPropertiesTyped;
 
             public Dictionary<string, string> PropertiesTyped
             {
@@ -176,8 +177,9 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 Complate = complate;
                 Name = patternXmlNode.Attributes["variable"].Value;
+                var evaluated = ResourceUtils.EvaluateResourceKey(CurrentPackage, patternXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, ResourceUtils.EvaluateResourceKey(CurrentPackage, patternXmlNode)).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
@@ -302,68 +304,6 @@ namespace Destrospean.DestrospeanCASPEditor
             for (int i = 0; i < CASPartResource.Presets.Count; i++)
             {
                 SavePreset(i);
-            }
-        }
-
-        internal static void DEBUG_ConsoleLogCASPartDetails(CASPart casPart)
-        {
-            var casPartResource = casPart.CASPartResource;
-            foreach (var flag in Enum.GetValues(typeof(ClothingCategoryFlags)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.ClothingCategory.HasFlag((ClothingCategoryFlags)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(ClothingType)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.Clothing.HasFlag((ClothingType)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(DataTypeFlags)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.DataType.HasFlag((DataTypeFlags)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(AgeFlags)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.AgeGender.Age.HasFlag((AgeFlags)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(GenderFlags)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.AgeGender.Gender.HasFlag((GenderFlags)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(SpeciesType)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.AgeGender.Species.HasFlag((SpeciesType)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(HandednessFlags)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + casPartResource.AgeGender.Handedness.HasFlag((HandednessFlags)flag));
-            }
-            Console.WriteLine();
-            foreach (var flag in Enum.GetValues(typeof(RegionType)))
-            {
-                Console.WriteLine(flag.ToString() + ": " + CASPartResourceExtensions.GetRegionType(casPartResource.ClothingCategory).HasFlag((RegionType)flag));
-            }
-            Console.WriteLine();
-            foreach (var preset in casPart.Presets)
-            {
-                foreach (var propertyName in preset.PropertyNames)
-                {
-                    Console.WriteLine(propertyName + ": " + preset.GetValue(propertyName));
-                }
-            }
-        }
-
-        internal static void DEBUG_ConsoleLogCASPartsDetails(Dictionary<IResourceIndexEntry, CASPart> casParts)
-        {
-            foreach (var casPartKvp in casParts)
-            {
-                Console.WriteLine(ResourceUtils.GetResourceTypeTag(casPartKvp.Key) + " 0x" + casPartKvp.Key.Instance.ToString("X"));
-                Console.WriteLine();
-                DEBUG_ConsoleLogCASPartDetails(casPartKvp.Value);
             }
         }
     }
