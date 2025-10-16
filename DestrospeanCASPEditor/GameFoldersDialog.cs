@@ -38,13 +38,13 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 var alignment = new Alignment(0, .5f, 1, 0);
                 var path = "";
-                var entry = new Entry()
+                var entry = new Entry
                     {
                         Text = InstallDirs.TryGetValue(game, out path) ? path : ""
                     };
                 alignment.Add(entry);
                 entry.Changed += (sender, e) => SetInstallDir(game, entry.Text);
-                GameFolderTable.Attach(new Label()
+                GameFolderTable.Attach(new Label
                     {
                         Text = game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""),
                         UseUnderline = false,

@@ -48,7 +48,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void PreloadGameImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            ImageUtils.PreloadedGameImages.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry), new List<Gdk.Pixbuf>()
+            ImageUtils.PreloadedGameImages.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry), new List<Gdk.Pixbuf>
                 {
                     ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear)
                 });
@@ -57,7 +57,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void PreloadImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            ImageUtils.PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>()
+            ImageUtils.PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>
                 {
                     ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear)
                 });

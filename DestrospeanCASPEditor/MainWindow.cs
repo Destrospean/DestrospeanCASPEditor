@@ -5,7 +5,7 @@ using Destrospean.DestrospeanCASPEditor;
 using Gtk;
 using s3pi.Interfaces;
 
-public partial class MainWindow: Window
+public partial class MainWindow : Window
 {
     public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
@@ -13,14 +13,15 @@ public partial class MainWindow: Window
 
     public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
 
-    public static float Scale;
+    public static float Scale, WineScale;
 
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
-        Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? (float)monitorGeometry.Height / 1080 : float.Parse(scaleEnvironmentVariable);
+        Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.OS.HasFlag(Platform.OSFlags.Unix) ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
+        WineScale = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
         SetDefaultSize((int)(DefaultWidth * Scale), (int)(DefaultHeight * Scale));
         var widgets = new Widget[]
             {
@@ -35,12 +36,15 @@ public partial class MainWindow: Window
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
         }
         Resize(DefaultWidth, DefaultHeight);
-        Move((monitorGeometry.Width - WidthRequest) / 2, (monitorGeometry.Height - HeightRequest) / 2);
+        if (Platform.OS.HasFlag(Platform.OSFlags.Unix) || Platform.IsRunningUnderWine)
+        {
+            Move(((int)((float)monitorGeometry.Width / WineScale) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / WineScale) - HeightRequest) / 2);
+        }
         CellRendererText instanceCell = new CellRendererText(), tagCell = new CellRendererText();
-        TreeViewColumn instanceColumn = new TreeViewColumn()
+        TreeViewColumn instanceColumn = new TreeViewColumn
             {
                 Title = "Instance"
-            }, tagColumn = new TreeViewColumn()
+            }, tagColumn = new TreeViewColumn
             {
                 Title = "Type"
             };
@@ -106,11 +110,11 @@ public partial class MainWindow: Window
     public static void AddPresetToNotebook(CASPart.Preset preset, Notebook notebook, Image imageWidget)
     {
         var subNotebook = new Notebook();
-        notebook.AppendPage(subNotebook, new Label()
+        notebook.AppendPage(subNotebook, new Label
             {
                 Text = "Preset " + (notebook.NPages + 1).ToString()
             });
-        List<CASPart.IComplate> complates = new List<CASPart.IComplate>()
+        List<CASPart.IComplate> complates = new List<CASPart.IComplate>
             {
                 preset
             };
@@ -124,7 +128,7 @@ public partial class MainWindow: Window
                     ColumnSpacing = 12
                 };
             scrolledWindow.AddWithViewport(table);
-            subNotebook.AppendPage(scrolledWindow, new Label()
+            subNotebook.AppendPage(scrolledWindow, new Label
                 {
                     Text = pattern == null ? "Configuration" : pattern.Name
                 });
@@ -153,7 +157,7 @@ public partial class MainWindow: Window
             switch (type)
             {
                 case "bool":
-                    var checkButton = new CheckButton()
+                    var checkButton = new CheckButton
                         {
                             Active = bool.Parse(value),
                             UseUnderline = false
@@ -164,10 +168,10 @@ public partial class MainWindow: Window
                 case "color":
                     alignment.Xscale = 0;
                     var rgba = new List<string>(value.Split(',')).ConvertAll(new Converter<string, ushort>(x => (ushort)(float.Parse(x) * ushort.MaxValue)));
-                    var colorButton = new ColorButton()
+                    var colorButton = new ColorButton
                         {
                             Alpha = rgba[3],
-                            Color = new Gdk.Color()
+                            Color = new Gdk.Color
                                 {
                                     Blue = rgba[2],
                                     Green = rgba[1],
@@ -177,7 +181,7 @@ public partial class MainWindow: Window
                         };
                     colorButton.ColorSet += (sender, e) =>
                         {
-                            rgba = new List<ushort>()
+                            rgba = new List<ushort>
                                 {
                                     colorButton.Color.Red,
                                     colorButton.Color.Green,
@@ -197,7 +201,7 @@ public partial class MainWindow: Window
                     valueWidget = spinButton;
                     break;
                 case "pattern":
-                    var entry = new Entry()
+                    var entry = new Entry
                         {
                             Text = value
                         };
@@ -219,16 +223,16 @@ public partial class MainWindow: Window
                         entries.Add(new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedGameImages[value][1], value));
                         listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
                     }
-                    var comboBox = new ComboBox()
+                    var comboBox = new ComboBox
                         {
                             Active = entries.FindIndex(x => x.Item2 == value),
                             Model = listStore
                         };
-                    var pixbufRenderer = new CellRendererPixbuf()
+                    var pixbufRenderer = new CellRendererPixbuf
                         {
                             Xpad = 4
                         };
-                    var textRenderer = new CellRendererText()
+                    var textRenderer = new CellRendererText
                         {
                             Xpad = 4
                         };
@@ -251,7 +255,7 @@ public partial class MainWindow: Window
                     valueWidget = hBox;
                     break;
             }
-            table.Attach(new Label()
+            table.Attach(new Label
                 {
                     Text = name,
                     UseUnderline = false,
@@ -265,7 +269,7 @@ public partial class MainWindow: Window
 
     public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
     {
-        var frame = new Frame()
+        var frame = new Frame
             {
                 Label = propertyPathParts[propertyPathParts.Length - 1],
             };
