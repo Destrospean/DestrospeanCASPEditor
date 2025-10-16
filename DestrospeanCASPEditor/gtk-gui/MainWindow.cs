@@ -29,17 +29,19 @@ public partial class MainWindow
 	
 	private global::Gtk.MenuBar MainMenuBar;
 	
-	private global::Gtk.HBox MainHBox;
+	private global::Gtk.Table MainTable;
 	
-	private global::Gtk.Image Image;
-	
-	private global::Gtk.ScrolledWindow ResourceScrolledWindow;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow;
 	
 	private global::Gtk.TreeView ResourceTreeView;
 	
+	private global::Gtk.ScrolledWindow ImageScrolledWindow;
+	
+	private global::Gtk.Image Image;
+	
 	private global::Gtk.Notebook PresetNotebook;
 	
-	private global::Gtk.Label PageLabel;
+	private global::Gtk.Label PresetLabel;
 	
 	private global::Gtk.Table CASPartFlagTable;
 
@@ -83,6 +85,8 @@ public partial class MainWindow
 		this.Name = "MainWindow";
 		this.Title = global::Mono.Unix.Catalog.GetString ("Destrospean's CASP Editor");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+		this.DefaultWidth = 1080;
+		this.DefaultHeight = 540;
 		// Container child MainWindow.Gtk.Container+ContainerChild
 		this.MainPane = new global::Gtk.HPaned ();
 		this.MainPane.CanFocus = true;
@@ -102,72 +106,86 @@ public partial class MainWindow
 		w2.Expand = false;
 		w2.Fill = false;
 		// Container child MainVBox.Gtk.Box+BoxChild
-		this.MainHBox = new global::Gtk.HBox ();
-		this.MainHBox.HeightRequest = 270;
-		this.MainHBox.Name = "MainHBox";
-		this.MainHBox.Spacing = 6;
-		// Container child MainHBox.Gtk.Box+BoxChild
+		this.MainTable = new global::Gtk.Table (((uint)(1)), ((uint)(3)), false);
+		this.MainTable.Name = "MainTable";
+		this.MainTable.RowSpacing = ((uint)(6));
+		this.MainTable.ColumnSpacing = ((uint)(6));
+		// Container child MainTable.Gtk.Table+TableChild
+		this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+		this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
+		this.ResourceTreeView = new global::Gtk.TreeView ();
+		this.ResourceTreeView.CanFocus = true;
+		this.ResourceTreeView.Name = "ResourceTreeView";
+		this.GtkScrolledWindow.Add (this.ResourceTreeView);
+		this.MainTable.Add (this.GtkScrolledWindow);
+		global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.MainTable [this.GtkScrolledWindow]));
+		w4.LeftAttach = ((uint)(1));
+		w4.RightAttach = ((uint)(2));
+		w4.YOptions = ((global::Gtk.AttachOptions)(4));
+		// Container child MainTable.Gtk.Table+TableChild
+		this.ImageScrolledWindow = new global::Gtk.ScrolledWindow ();
+		this.ImageScrolledWindow.WidthRequest = 270;
+		this.ImageScrolledWindow.HeightRequest = 270;
+		this.ImageScrolledWindow.CanFocus = true;
+		this.ImageScrolledWindow.Name = "ImageScrolledWindow";
+		this.ImageScrolledWindow.VscrollbarPolicy = ((global::Gtk.PolicyType)(2));
+		this.ImageScrolledWindow.HscrollbarPolicy = ((global::Gtk.PolicyType)(2));
+		this.ImageScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child ImageScrolledWindow.Gtk.Container+ContainerChild
+		global::Gtk.Viewport w5 = new global::Gtk.Viewport ();
+		w5.ShadowType = ((global::Gtk.ShadowType)(0));
+		// Container child GtkViewport.Gtk.Container+ContainerChild
 		this.Image = new global::Gtk.Image ();
 		this.Image.WidthRequest = 270;
 		this.Image.HeightRequest = 270;
 		this.Image.Name = "Image";
-		this.MainHBox.Add (this.Image);
-		global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.MainHBox [this.Image]));
-		w3.Position = 0;
-		w3.Expand = false;
-		w3.Fill = false;
-		// Container child MainHBox.Gtk.Box+BoxChild
-		this.ResourceScrolledWindow = new global::Gtk.ScrolledWindow ();
-		this.ResourceScrolledWindow.CanFocus = true;
-		this.ResourceScrolledWindow.Name = "ResourceScrolledWindow";
-		this.ResourceScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
-		// Container child ResourceScrolledWindow.Gtk.Container+ContainerChild
-		this.ResourceTreeView = new global::Gtk.TreeView ();
-		this.ResourceTreeView.CanFocus = true;
-		this.ResourceTreeView.Name = "ResourceTreeView";
-		this.ResourceScrolledWindow.Add (this.ResourceTreeView);
-		this.MainHBox.Add (this.ResourceScrolledWindow);
-		global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.MainHBox [this.ResourceScrolledWindow]));
-		w5.Position = 1;
-		// Container child MainHBox.Gtk.Box+BoxChild
+		w5.Add (this.Image);
+		this.ImageScrolledWindow.Add (w5);
+		this.MainTable.Add (this.ImageScrolledWindow);
+		global::Gtk.Table.TableChild w8 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ImageScrolledWindow]));
+		w8.XOptions = ((global::Gtk.AttachOptions)(4));
+		w8.YOptions = ((global::Gtk.AttachOptions)(4));
+		// Container child MainTable.Gtk.Table+TableChild
 		this.PresetNotebook = new global::Gtk.Notebook ();
 		this.PresetNotebook.WidthRequest = 432;
 		this.PresetNotebook.CanFocus = true;
 		this.PresetNotebook.Name = "PresetNotebook";
 		this.PresetNotebook.CurrentPage = 0;
 		// Notebook tab
-		global::Gtk.Label w6 = new global::Gtk.Label ();
-		w6.Visible = true;
-		this.PresetNotebook.Add (w6);
-		this.PageLabel = new global::Gtk.Label ();
-		this.PageLabel.Name = "PageLabel";
-		this.PageLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Page");
-		this.PresetNotebook.SetTabLabel (w6, this.PageLabel);
-		this.PageLabel.ShowAll ();
-		this.MainHBox.Add (this.PresetNotebook);
-		global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.MainHBox [this.PresetNotebook]));
-		w7.Position = 2;
-		w7.Expand = false;
-		this.MainVBox.Add (this.MainHBox);
-		global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainHBox]));
-		w8.Position = 1;
-		w8.Expand = false;
-		w8.Fill = false;
+		global::Gtk.Label w9 = new global::Gtk.Label ();
+		w9.Visible = true;
+		this.PresetNotebook.Add (w9);
+		this.PresetLabel = new global::Gtk.Label ();
+		this.PresetLabel.Name = "PresetLabel";
+		this.PresetLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Page");
+		this.PresetNotebook.SetTabLabel (w9, this.PresetLabel);
+		this.PresetLabel.ShowAll ();
+		this.MainTable.Add (this.PresetNotebook);
+		global::Gtk.Table.TableChild w10 = ((global::Gtk.Table.TableChild)(this.MainTable [this.PresetNotebook]));
+		w10.LeftAttach = ((uint)(2));
+		w10.RightAttach = ((uint)(3));
+		w10.XOptions = ((global::Gtk.AttachOptions)(4));
+		w10.YOptions = ((global::Gtk.AttachOptions)(4));
+		this.MainVBox.Add (this.MainTable);
+		global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainTable]));
+		w11.Position = 1;
+		w11.Expand = false;
+		w11.Fill = false;
 		// Container child MainVBox.Gtk.Box+BoxChild
 		this.CASPartFlagTable = new global::Gtk.Table (((uint)(2)), ((uint)(6)), true);
 		this.CASPartFlagTable.Name = "CASPartFlagTable";
 		this.CASPartFlagTable.RowSpacing = ((uint)(6));
 		this.CASPartFlagTable.ColumnSpacing = ((uint)(6));
 		this.MainVBox.Add (this.CASPartFlagTable);
-		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.CASPartFlagTable]));
-		w9.Position = 2;
+		global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.CASPartFlagTable]));
+		w12.Position = 2;
 		this.MainPane.Add (this.MainVBox);
 		this.Add (this.MainPane);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
 		}
-		this.DefaultWidth = 1080;
-		this.DefaultHeight = 540;
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
 		this.OpenAction.Activated += new global::System.EventHandler (this.OnOpenActionActivated);

@@ -27,7 +27,8 @@ public partial class MainWindow : Window
             {
                 CASPartFlagTable,
                 Image,
-                MainHBox,
+                ImageScrolledWindow,
+                MainTable,
                 PresetNotebook,
                 this
             };
@@ -35,6 +36,7 @@ public partial class MainWindow : Window
         {
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
         }
+        Image.SetSizeRequest(Image.WidthRequest == -1 ? -1 : (int)(Image.WidthRequest * WineScale), Image.HeightRequest == -1 ? -1 : (int)(Image.HeightRequest * WineScale));
         Resize(DefaultWidth, DefaultHeight);
         if (Platform.OS.HasFlag(Platform.OSFlags.Unix) || Platform.IsRunningUnderWine)
         {
@@ -366,16 +368,22 @@ public partial class MainWindow : Window
         ShowAll();
     }
 
+    protected void OnCloseActionActivated(object sender, EventArgs e)
+    {
+        CurrentPackage = null;
+        RefreshWidgets();
+    }
+
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
     {
         Application.Quit();
         a.RetVal = true;
     }
 
-    protected void OnCloseActionActivated(object sender, EventArgs e)
+    protected void OnGameFoldersActionActivated(object sender, EventArgs e)
     {
-        CurrentPackage = null;
-        RefreshWidgets();
+        var gameFoldersDialog = new GameFoldersDialog(this);
+        gameFoldersDialog.ShowAll();
     }
 
     protected void OnNewActionActivated(object sender, EventArgs e)
@@ -418,11 +426,5 @@ public partial class MainWindow : Window
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)
     {
-    }
-
-    protected void OnGameFoldersActionActivated(object sender, EventArgs e)
-    {
-        var gameFoldersDialog = new GameFoldersDialog(this);
-        gameFoldersDialog.ShowAll();
     }
 }
