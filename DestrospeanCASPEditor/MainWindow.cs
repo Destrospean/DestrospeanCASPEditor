@@ -13,29 +13,28 @@ public partial class MainWindow: Window
 
     public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
 
-    public static float Scale = 1;
+    public static float Scale;
 
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
-        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
-        if (!string.IsNullOrEmpty(scaleEnvironmentVariable))
-        {
-            Scale = float.Parse(scaleEnvironmentVariable);
-            var widgets = new Widget[]
-                {
-                    this,
-                    CASPartFlagTable,
-                    Image,
-                    MainHBox,
-                    PresetNotebook
-                };
-            foreach (var widget in widgets)
-            {
-                widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
-            }
-        }
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
+        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
+        Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? (float)monitorGeometry.Height / 1080 : float.Parse(scaleEnvironmentVariable);
+        SetDefaultSize((int)(DefaultWidth * Scale), (int)(DefaultHeight * Scale));
+        var widgets = new Widget[]
+            {
+                CASPartFlagTable,
+                Image,
+                MainHBox,
+                PresetNotebook,
+                this
+            };
+        foreach (var widget in widgets)
+        {
+            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
+        }
+        Resize(DefaultWidth, DefaultHeight);
         Move((monitorGeometry.Width - WidthRequest) / 2, (monitorGeometry.Height - HeightRequest) / 2);
         CellRendererText instanceCell = new CellRendererText(), tagCell = new CellRendererText();
         TreeViewColumn instanceColumn = new TreeViewColumn()
