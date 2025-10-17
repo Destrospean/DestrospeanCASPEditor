@@ -146,30 +146,15 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="Gtk.ScrolledWindow" id="ImageScrolledWindow">
+                  <widget class="Gtk.Image" id="Image">
                     <property name="MemberName" />
                     <property name="WidthRequest">270</property>
                     <property name="HeightRequest">270</property>
-                    <property name="CanFocus">True</property>
-                    <property name="VscrollbarPolicy">Never</property>
-                    <property name="HscrollbarPolicy">Never</property>
-                    <property name="ShadowType">In</property>
-                    <child>
-                      <widget class="Gtk.Viewport" id="GtkViewport">
-                        <property name="MemberName" />
-                        <property name="ShadowType">None</property>
-                        <child>
-                          <widget class="Gtk.Image" id="Image">
-                            <property name="MemberName" />
-                            <property name="WidthRequest">270</property>
-                            <property name="HeightRequest">270</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
+                    <property name="Xalign">0</property>
+                    <property name="Yalign">0</property>
                   </widget>
                   <packing>
-                    <property name="AutoSize">False</property>
+                    <property name="AutoSize">True</property>
                     <property name="XOptions">Fill</property>
                     <property name="YOptions">Fill</property>
                     <property name="XExpand">False</property>

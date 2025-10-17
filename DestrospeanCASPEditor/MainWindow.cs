@@ -27,7 +27,6 @@ public partial class MainWindow : Window
             {
                 CASPartFlagTable,
                 Image,
-                ImageScrolledWindow,
                 MainTable,
                 PresetNotebook,
                 this
@@ -36,7 +35,6 @@ public partial class MainWindow : Window
         {
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
         }
-        Image.SetSizeRequest(Image.WidthRequest == -1 ? -1 : (int)(Image.WidthRequest * WineScale), Image.HeightRequest == -1 ? -1 : (int)(Image.HeightRequest * WineScale));
         Resize(DefaultWidth, DefaultHeight);
         if (Platform.OS.HasFlag(Platform.OSFlags.Unix) || Platform.IsRunningUnderWine)
         {
