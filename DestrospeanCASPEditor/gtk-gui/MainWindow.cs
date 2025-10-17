@@ -174,6 +174,7 @@ public partial class MainWindow
 		}
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
+		this.SizeAllocated += new global::Gtk.SizeAllocatedHandler (this.OnSizeAllocated);
 		this.OpenAction.Activated += new global::System.EventHandler (this.OnOpenActionActivated);
 		this.SaveAction.Activated += new global::System.EventHandler (this.OnSaveActionActivated);
 		this.SaveAsAction.Activated += new global::System.EventHandler (this.OnSaveAsActionActivated);

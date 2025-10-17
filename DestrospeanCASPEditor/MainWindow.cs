@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
+        AllowShrink = Platform.IsRunningUnderWine;
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
         Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.OS.HasFlag(Platform.OSFlags.Unix) ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
@@ -424,5 +425,17 @@ public partial class MainWindow : Window
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)
     {
+    }
+
+    protected void OnSizeAllocated(object sender, SizeAllocatedArgs a)
+    {
+        if (Platform.IsRunningUnderWine && (a.Allocation.Height < DefaultHeight - 1 || a.Allocation.Width < DefaultWidth))
+        {
+            int x, y;
+            GetPosition(out x, out y);
+            ReshowWithInitialSize();
+            Move(x, y);
+            Resize(a.Allocation.Width < DefaultWidth ? DefaultWidth : a.Allocation.Width, a.Allocation.Height < DefaultHeight - 1 ? DefaultHeight : a.Allocation.Height);
+        }
     }
 }
