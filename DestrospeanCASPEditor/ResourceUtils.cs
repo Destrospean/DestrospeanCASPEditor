@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using s3pi.Interfaces;
+using s3pi.Extensions;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -69,6 +70,85 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public class ResourceKey : IResourceKey
+        {
+            ulong mInstance;
+
+            uint mResourceGroup, mResourceType;
+
+            public ulong Instance
+            {
+                get
+                {
+                    return mInstance;
+                }
+                set
+                {
+                    mInstance = value;
+                }
+            }
+
+            public uint ResourceGroup
+            {
+                get
+                {
+                    return mResourceGroup;
+                }
+                set
+                {
+                    mResourceGroup = value;
+                }
+            }
+
+            public uint ResourceType
+            {
+                get
+                {
+                    return mResourceType;
+                }
+                set
+                {
+                    mResourceType = value;
+                }
+            }
+
+            public ResourceKey(uint type, uint group, ulong instance)
+            {
+                ResourceType = type;
+                ResourceGroup = group;
+                Instance = instance;
+            }
+
+            public int CompareTo(IResourceKey other)
+            {
+                int res = ResourceType.CompareTo(other.ResourceType);
+                if (res != 0) return res;
+                res = ResourceGroup.CompareTo(other.ResourceGroup);
+                if (res != 0) return res;
+                return Instance.CompareTo(other.Instance);
+            }
+
+            public bool Equals(IResourceKey other)
+            {
+                return CompareTo(other) == 0;
+            }
+
+            public bool Equals(IResourceKey x, IResourceKey y)
+            {
+                return x.Equals(y);
+            }
+
+            public override int GetHashCode()
+            {
+                return ResourceType.GetHashCode() ^ ResourceGroup.GetHashCode() ^ Instance.GetHashCode();
+            }
+
+            public int GetHashCode(IResourceKey obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+
         static System.Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
         {   
             var tgi = new ulong[3];
@@ -134,9 +214,66 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public static uint GetResourceTypeFromTag(string tag)
+        {
+            foreach (var type in ExtList.Ext.Keys)
+            {
+                if (ExtList.Ext[type].Contains(tag))
+                {
+                    return System.Convert.ToUInt32(type, 16);
+                }
+            }
+            return 0;
+        }
+
         public static string GetResourceTypeTag(IResourceIndexEntry resourceIndexEntry)
         {
-            return s3pi.Extensions.ExtList.Ext[resourceIndexEntry.ResourceType][0];
+            return ExtList.Ext[resourceIndexEntry.ResourceType][0];
+        }
+
+        public static void ResolveResourceType(IPackage package, IResourceIndexEntry resourceIndexEntry)
+        {
+            IResource castResource = null;
+            var resource = s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
+            string tag = null;
+            try
+            {
+                GDImageLibrary._DDS.LoadImage(resource.AsBytes);
+                tag = "_IMG";
+            }
+            catch
+            {
+            }
+            try
+            {
+                castResource = new CASPartResource.CASPartResource(0, resource.Stream);
+                tag = "CASP";
+            }
+            catch
+            {
+            }
+            try
+            {
+                castResource = new meshExpImp.ModelBlocks.GeometryResource(0, resource.Stream);
+                tag = "GEOM";
+            }
+            catch
+            {
+            }
+            try
+            {
+                castResource = new TxtcResource.TxtcResource(0, resource.Stream);
+                tag = "TXTC";
+            }
+            catch
+            {
+            }
+            if (string.IsNullOrEmpty(tag))
+            {
+                return;
+            }
+            package.ReplaceResource(resourceIndexEntry, castResource);
+            resourceIndexEntry.ResourceType = GetResourceTypeFromTag(tag);
         }
 
         public static string ReverseEvaluateResourceKey(IResourceIndexEntry resourceIndexEntry)

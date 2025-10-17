@@ -69,6 +69,30 @@
         <property name="StockId">gtk-directory</property>
         <signal name="Activated" handler="OnGameFoldersActionActivated" />
       </action>
+      <action id="ResourceAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Resource</property>
+        <property name="ShortLabel" translatable="yes">Resource</property>
+      </action>
+      <action id="ImportResourceAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Import</property>
+        <property name="ShortLabel" translatable="yes">Import</property>
+        <property name="StockId">gtk-directory</property>
+        <signal name="Activated" handler="OnImportResourceActionActivated" />
+      </action>
+      <action id="ReplaceResourceAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Replace</property>
+        <property name="ShortLabel" translatable="yes">Replace</property>
+        <property name="StockId">gtk-convert</property>
+      </action>
+      <action id="DeleteResourceAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Delete</property>
+        <property name="ShortLabel" translatable="yes">Delete</property>
+        <property name="StockId">gtk-delete</property>
+      </action>
     </action-group>
     <property name="MemberName" />
     <property name="WidthRequest">1080</property>
@@ -102,6 +126,11 @@
                     <node type="Menuitem" action="SaveAsAction" />
                     <node type="Menuitem" action="CloseAction" />
                     <node type="Menuitem" action="QuitAction" />
+                  </node>
+                  <node type="Menu" action="ResourceAction">
+                    <node type="Menuitem" action="ImportResourceAction" />
+                    <node type="Menuitem" action="ReplaceResourceAction" />
+                    <node type="Menuitem" action="DeleteResourceAction" />
                   </node>
                   <node type="Menu" action="SettingsAction">
                     <node type="Menuitem" action="GameFoldersAction" />

@@ -11,7 +11,7 @@ public partial class MainWindow : Window
 
     public IPackage CurrentPackage;
 
-    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry), typeof(IResource));
+    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public static float Scale, WineScale;
 
@@ -79,16 +79,7 @@ public partial class MainWindow : Window
                             Image.Pixbuf = ImageUtils.PreloadedImages[resourceIndexEntry][0];
                             break;
                         case "CASP":
-                            var casPartResource = (CASPartResource.CASPartResource)model.GetValue(iter, 3);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(ClothingCategoryFlags), casPartResource.ClothingCategory, "Clothing Category"), 0, 1, 0, 2);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(ClothingType), casPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(DataTypeFlags), casPartResource.DataType, "Data Type"), 2, 3, 0, 2);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(AgeFlags), casPartResource.AgeGender.Age, "Age Gender", "Age"), 3, 4, 0, 2);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(GenderFlags), casPartResource.AgeGender.Gender, "Age Gender", "Gender"), 4, 5, 0, 1);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(SpeciesType), casPartResource.AgeGender.Species, "Age Gender", "Species"), 5, 6, 0, 2);
-                            CASPartFlagTable.Attach(GetFlagsInNewFrame(CASParts[resourceIndexEntry], typeof(HandednessFlags), casPartResource.AgeGender.Handedness, "Age Gender", "Handedness"), 4, 5, 1, 2);
-                            CASPartFlagTable.ShowAll();
-                            CASParts[resourceIndexEntry].Presets.ForEach(x => AddPresetToNotebook(x, PresetNotebook, Image));
+                            AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                     }
                 }
@@ -106,6 +97,19 @@ public partial class MainWindow : Window
             }
             s3pi.Filetable.GameFolders.InstallDirs = installDirs;
         }
+    }
+
+    public void AddCASPartWidgets(CASPart casPart)
+    {
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category"), 0, 1, 0, 2);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(DataTypeFlags), casPart.CASPartResource.DataType, "Data Type"), 2, 3, 0, 2);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age Gender", "Age"), 3, 4, 0, 2);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Age Gender", "Gender"), 4, 5, 0, 1);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(SpeciesType), casPart.CASPartResource.AgeGender.Species, "Age Gender", "Species"), 5, 6, 0, 2);
+        CASPartFlagTable.Attach(GetFlagsInNewFrame(casPart, typeof(HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Age Gender", "Handedness"), 4, 5, 1, 2);
+        CASPartFlagTable.ShowAll();
+        casPart.Presets.ForEach(x => AddPresetToNotebook(x, PresetNotebook, Image));
     }
 
     public static void AddPresetToNotebook(CASPart.Preset preset, Notebook notebook, Image imageWidget)
@@ -341,7 +345,7 @@ public partial class MainWindow : Window
             return;
         }
         var resourceList = CurrentPackage.GetResourceList;
-        resourceList.Sort((a, b) => ResourceUtils.GetResourceTypeTag(b).CompareTo(ResourceUtils.GetResourceTypeTag(a)));
+        resourceList.Sort((a, b) => ResourceUtils.GetResourceTypeTag(a).CompareTo(ResourceUtils.GetResourceTypeTag(b)));
         foreach (var resourceIndexEntry in resourceList)
         {
             var tag = ResourceUtils.GetResourceTypeTag(resourceIndexEntry);
@@ -349,7 +353,9 @@ public partial class MainWindow : Window
             {
                 case "_IMG":
                 case "CASP":
-                    ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry, s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                case "GEOM":
+                case "TXTC":
+                    ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry);
                     break;
             }
             switch (tag)
@@ -363,12 +369,17 @@ public partial class MainWindow : Window
                     break;
             }
         }
+        foreach (var casPart in CASParts.Values)
+        {
+            AddCASPartWidgets(casPart);
+        }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
         ShowAll();
     }
 
     protected void OnCloseActionActivated(object sender, EventArgs e)
     {
+        s3pi.Package.Package.ClosePackage(0, CurrentPackage);
         CurrentPackage = null;
         RefreshWidgets();
     }
@@ -385,6 +396,24 @@ public partial class MainWindow : Window
         gameFoldersDialog.ShowAll();
     }
 
+    protected void OnImportResourceActionActivated(object sender, EventArgs e)
+    {
+        FileChooserDialog fileChooser = new FileChooserDialog("Import Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        if (fileChooser.Run() == (int)ResponseType.Accept)
+        {
+            try
+            {
+                ResourceUtils.ResolveResourceType(CurrentPackage, CurrentPackage.AddResource(new ResourceUtils.ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(fileChooser.Filename), true));
+                RefreshWidgets();
+            }
+            catch (System.IO.InvalidDataException ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+        fileChooser.Destroy();
+    }
+
     protected void OnNewActionActivated(object sender, EventArgs e)
     {
     }
@@ -396,6 +425,8 @@ public partial class MainWindow : Window
         {
             try
             {
+
+                s3pi.Package.Package.ClosePackage(0, CurrentPackage);
                 var package = s3pi.Package.Package.OpenPackage(0, fileChooser.Filename, true);
                 CurrentPackage = package;
                 RefreshWidgets();
