@@ -324,6 +324,11 @@ public partial class MainWindow : Window
         return frame;
     }
 
+    public static IResourceIndexEntry GetNewUnresolvedResourceIndexEntry(IPackage package, string filename)
+    {
+        return package.AddResource(new ResourceUtils.ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
+    }
+
     public void RefreshWidgets()
     {
         CASParts.Clear();
@@ -355,7 +360,10 @@ public partial class MainWindow : Window
                 case "CASP":
                 case "GEOM":
                 case "TXTC":
-                    ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry);
+                    if (!resourceIndexEntry.IsDeleted)
+                    {
+                        ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry);
+                    }
                     break;
             }
             switch (tag)
@@ -388,6 +396,17 @@ public partial class MainWindow : Window
     {
         Application.Quit();
         a.RetVal = true;
+    }
+
+    protected void OnDeleteResourceActionActivated(object sender, EventArgs e)
+    {
+        TreeIter iter;
+        TreeModel model;
+        if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+        {
+            CurrentPackage.DeleteResource((IResourceIndexEntry)model.GetValue(iter, 2));
+            RefreshWidgets();
+        }
     }
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
@@ -442,6 +461,32 @@ public partial class MainWindow : Window
     protected void OnQuitActionActivated(object sender, EventArgs e)
     {
         Application.Quit();
+    }
+
+    protected void OnReplaceResourceActionActivated(object sender, EventArgs e)
+    {
+        FileChooserDialog fileChooser = new FileChooserDialog("Replace Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        if (fileChooser.Run() == (int)ResponseType.Accept)
+        {
+            try
+            {
+                TreeIter iter;
+                TreeModel model;
+                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                {
+                    IResourceIndexEntry addedResourceIndexEntry = GetNewUnresolvedResourceIndexEntry(CurrentPackage, fileChooser.Filename), resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+                    ResourceUtils.ResolveResourceType(CurrentPackage, addedResourceIndexEntry);
+                    CurrentPackage.ReplaceResource(resourceIndexEntry, s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, addedResourceIndexEntry));
+                    CurrentPackage.DeleteResource(addedResourceIndexEntry);
+                    RefreshWidgets();
+                }
+            }
+            catch (System.IO.InvalidDataException ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+        fileChooser.Destroy();
     }
 
     protected void OnSaveActionActivated(object sender, EventArgs e)

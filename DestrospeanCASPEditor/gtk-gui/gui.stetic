@@ -86,12 +86,14 @@
         <property name="Label" translatable="yes">Replace</property>
         <property name="ShortLabel" translatable="yes">Replace</property>
         <property name="StockId">gtk-convert</property>
+        <signal name="Activated" handler="OnReplaceResourceActionActivated" />
       </action>
       <action id="DeleteResourceAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Delete</property>
         <property name="ShortLabel" translatable="yes">Delete</property>
         <property name="StockId">gtk-delete</property>
+        <signal name="Activated" handler="OnDeleteResourceActionActivated" />
       </action>
     </action-group>
     <property name="MemberName" />

@@ -272,7 +272,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 return;
             }
-            package.ReplaceResource(resourceIndexEntry, castResource);
+            package.ReplaceResource(resourceIndexEntry, castResource ?? resource);
             resourceIndexEntry.ResourceType = GetResourceTypeFromTag(tag);
         }
 

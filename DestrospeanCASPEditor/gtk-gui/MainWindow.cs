@@ -203,5 +203,7 @@ public partial class MainWindow
 		this.QuitAction.Activated += new global::System.EventHandler (this.OnQuitActionActivated);
 		this.GameFoldersAction.Activated += new global::System.EventHandler (this.OnGameFoldersActionActivated);
 		this.ImportResourceAction.Activated += new global::System.EventHandler (this.OnImportResourceActionActivated);
+		this.ReplaceResourceAction.Activated += new global::System.EventHandler (this.OnReplaceResourceActionActivated);
+		this.DeleteResourceAction.Activated += new global::System.EventHandler (this.OnDeleteResourceActionActivated);
 	}
 }
