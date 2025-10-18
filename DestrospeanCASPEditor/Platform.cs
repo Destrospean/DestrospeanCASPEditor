@@ -50,9 +50,9 @@ public static class Platform
             {
                 case 4:
                 case 128:
-                    Platform.OSFlags os = Platform.OSFlags.Unix;
-                    string uname = GetCommandOutput("uname");
-                    switch (uname.TrimEnd('\n'))
+                    var os = Platform.OSFlags.Unix;
+                    var uname = GetCommandOutput("uname").TrimEnd('\n');
+                    switch (uname)
                     {
                         case "Darwin":
                         case "Linux":
@@ -68,17 +68,16 @@ public static class Platform
 
     public static string GetCommandOutput(string command, string arguments = "")
     {
-        ProcessStartInfo startInfo = new ProcessStartInfo
+        var startInfo = new ProcessStartInfo
             {
-                FileName = command,
                 Arguments = arguments,
+                CreateNoWindow = true,
+                FileName = command,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
+                UseShellExecute = false
             };
-
-        using (Process process = new Process
+        using (var process = new Process
             {
                 StartInfo = startInfo
             })

@@ -8,6 +8,8 @@ namespace Destrospean.DestrospeanCASPEditor
     {
         static Dictionary<s3pi.Filetable.PackageTag, IPackage> mGamePackages;
 
+        static List<string> mMissingResourceKeys;
+
         public static Dictionary<s3pi.Filetable.PackageTag, IPackage> GamePackages
         {
             get
@@ -25,6 +27,18 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
                 return mGamePackages;
+            }
+        }
+
+        public static List<string> MissingResourceKeys
+        {
+            get
+            {
+                if (mMissingResourceKeys == null)
+                {
+                    mMissingResourceKeys = new List<string>();
+                }
+                return mMissingResourceKeys;
             }
         }
 
@@ -262,6 +276,15 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             try
             {
+                var genericRCOLResource = new s3pi.GenericRCOLResource.GenericRCOLResource(0, resource.Stream);
+                castResource = genericRCOLResource;
+                tag = genericRCOLResource.ChunkEntries[0].RCOLBlock.Tag;
+            }
+            catch
+            {
+            }
+            try
+            {
                 castResource = new TxtcResource.TxtcResource(0, resource.Stream);
                 tag = "TXTC";
             }
@@ -276,16 +299,15 @@ namespace Destrospean.DestrospeanCASPEditor
             resourceIndexEntry.ResourceType = GetResourceTypeFromTag(tag);
         }
 
-        public static string ReverseEvaluateResourceKey(IResourceIndexEntry resourceIndexEntry)
+        public static string ReverseEvaluateResourceKey(IResourceKey resourceKey)
         {   
-            var tgi = new ulong[]
-                {
-                    resourceIndexEntry.ResourceType,
-                    resourceIndexEntry.ResourceGroup,
-                    resourceIndexEntry.Instance
-                };
             var output = "key";
-            foreach (var value in tgi)
+            foreach (var value in new ulong[]
+                {
+                    resourceKey.ResourceType,
+                    resourceKey.ResourceGroup,
+                    resourceKey.Instance
+                })
             {
                 output += ":" + value.ToString("X8");
             }

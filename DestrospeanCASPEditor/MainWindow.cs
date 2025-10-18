@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using CASPartResource;
 using Destrospean.DestrospeanCASPEditor;
 using Gtk;
+using meshExpImp.ModelBlocks;
+using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 
 public partial class MainWindow : Window
@@ -10,6 +12,8 @@ public partial class MainWindow : Window
     public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
     public IPackage CurrentPackage;
+
+    public Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
     public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
@@ -24,15 +28,14 @@ public partial class MainWindow : Window
         Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.OS.HasFlag(Platform.OSFlags.Unix) ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
         WineScale = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
         SetDefaultSize((int)(DefaultWidth * Scale), (int)(DefaultHeight * Scale));
-        var widgets = new Widget[]
+        foreach (var widget in new Widget[]
             {
                 CASPartFlagTable,
                 Image,
                 MainTable,
                 PresetNotebook,
                 this
-            };
-        foreach (var widget in widgets)
+            })
         {
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * Scale));
         }
@@ -80,6 +83,13 @@ public partial class MainWindow : Window
                             break;
                         case "CASP":
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
+                            break;
+                        case "GEOM":
+                            AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], PresetNotebook, Image);
+                            break;
+                        case "TXTC":
+                            break;
+                        case "VPXY":
                             break;
                     }
                 }
@@ -142,6 +152,22 @@ public partial class MainWindow : Window
         notebook.ShowAll();
     }
 
+    public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Image imageWidget)
+    {
+        var scrolledWindow = new ScrolledWindow();
+        var table = new Table(1, 2, false)
+            {
+                ColumnSpacing = 12
+            };
+        scrolledWindow.AddWithViewport(table);
+        notebook.AppendPage(scrolledWindow, new Label
+            {
+                Text = "Configuration"
+            });
+        AddPropertiesToTable(package, geometryResource, table, imageWidget);
+        notebook.ShowAll();
+    }
+
     public static void AddPropertiesToTable(CASPart.IComplate complate, Table table, Image imageWidget)
     {
         var propertyNames = complate.PropertyNames;
@@ -201,7 +227,7 @@ public partial class MainWindow : Window
                     break;
                 case "float":
                     alignment.Xscale = 0;
-                    var spinButton = new SpinButton(new Adjustment(float.Parse(value), .0, 1, .0001, 10, 0), 10, 4);
+                    var spinButton = new SpinButton(new Adjustment(float.Parse(value), 0, 1, .0001, 10, 0), 10, 4);
                     spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
                     valueWidget = spinButton;
                     break;
@@ -217,15 +243,24 @@ public partial class MainWindow : Window
                     var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
                     var entries = complate.CurrentPackage.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Gdk.Pixbuf, string>>(x => new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
                     entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
+                    var missing = ResourceUtils.MissingResourceKeys.Contains(value);
                     if (!entries.Exists(x => x.Item2 == value))
                     {
-                        if (!ImageUtils.PreloadedGameImages.ContainsKey(value))
+                        if (!ImageUtils.PreloadedGameImages.ContainsKey(value) && !missing)
                         {
-                            var evaluated = ResourceUtils.EvaluateImageResourceKey(complate.CurrentPackage, value);
-                            ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                            ImageUtils.PreloadedGameImages[value].Add(ImageUtils.PreloadedGameImages[value][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                            try
+                            {
+                                var evaluated = ResourceUtils.EvaluateImageResourceKey(complate.CurrentPackage, value);
+                                ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
+                                ImageUtils.PreloadedGameImages[value].Add(ImageUtils.PreloadedGameImages[value][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                            }
+                            catch
+                            {
+                                ResourceUtils.MissingResourceKeys.Add(value);
+                                missing = true;
+                            }
                         }
-                        entries.Add(new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedGameImages[value][1], value));
+                        entries.Add(new Tuple<Gdk.Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[value][1], value));
                         listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
                     }
                     var comboBox = new ComboBox
@@ -250,13 +285,13 @@ public partial class MainWindow : Window
                     break;
                 case "vec2":
                     var hBox = new HBox();
-                    var xy = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
-                    SpinButton xSpinButton = new SpinButton(new Adjustment(xy[0], .0, 1, .0001, 10, 0), 10, 4), ySpinButton = new SpinButton(new Adjustment(xy[1], .0, 1, .0001, 10, 0), 10, 4);
-                    EventHandler valueChanged = (sender, e) => complate.SetValue(name, xSpinButton.Value.ToString("F4") + "," + ySpinButton.Value.ToString("F4"));
-                    xSpinButton.ValueChanged += valueChanged;
-                    ySpinButton.ValueChanged += valueChanged;
-                    hBox.PackStart(xSpinButton, false, false, 0);
-                    hBox.PackStart(ySpinButton, false, false, 0);
+                    var coordinates = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
+                    SpinButton spinButtonX = new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 10, 4), spinButtonY = new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 10, 4);
+                    EventHandler valueChanged = (sender, e) => complate.SetValue(name, spinButtonX.Value.ToString("F4") + "," + spinButtonY.Value.ToString("F4"));
+                    spinButtonX.ValueChanged += valueChanged;
+                    spinButtonY.ValueChanged += valueChanged;
+                    hBox.PackStart(spinButtonX, false, false, 0);
+                    hBox.PackStart(spinButtonY, false, false, 0);
                     valueWidget = hBox;
                     break;
             }
@@ -270,6 +305,161 @@ public partial class MainWindow : Window
             table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
         }
+    }
+
+    public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, Image imageWidget)
+    {
+        var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
+        Console.WriteLine(geom.Shader.ToString());
+        foreach (var element in geom.Mtnf.SData)
+        {
+            Widget valueWidget = null;
+            var alignment = new Alignment(0, .5f, 0, 0)
+                {
+                    HeightRequest = 48
+                };
+            var elementFloat = element as ElementFloat;
+            if (elementFloat != null)
+            {
+                var spinButton = new SpinButton(new Adjustment(elementFloat.Data, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4);
+                spinButton.ValueChanged += (sender, e) => elementFloat.Data = (float)spinButton.Value;
+                valueWidget = spinButton;
+            }
+            var elementFloat2 = element as ElementFloat2;
+            if (elementFloat2 != null)
+            {
+                var hBox = new HBox();
+                var spinButtons = new SpinButton[]
+                    {
+                        new SpinButton(new Adjustment(elementFloat2.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat2.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                    };
+                spinButtons[0].ValueChanged += (sender, e) => elementFloat2.Data0 = (float)spinButtons[0].Value;
+                spinButtons[1].ValueChanged += (sender, e) => elementFloat2.Data1 = (float)spinButtons[1].Value;
+                foreach (var spinButton in spinButtons)
+                {
+                    hBox.PackStart(spinButton, false, false, 0);
+                }
+                valueWidget = hBox;
+            }
+            var elementFloat3 = element as ElementFloat3;
+            if (elementFloat3 != null)
+            {
+                var hBox = new HBox();
+                var spinButtons = new SpinButton[]
+                    {
+                        new SpinButton(new Adjustment(elementFloat3.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat3.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat3.Data2, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                    };
+                spinButtons[0].ValueChanged += (sender, e) => elementFloat3.Data0 = (float)spinButtons[0].Value;
+                spinButtons[1].ValueChanged += (sender, e) => elementFloat3.Data1 = (float)spinButtons[1].Value;
+                spinButtons[2].ValueChanged += (sender, e) => elementFloat3.Data2 = (float)spinButtons[2].Value;
+                foreach (var spinButton in spinButtons)
+                {
+                    hBox.PackStart(spinButton, false, false, 0);
+                }
+                valueWidget = hBox;
+            }
+            var elementFloat4 = element as ElementFloat4;
+            if (elementFloat4 != null)
+            {
+                var hBox = new HBox();
+                var spinButtons = new SpinButton[]
+                    {
+                        new SpinButton(new Adjustment(elementFloat4.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat4.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat4.Data2, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
+                        new SpinButton(new Adjustment(elementFloat4.Data3, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                    };
+                spinButtons[0].ValueChanged += (sender, e) => elementFloat4.Data0 = (float)spinButtons[0].Value;
+                spinButtons[1].ValueChanged += (sender, e) => elementFloat4.Data1 = (float)spinButtons[1].Value;
+                spinButtons[2].ValueChanged += (sender, e) => elementFloat4.Data2 = (float)spinButtons[2].Value;
+                spinButtons[3].ValueChanged += (sender, e) => elementFloat4.Data3 = (float)spinButtons[3].Value;
+                foreach (var spinButton in spinButtons)
+                {
+                    hBox.PackStart(spinButton, false, false, 0);
+                }
+                valueWidget = hBox;
+            }
+            var elementInt = element as ElementInt;
+            if (elementInt != null)
+            {
+                var spinButton = new SpinButton(new Adjustment(elementInt.Data, int.MinValue, int.MaxValue, 1, 10, 0), 0, 0);
+                spinButton.ValueChanged += (sender, e) => elementInt.Data = spinButton.ValueAsInt;
+                valueWidget = spinButton;
+            }
+            var elementTextureKey = element as ElementTextureKey;
+            if (elementTextureKey != null)
+            {
+            }
+            var elementTextureRef = element as ElementTextureRef;
+            if (elementTextureRef != null)
+            {
+                var value = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
+                var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
+                var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Gdk.Pixbuf, string>>(x => new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
+                entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
+                var missing = ResourceUtils.MissingResourceKeys.Contains(value);
+                if (!entries.Exists(x => x.Item2 == value))
+                {
+                    if (!ImageUtils.PreloadedGameImages.ContainsKey(value) && !missing)
+                    {
+                        try
+                        {
+                            var evaluated = ResourceUtils.EvaluateImageResourceKey(package, value);
+                            ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
+                            ImageUtils.PreloadedGameImages[value].Add(ImageUtils.PreloadedGameImages[value][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                        }
+                        catch
+                        {
+                            ResourceUtils.MissingResourceKeys.Add(value);
+                            missing = true;
+                        }
+                    }
+                    entries.Add(new Tuple<Gdk.Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[value][1], value));
+                    listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
+                }
+                var comboBox = new ComboBox
+                    {
+                        Active = entries.FindIndex(x => x.Item2 == value),
+                        Model = listStore
+                    };
+                var pixbufRenderer = new CellRendererPixbuf
+                    {
+                        Xpad = 4
+                    };
+                var textRenderer = new CellRendererText
+                    {
+                        Xpad = 4
+                    };
+                comboBox.PackStart(pixbufRenderer, false);
+                comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
+                comboBox.PackStart(textRenderer, false);
+                comboBox.AddAttribute(textRenderer, "text", 1);
+                comboBox.Changed += (sender, e) =>
+                    {
+                        var index = element.ParentTGIBlocks.FindIndex(x => ResourceUtils.ReverseEvaluateResourceKey(x) == entries[comboBox.Active].Item2);
+                        if (index == -1)
+                        {
+                            element.ParentTGIBlocks.Add(new TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, entries[comboBox.Active].Item2).Item2));
+                            index = element.ParentTGIBlocks.Count - 1;
+                        }
+                        elementTextureRef.Index = index;
+                    };
+                valueWidget = comboBox;
+            }
+            table.Attach(new Label
+                {
+                    Text = element.Field.ToString(),
+                    UseUnderline = false,
+                    Xalign = 0
+                }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            alignment.Add(valueWidget);
+            table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.NRows++;
+        }
+        Console.WriteLine();
     }
 
     public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
@@ -345,7 +535,17 @@ public partial class MainWindow : Window
         {
             PresetNotebook.RemovePage(0);
         }
-        if (CurrentPackage == null)
+        foreach (var action in new Gtk.Action[]
+            {
+                CloseAction,
+                ResourceAction,
+                SaveAction,
+                SaveAsAction
+            })
+        {
+            action.Sensitive = CurrentPackage != null;
+        }
+        if (!CloseAction.Sensitive)
         {
             return;
         }
@@ -360,6 +560,7 @@ public partial class MainWindow : Window
                 case "CASP":
                 case "GEOM":
                 case "TXTC":
+                case "VPXY":
                     if (!resourceIndexEntry.IsDeleted)
                     {
                         ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry);
@@ -375,6 +576,9 @@ public partial class MainWindow : Window
                 case "CASP":
                     CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry));
                     break;
+                case "GEOM":
+                    GeometryResources.Add(resourceIndexEntry, (GeometryResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    break;
             }
         }
         foreach (var casPart in CASParts.Values)
@@ -389,6 +593,7 @@ public partial class MainWindow : Window
     {
         s3pi.Package.Package.ClosePackage(0, CurrentPackage);
         CurrentPackage = null;
+        ResourceUtils.MissingResourceKeys.Clear();
         RefreshWidgets();
     }
 
@@ -404,7 +609,9 @@ public partial class MainWindow : Window
         TreeModel model;
         if (ResourceTreeView.Selection.GetSelected(out model, out iter))
         {
-            CurrentPackage.DeleteResource((IResourceIndexEntry)model.GetValue(iter, 2));
+            var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+            CurrentPackage.DeleteResource(resourceIndexEntry);
+            ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
             RefreshWidgets();
         }
     }
@@ -444,10 +651,10 @@ public partial class MainWindow : Window
         {
             try
             {
-
                 s3pi.Package.Package.ClosePackage(0, CurrentPackage);
                 var package = s3pi.Package.Package.OpenPackage(0, fileChooser.Filename, true);
                 CurrentPackage = package;
+                ResourceUtils.MissingResourceKeys.Clear();
                 RefreshWidgets();
             }
             catch (System.IO.InvalidDataException ex)
@@ -495,6 +702,10 @@ public partial class MainWindow : Window
         {
             casPartKvp.Value.SavePresets();
             CurrentPackage.ReplaceResource(casPartKvp.Key, casPartKvp.Value.CASPartResource);
+        }
+        foreach (var geometryResourceKvp in GeometryResources)
+        {
+            CurrentPackage.ReplaceResource(geometryResourceKvp.Key, geometryResourceKvp.Value);
         }
         CurrentPackage.SavePackage();
     }

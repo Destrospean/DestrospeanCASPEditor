@@ -64,15 +64,18 @@ public partial class MainWindow
 		this.OpenAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Open");
 		w1.Add (this.OpenAction, null);
 		this.SaveAction = new global::Gtk.Action ("SaveAction", global::Mono.Unix.Catalog.GetString ("Save"), null, "gtk-save");
+		this.SaveAction.Sensitive = false;
 		this.SaveAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save");
 		w1.Add (this.SaveAction, null);
 		this.SaveAsAction = new global::Gtk.Action ("SaveAsAction", global::Mono.Unix.Catalog.GetString ("Save As"), null, "gtk-save-as");
+		this.SaveAsAction.Sensitive = false;
 		this.SaveAsAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save As");
 		w1.Add (this.SaveAsAction, null);
 		this.NewAction = new global::Gtk.Action ("NewAction", global::Mono.Unix.Catalog.GetString ("New"), null, "gtk-new");
 		this.NewAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("New");
 		w1.Add (this.NewAction, null);
 		this.CloseAction = new global::Gtk.Action ("CloseAction", global::Mono.Unix.Catalog.GetString ("Close"), null, "gtk-close");
+		this.CloseAction.Sensitive = false;
 		this.CloseAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Close");
 		w1.Add (this.CloseAction, null);
 		this.QuitAction = new global::Gtk.Action ("QuitAction", global::Mono.Unix.Catalog.GetString ("Quit"), null, "gtk-quit");
@@ -85,6 +88,7 @@ public partial class MainWindow
 		this.GameFoldersAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Game Folders");
 		w1.Add (this.GameFoldersAction, null);
 		this.ResourceAction = new global::Gtk.Action ("ResourceAction", global::Mono.Unix.Catalog.GetString ("Resource"), null, null);
+		this.ResourceAction.Sensitive = false;
 		this.ResourceAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Resource");
 		w1.Add (this.ResourceAction, null);
 		this.ImportResourceAction = new global::Gtk.Action ("ImportResourceAction", global::Mono.Unix.Catalog.GetString ("Import"), null, "gtk-directory");

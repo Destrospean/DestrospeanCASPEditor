@@ -25,6 +25,7 @@
       <action id="SaveAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Save</property>
+        <property name="Sensitive">False</property>
         <property name="ShortLabel" translatable="yes">Save</property>
         <property name="StockId">gtk-save</property>
         <signal name="Activated" handler="OnSaveActionActivated" />
@@ -32,6 +33,7 @@
       <action id="SaveAsAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Save As</property>
+        <property name="Sensitive">False</property>
         <property name="ShortLabel" translatable="yes">Save As</property>
         <property name="StockId">gtk-save-as</property>
         <signal name="Activated" handler="OnSaveAsActionActivated" />
@@ -46,6 +48,7 @@
       <action id="CloseAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Close</property>
+        <property name="Sensitive">False</property>
         <property name="ShortLabel" translatable="yes">Close</property>
         <property name="StockId">gtk-close</property>
         <signal name="Activated" handler="OnCloseActionActivated" />
@@ -72,6 +75,7 @@
       <action id="ResourceAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Resource</property>
+        <property name="Sensitive">False</property>
         <property name="ShortLabel" translatable="yes">Resource</property>
       </action>
       <action id="ImportResourceAction">
