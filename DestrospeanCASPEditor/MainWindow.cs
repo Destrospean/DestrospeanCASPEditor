@@ -585,6 +585,10 @@ public partial class MainWindow : Window
         {
             AddCASPartWidgets(casPart);
         }
+        foreach (var geometryResource in GeometryResources.Values)
+        {
+            AddPropertiesToNotebook(CurrentPackage, geometryResource, PresetNotebook, Image);
+        }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
         ShowAll();
     }
