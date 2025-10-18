@@ -195,6 +195,7 @@
     <Compile Include="GameFoldersDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="Platform.cs" />
+    <Compile Include="ComponentUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

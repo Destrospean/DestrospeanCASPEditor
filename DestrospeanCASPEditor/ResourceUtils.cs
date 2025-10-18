@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using s3pi.Interfaces;
 using s3pi.Extensions;
+using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -157,10 +157,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 return ResourceType.GetHashCode() ^ ResourceGroup.GetHashCode() ^ Instance.GetHashCode();
             }
 
-            public int GetHashCode(IResourceKey obj)
+            public int GetHashCode(IResourceKey resourceKey)
             {
-                return obj.GetHashCode();
+                return resourceKey.GetHashCode();
             }
+        }
+
+        public static IResourceIndexEntry AddResource(IPackage package, string filename)
+        {
+            return package.AddResource(new ResourceUtils.ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(System.Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
         }
 
         static System.Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
@@ -228,7 +233,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static uint GetResourceTypeFromTag(string tag)
+        public static uint GetResourceType(string tag)
         {
             foreach (var type in ExtList.Ext.Keys)
             {
@@ -276,6 +281,14 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             try
             {
+                castResource = new TxtcResource.TxtcResource(0, resource.Stream);
+                tag = "TXTC";
+            }
+            catch
+            {
+            }
+            try
+            {
                 var genericRCOLResource = new s3pi.GenericRCOLResource.GenericRCOLResource(0, resource.Stream);
                 castResource = genericRCOLResource;
                 tag = genericRCOLResource.ChunkEntries[0].RCOLBlock.Tag;
@@ -283,20 +296,11 @@ namespace Destrospean.DestrospeanCASPEditor
             catch
             {
             }
-            try
+            if (!string.IsNullOrEmpty(tag))
             {
-                castResource = new TxtcResource.TxtcResource(0, resource.Stream);
-                tag = "TXTC";
+                package.ReplaceResource(resourceIndexEntry, castResource ?? resource);
+                resourceIndexEntry.ResourceType = GetResourceType(tag);
             }
-            catch
-            {
-            }
-            if (string.IsNullOrEmpty(tag))
-            {
-                return;
-            }
-            package.ReplaceResource(resourceIndexEntry, castResource ?? resource);
-            resourceIndexEntry.ResourceType = GetResourceTypeFromTag(tag);
         }
 
         public static string ReverseEvaluateResourceKey(IResourceKey resourceKey)
