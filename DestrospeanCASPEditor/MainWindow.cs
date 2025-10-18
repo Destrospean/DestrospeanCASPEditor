@@ -19,20 +19,8 @@ public partial class MainWindow : Window
         Build();
         Rescale();
         BuildResourceTable();
-        if (System.IO.File.Exists(GameFoldersDialog.ConfigurationPath))
-        {
-            var installDirectories = "";
-            using (var stream = System.IO.File.OpenText(GameFoldersDialog.ConfigurationPath))
-            {
-                foreach (var installDirectoryKvp in Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(stream.ReadToEnd()))
-                {
-                    installDirectories += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
-                }
-            }
-            s3pi.Filetable.GameFolders.InstallDirs = installDirectories;
-        }
+        LoadGameFolders();
         PresetNotebook.RemovePage(0);
-        AllowShrink = Platform.IsRunningUnderWine;
     }
 
     public void AddCASPartWidgets(CASPart casPart)
@@ -102,12 +90,33 @@ public partial class MainWindow : Window
             };
     }
 
-    public void RefreshWidgets()
+    public void LoadGameFolders()
+    {
+        if (System.IO.File.Exists(GameFoldersDialog.ConfigurationPath))
+        {
+            var installDirectories = "";
+            using (var stream = System.IO.File.OpenText(GameFoldersDialog.ConfigurationPath))
+            {
+                foreach (var installDirectoryKvp in Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(stream.ReadToEnd()))
+                {
+                    installDirectories += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
+                }
+            }
+            s3pi.Filetable.GameFolders.InstallDirs = installDirectories;
+        }
+    }
+
+    public void ClearDictionaries()
     {
         CASParts.Clear();
         GeometryResources.Clear();
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImages.Clear();
+    }
+
+    public void RefreshWidgets()
+    {
+        ClearDictionaries();
         Image.Clear();
         ResourceListStore.Clear();
         foreach (var child in CASPartFlagTable.Children)
@@ -200,6 +209,7 @@ public partial class MainWindow : Window
         {
             Move(((int)((float)monitorGeometry.Width / ComponentUtils.WineScale) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / ComponentUtils.WineScale) - HeightRequest) / 2);
         }
+        AllowShrink = Platform.IsRunningUnderWine;
     }
 
     protected void OnCloseActionActivated(object sender, EventArgs e)
