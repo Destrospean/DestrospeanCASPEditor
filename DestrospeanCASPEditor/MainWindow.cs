@@ -90,6 +90,14 @@ public partial class MainWindow : Window
             };
     }
 
+    public void ClearTemporaryData()
+    {
+        CASParts.Clear();
+        GeometryResources.Clear();
+        ImageUtils.PreloadedGameImages.Clear();
+        ImageUtils.PreloadedImages.Clear();
+    }
+
     public void LoadGameFolders()
     {
         if (System.IO.File.Exists(GameFoldersDialog.ConfigurationPath))
@@ -106,17 +114,9 @@ public partial class MainWindow : Window
         }
     }
 
-    public void ClearDictionaries()
-    {
-        CASParts.Clear();
-        GeometryResources.Clear();
-        ImageUtils.PreloadedGameImages.Clear();
-        ImageUtils.PreloadedImages.Clear();
-    }
-
     public void RefreshWidgets()
     {
-        ClearDictionaries();
+        ClearTemporaryData();
         Image.Clear();
         ResourceListStore.Clear();
         foreach (var child in CASPartFlagTable.Children)
@@ -241,8 +241,7 @@ public partial class MainWindow : Window
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
     {
-        var gameFoldersDialog = new GameFoldersDialog(this);
-        gameFoldersDialog.ShowAll();
+        new GameFoldersDialog(this).ShowAll();
     }
 
     protected void OnImportResourceActionActivated(object sender, EventArgs e)

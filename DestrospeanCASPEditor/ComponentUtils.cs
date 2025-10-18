@@ -15,9 +15,9 @@ namespace Destrospean.DestrospeanCASPEditor
             var subNotebook = new Notebook();
             notebook.AppendPage(subNotebook, new Label
                 {
-                    Text = "Preset " + (notebook.NPages + 1).ToString()
+                    Text = "Preset " + notebook.NPages.ToString()
                 });
-            List<CASPart.IComplate> complates = new List<CASPart.IComplate>
+            var complates = new List<CASPart.IComplate>
                 {
                     preset
                 };
@@ -277,10 +277,6 @@ namespace Destrospean.DestrospeanCASPEditor
                     spinButton.ValueChanged += (sender, e) => elementInt.Data = spinButton.ValueAsInt;
                     valueWidget = spinButton;
                 }
-                var elementTextureKey = element as ElementTextureKey;
-                if (elementTextureKey != null)
-                {
-                }
                 var elementTextureRef = element as ElementTextureRef;
                 if (elementTextureRef != null)
                 {
@@ -347,7 +343,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
-            Console.WriteLine();
         }
 
         public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
