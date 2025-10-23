@@ -15,7 +15,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var subNotebook = new Notebook();
             notebook.AppendPage(subNotebook, new Label
                 {
-                    Text = "Preset " + notebook.NPages.ToString()
+                    Text = "Preset " + (notebook.NPages + 1).ToString()
                 });
             var complates = new List<CASPart.IComplate>
                 {
@@ -115,7 +115,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         break;
                     case "float":
                         alignment.Xscale = 0;
-                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), 0, 1, .0001, 10, 0), 10, 4);
+                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), 0, 1, .0001, 10, 0), 0, 4);
                         spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
                         valueWidget = spinButton;
                         break;
@@ -174,7 +174,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     case "vec2":
                         var hBox = new HBox();
                         var coordinates = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
-                        SpinButton spinButtonX = new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 10, 4), spinButtonY = new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 10, 4);
+                        SpinButton spinButtonX = new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 0, 4), spinButtonY = new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 0, 4);
                         EventHandler valueChanged = (sender, e) => complate.SetValue(name, spinButtonX.Value.ToString("F4") + "," + spinButtonY.Value.ToString("F4"));
                         spinButtonX.ValueChanged += valueChanged;
                         spinButtonY.ValueChanged += valueChanged;
@@ -198,7 +198,27 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void AddPropertiesToTable(s3pi.Interfaces.IPackage package, GeometryResource geometryResource, Table table, Image imageWidget)
         {
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
-            Console.WriteLine(geom.Shader.ToString());
+            var shaders = new List<string>();
+            foreach (var shader in Enum.GetValues(typeof(ShaderType)))
+            {
+                shaders.Add(shader.ToString());
+            }
+            shaders.RemoveAt(0);
+            shaders.Sort();
+            shaders.Insert(0, "None");
+            var shaderComboBox = new ComboBox(shaders.ToArray())
+                {
+                    Active = shaders.IndexOf(geom.Shader.ToString()),
+                    HeightRequest = 48
+                };
+            shaderComboBox.Changed += (sender, e) => geom.Shader = (ShaderType)Enum.Parse(typeof(ShaderType), shaderComboBox.ActiveText);
+            table.Attach(new Label
+                {
+                    Text = "Shader",
+                    Xalign = 0
+                }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.Attach(shaderComboBox, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.NRows++;
             foreach (var element in geom.Mtnf.SData)
             {
                 Widget valueWidget = null;
@@ -209,7 +229,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 var elementFloat = element as ElementFloat;
                 if (elementFloat != null)
                 {
-                    var spinButton = new SpinButton(new Adjustment(elementFloat.Data, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4);
+                    var spinButton = new SpinButton(new Adjustment(elementFloat.Data, 0, 1, .0001, 10, 0), 0, 4);
                     spinButton.ValueChanged += (sender, e) => elementFloat.Data = (float)spinButton.Value;
                     valueWidget = spinButton;
                 }
@@ -219,8 +239,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     var hBox = new HBox();
                     var spinButtons = new SpinButton[]
                         {
-                            new SpinButton(new Adjustment(elementFloat2.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat2.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                            new SpinButton(new Adjustment(elementFloat2.Data0, 0, 1, .0001, 10, 0), 0, 4),
+                            new SpinButton(new Adjustment(elementFloat2.Data1, 0, 1, .0001, 10, 0), 0, 4)
                         };
                     spinButtons[0].ValueChanged += (sender, e) => elementFloat2.Data0 = (float)spinButtons[0].Value;
                     spinButtons[1].ValueChanged += (sender, e) => elementFloat2.Data1 = (float)spinButtons[1].Value;
@@ -233,42 +253,45 @@ namespace Destrospean.DestrospeanCASPEditor
                 var elementFloat3 = element as ElementFloat3;
                 if (elementFloat3 != null)
                 {
-                    var hBox = new HBox();
-                    var spinButtons = new SpinButton[]
+                    var colorButton = new ColorButton
                         {
-                            new SpinButton(new Adjustment(elementFloat3.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat3.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat3.Data2, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                            Color = new Gdk.Color
+                                {
+                                    Blue = (ushort)(elementFloat3.Data2 * ushort.MaxValue),
+                                    Green = (ushort)(elementFloat3.Data1 * ushort.MaxValue),
+                                    Red = (ushort)(elementFloat3.Data0 * ushort.MaxValue)
+                                }
                         };
-                    spinButtons[0].ValueChanged += (sender, e) => elementFloat3.Data0 = (float)spinButtons[0].Value;
-                    spinButtons[1].ValueChanged += (sender, e) => elementFloat3.Data1 = (float)spinButtons[1].Value;
-                    spinButtons[2].ValueChanged += (sender, e) => elementFloat3.Data2 = (float)spinButtons[2].Value;
-                    foreach (var spinButton in spinButtons)
-                    {
-                        hBox.PackStart(spinButton, false, false, 0);
-                    }
-                    valueWidget = hBox;
+                    colorButton.ColorSet += (sender, e) =>
+                        {
+                            elementFloat3.Data0 = (float)colorButton.Color.Red / ushort.MaxValue;
+                            elementFloat3.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
+                            elementFloat3.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
+                        };
+                    valueWidget = colorButton;
                 }
                 var elementFloat4 = element as ElementFloat4;
                 if (elementFloat4 != null)
                 {
-                    var hBox = new HBox();
-                    var spinButtons = new SpinButton[]
+                    var colorButton = new ColorButton
                         {
-                            new SpinButton(new Adjustment(elementFloat4.Data0, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat4.Data1, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat4.Data2, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4),
-                            new SpinButton(new Adjustment(elementFloat4.Data3, float.MinValue, float.MaxValue, .0001, 10, 0), 10, 4)
+                            Alpha = (ushort)(elementFloat4.Data3 * ushort.MaxValue),
+                            Color = new Gdk.Color
+                                {
+                                    Blue = (ushort)(elementFloat4.Data2 * ushort.MaxValue),
+                                    Green = (ushort)(elementFloat4.Data1 * ushort.MaxValue),
+                                    Red = (ushort)(elementFloat4.Data0 * ushort.MaxValue)
+                                },
+                            UseAlpha = true
                         };
-                    spinButtons[0].ValueChanged += (sender, e) => elementFloat4.Data0 = (float)spinButtons[0].Value;
-                    spinButtons[1].ValueChanged += (sender, e) => elementFloat4.Data1 = (float)spinButtons[1].Value;
-                    spinButtons[2].ValueChanged += (sender, e) => elementFloat4.Data2 = (float)spinButtons[2].Value;
-                    spinButtons[3].ValueChanged += (sender, e) => elementFloat4.Data3 = (float)spinButtons[3].Value;
-                    foreach (var spinButton in spinButtons)
-                    {
-                        hBox.PackStart(spinButton, false, false, 0);
-                    }
-                    valueWidget = hBox;
+                    colorButton.ColorSet += (sender, e) =>
+                        {
+                            elementFloat4.Data0 = (float)colorButton.Color.Red / ushort.MaxValue;
+                            elementFloat4.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
+                            elementFloat4.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
+                            elementFloat4.Data3 = (float)colorButton.Alpha / ushort.MaxValue;
+                        };
+                    valueWidget = colorButton;
                 }
                 var elementInt = element as ElementInt;
                 if (elementInt != null)
