@@ -273,8 +273,8 @@ public partial class MainWindow : Window
         {
             try
             {
-                s3pi.Package.Package.ClosePackage(0, CurrentPackage);
                 var package = s3pi.Package.Package.OpenPackage(0, fileChooser.Filename, true);
+                s3pi.Package.Package.ClosePackage(0, CurrentPackage);
                 CurrentPackage = package;
                 ResourceUtils.MissingResourceKeys.Clear();
                 RefreshWidgets();
