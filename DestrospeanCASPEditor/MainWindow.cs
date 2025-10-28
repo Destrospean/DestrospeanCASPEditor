@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using Destrospean.DestrospeanCASPEditor;
 using Gtk;
+using meshExpImp.ModelBlocks;
+using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
+using s3pi.WrapperDealer;
 
 public partial class MainWindow : Window
 {
@@ -10,9 +13,11 @@ public partial class MainWindow : Window
 
     public IPackage CurrentPackage;
 
-    public Dictionary<IResourceIndexEntry, meshExpImp.ModelBlocks.GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, meshExpImp.ModelBlocks.GeometryResource>();
+    public Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
     public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
+
+    public Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
 
     public MainWindow() : base(WindowType.Toplevel)
     {
@@ -25,13 +30,13 @@ public partial class MainWindow : Window
 
     public void AddCASPartWidgets(CASPart casPart)
     {
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category"), 0, 1, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "Data Type"), 2, 3, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age Gender", "Age"), 3, 4, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Age Gender", "Gender"), 4, 5, 0, 1);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "Age Gender", "Species"), 5, 6, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Age Gender", "Handedness"), 4, 5, 1, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category", "ClothingCategory"), 0, 1, 0, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing Type", "Clothing"), 1, 2, 0, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "Data Type", "DataType"), 2, 3, 0, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age", "AgeGender", "Age"), 3, 4, 0, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Gender", "AgeGender", "Gender"), 4, 5, 0, 1);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "Species", "AgeGender", "Species"), 5, 6, 0, 2);
+        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Handedness", "AgeGender", "Handedness"), 4, 5, 1, 2);
         CASPartFlagTable.ShowAll();
         casPart.Presets.ForEach(x => ComponentUtils.AddPresetToNotebook(x, PresetNotebook, Image));
     }
@@ -96,6 +101,23 @@ public partial class MainWindow : Window
                         case "TXTC":
                             break;
                         case "VPXY":
+                            var vpxy = (VPXY)VPXYResources[resourceIndexEntry].ChunkEntries[0].RCOLBlock;
+                            foreach (var entry in vpxy.Entries)
+                            {
+                                var entry00 = entry as VPXY.Entry00;
+                                if (entry00 != null)
+                                {
+                                    Console.WriteLine(entry00.EntryID);
+                                    foreach (var tgiIndex in entry00.TGIIndexes)
+                                    {
+                                        Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(entry00.ParentTGIBlocks[tgiIndex]));
+                                    }
+                                }
+                                var entry01 = entry as VPXY.Entry01;
+                                if (entry01 != null)
+                                {
+                                }
+                            }
                             break;
                     }
                 }
@@ -106,6 +128,7 @@ public partial class MainWindow : Window
     {
         CASParts.Clear();
         GeometryResources.Clear();
+        VPXYResources.Clear();
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImages.Clear();
     }
@@ -182,17 +205,21 @@ public partial class MainWindow : Window
                     CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry));
                     break;
                 case "GEOM":
-                    GeometryResources.Add(resourceIndexEntry, (meshExpImp.ModelBlocks.GeometryResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    GeometryResources.Add(resourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
                     break;
                 case "TXTC":
                     break;
                 case "VPXY":
+                    VPXYResources.Add(resourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
                     break;
             }
         }
         foreach (var casPart in CASParts.Values)
         {
             AddCASPartWidgets(casPart);
+        }
+        foreach (var vpxyResource in VPXYResources.Values)
+        {
         }
         foreach (var geometryResource in GeometryResources.Values)
         {
@@ -321,7 +348,7 @@ public partial class MainWindow : Window
                 {
                     IResourceIndexEntry addedResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooser.Filename), resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
                     ResourceUtils.ResolveResourceType(CurrentPackage, addedResourceIndexEntry);
-                    CurrentPackage.ReplaceResource(resourceIndexEntry, s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, addedResourceIndexEntry));
+                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, addedResourceIndexEntry));
                     CurrentPackage.DeleteResource(addedResourceIndexEntry);
                     RefreshWidgets();
                 }
@@ -344,6 +371,10 @@ public partial class MainWindow : Window
         foreach (var geometryResourceKvp in GeometryResources)
         {
             CurrentPackage.ReplaceResource(geometryResourceKvp.Key, geometryResourceKvp.Value);
+        }
+        foreach (var vpxyResourceKvp in VPXYResources)
+        {
+            CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
         }
         CurrentPackage.SavePackage();
     }

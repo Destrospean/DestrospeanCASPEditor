@@ -368,11 +368,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
+        public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, string label, params string[] propertyPathParts)
         {
             var frame = new Frame
                 {
-                    Label = propertyPathParts[propertyPathParts.Length - 1],
+                    Label = label
                 };
             var scrolledWindow = new ScrolledWindow();
             var vBox = new VBox();
@@ -388,13 +388,13 @@ namespace Destrospean.DestrospeanCASPEditor
                 checkButton.Toggled += (sender, e) =>
                     {
                         object property = casPart.CASPartResource;
-                        var propertyInfo = property.GetType().GetProperty(propertyPathParts[0].Replace(" ", ""));
+                        var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
                         if (propertyPathParts.Length > 1)
                         {
                             for (var i = 1; i < propertyPathParts.Length; i++)
                             {
                                 property = propertyInfo.GetValue(property);
-                                propertyInfo = property.GetType().GetProperty(propertyPathParts[i].Replace(" ", ""));
+                                propertyInfo = property.GetType().GetProperty(propertyPathParts[i]);
                             }
                         }
                         try
