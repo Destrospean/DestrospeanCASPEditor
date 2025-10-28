@@ -306,14 +306,14 @@ namespace Destrospean.DestrospeanCASPEditor
         public static string ReverseEvaluateResourceKey(IResourceKey resourceKey)
         {   
             var output = "key";
-            foreach (var value in new ulong[]
+            foreach (var value in new System.Tuple<ulong, string>[]
                 {
-                    resourceKey.ResourceType,
-                    resourceKey.ResourceGroup,
-                    resourceKey.Instance
+                    new System.Tuple<ulong, string>(resourceKey.ResourceType, "X8"),
+                    new System.Tuple<ulong, string>(resourceKey.ResourceGroup, "X8"),
+                    new System.Tuple<ulong, string>(resourceKey.Instance, "X16")
                 })
             {
-                output += ":" + value.ToString("X8");
+                output += ":" + value.Item1.ToString(value.Item2);
             }
             return output;
         }

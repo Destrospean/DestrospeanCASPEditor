@@ -12,7 +12,7 @@ public partial class MainWindow : Window
 
     public Dictionary<IResourceIndexEntry, meshExpImp.ModelBlocks.GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, meshExpImp.ModelBlocks.GeometryResource>();
 
-    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(IResourceIndexEntry));
+    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public MainWindow() : base(WindowType.Toplevel)
     {
@@ -38,19 +38,31 @@ public partial class MainWindow : Window
 
     public void BuildResourceTable()
     {
-        CellRendererText instanceCell = new CellRendererText(), tagCell = new CellRendererText();
-        TreeViewColumn instanceColumn = new TreeViewColumn
+        CellRendererText groupCell = new CellRendererText(), instanceCell = new CellRendererText(), tagCell = new CellRendererText(), typeCell = new CellRendererText();
+        TreeViewColumn groupColumn = new TreeViewColumn
+            {
+                Title = "Group"
+            }, instanceColumn = new TreeViewColumn
             {
                 Title = "Instance"
             }, tagColumn = new TreeViewColumn
+            {
+                Title = "Tag"
+            }, typeColumn = new TreeViewColumn
             {
                 Title = "Type"
             };
         tagColumn.PackStart(tagCell, true);
         tagColumn.AddAttribute(tagCell, "text", 0);
+        typeColumn.PackStart(typeCell, true);
+        typeColumn.AddAttribute(typeCell, "text", 1);
+        groupColumn.PackStart(groupCell, true);
+        groupColumn.AddAttribute(groupCell, "text", 2);
         instanceColumn.PackStart(instanceCell, true);
-        instanceColumn.AddAttribute(instanceCell, "text", 1);
+        instanceColumn.AddAttribute(instanceCell, "text", 3);
         ResourceTreeView.AppendColumn(tagColumn);
+        ResourceTreeView.AppendColumn(typeColumn);
+        ResourceTreeView.AppendColumn(groupColumn);
         ResourceTreeView.AppendColumn(instanceColumn);
         ResourceTreeView.Model = ResourceListStore;
         ResourceTreeView.Selection.Changed += (sender, e) => 
@@ -69,7 +81,7 @@ public partial class MainWindow : Window
                 TreeModel model;
                 if (ResourceTreeView.Selection.GetSelected(out model, out iter))
                 {
-                    var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+                    var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
                     switch ((string)model.GetValue(iter, 0))
                     {
                         case "_IMG":
@@ -156,7 +168,7 @@ public partial class MainWindow : Window
                 case "VPXY":
                     if (!resourceIndexEntry.IsDeleted)
                     {
-                        ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.Instance.ToString("X"), resourceIndexEntry);
+                        ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
                     }
                     break;
             }
@@ -171,6 +183,10 @@ public partial class MainWindow : Window
                     break;
                 case "GEOM":
                     GeometryResources.Add(resourceIndexEntry, (meshExpImp.ModelBlocks.GeometryResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    break;
+                case "TXTC":
+                    break;
+                case "VPXY":
                     break;
             }
         }
