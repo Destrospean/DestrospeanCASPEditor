@@ -48,7 +48,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         Text = game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""),
                         UseUnderline = false,
                         Xalign = 0
-                    }, 0, 1, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Fill | AttachOptions.Shrink, AttachOptions.Shrink, 0, 0);
+                    }, 0, 1, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Fill | AttachOptions.Shrink, 0, 0, 0);
                 GameFolderTable.Attach(alignment, 1, 2, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 GameFolderTable.NRows++;
             }
