@@ -9,22 +9,22 @@ using s3pi.WrapperDealer;
 
 public partial class MainWindow : Window
 {
-    public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
-
     public IPackage CurrentPackage;
+
+    public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
     public Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
-    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
-
     public Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
+
+    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
         Rescale();
         BuildResourceTable();
-        LoadGameFolders();
+        GameFoldersDialog.LoadGameFolders();
         PresetNotebook.RemovePage(0);
     }
 
@@ -133,22 +133,6 @@ public partial class MainWindow : Window
         ImageUtils.PreloadedImages.Clear();
     }
 
-    public void LoadGameFolders()
-    {
-        if (System.IO.File.Exists(GameFoldersDialog.ConfigurationPath))
-        {
-            var installDirectories = "";
-            using (var stream = System.IO.File.OpenText(GameFoldersDialog.ConfigurationPath))
-            {
-                foreach (var installDirectoryKvp in Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, string>>(stream.ReadToEnd()))
-                {
-                    installDirectories += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
-                }
-            }
-            s3pi.Filetable.GameFolders.InstallDirs = installDirectories;
-        }
-    }
-
     public void RefreshWidgets()
     {
         ClearTemporaryData();
@@ -218,12 +202,12 @@ public partial class MainWindow : Window
         {
             AddCASPartWidgets(casPart);
         }
-        foreach (var vpxyResource in VPXYResources.Values)
-        {
-        }
         foreach (var geometryResource in GeometryResources.Values)
         {
             ComponentUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, PresetNotebook, Image);
+        }
+        foreach (var vpxyResource in VPXYResources.Values)
+        {
         }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
         ShowAll();

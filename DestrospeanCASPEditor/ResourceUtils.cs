@@ -135,7 +135,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public int CompareTo(IResourceKey other)
             {
-                int res = ResourceType.CompareTo(other.ResourceType);
+                var res = ResourceType.CompareTo(other.ResourceType);
                 if (res != 0) return res;
                 res = ResourceGroup.CompareTo(other.ResourceGroup);
                 if (res != 0) return res;
@@ -165,7 +165,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static IResourceIndexEntry AddResource(IPackage package, string filename)
         {
-            return package.AddResource(new ResourceUtils.ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(System.Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
+            return package.AddResource(new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(System.Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
         }
 
         static System.Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
@@ -192,11 +192,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (ResourceIndexEntryNotFoundException)
             {
-                foreach (var packageKvp in ImageUtils.GameImageResources)
+                foreach (var gamePackage in ImageUtils.GameImageResources.Values)
                 {
                     try
                     {
-                        return EvaluateResourceKeyInternal(packageKvp.Value, key);
+                        return EvaluateResourceKeyInternal(gamePackage, key);
                     }
                     catch (ResourceIndexEntryNotFoundException)
                     {
@@ -219,11 +219,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (ResourceIndexEntryNotFoundException)
             {
-                foreach (var packageKvp in ResourceUtils.GamePackages)
+                foreach (var gamePackage in GamePackages.Values)
                 {
                     try
                     {
-                        return EvaluateResourceKeyInternal(packageKvp.Value, key);
+                        return EvaluateResourceKeyInternal(gamePackage, key);
                     }
                     catch (ResourceIndexEntryNotFoundException)
                     {

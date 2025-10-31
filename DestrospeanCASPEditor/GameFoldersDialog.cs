@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Gtk;
+using Newtonsoft.Json;
 using s3pi.Filetable;
 
 namespace Destrospean.DestrospeanCASPEditor
@@ -54,6 +55,22 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public static void LoadGameFolders()
+        {
+            if (System.IO.File.Exists(ConfigurationPath))
+            {
+                var output = "";
+                using (var stream = System.IO.File.OpenText(ConfigurationPath))
+                {
+                    foreach (var installDirectoryKvp in JsonConvert.DeserializeObject<Dictionary<string, string>>(stream.ReadToEnd()))
+                    {
+                        output += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
+                    }
+                }
+                GameFolders.InstallDirs = output.Substring(1);
+            }
+        }
+
         public static void SetInstallDirectory(Game game, string path)
         {
             var installDirectories = InstallDirectories;
@@ -66,7 +83,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 outputDictionary.Add(installDirectoryKvp.Key.Name, installDirectoryKvp.Value);
             }
             GameFolders.InstallDirs = output.Substring(1);
-            System.IO.File.WriteAllText(ConfigurationPath, Newtonsoft.Json.JsonConvert.SerializeObject(outputDictionary, Newtonsoft.Json.Formatting.Indented));
+            System.IO.File.WriteAllText(ConfigurationPath, JsonConvert.SerializeObject(outputDictionary, Formatting.Indented));
         }
 
         protected void OnButtonOkClicked(object sender, System.EventArgs e)
@@ -75,4 +92,3 @@ namespace Destrospean.DestrospeanCASPEditor
         }
     }
 }
-
