@@ -202,7 +202,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="Gtk.Notebook" id="PresetNotebook">
+                  <widget class="Gtk.Notebook" id="ResourcePropertyNotebook">
                     <property name="MemberName" />
                     <property name="WidthRequest">432</property>
                     <property name="CanFocus">True</property>
@@ -243,43 +243,11 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Table" id="CASPartFlagTable">
+              <widget class="Gtk.Table" id="ResourcePropertyTable">
                 <property name="MemberName" />
-                <property name="NRows">2</property>
-                <property name="NColumns">6</property>
-                <property name="Homogeneous">True</property>
+                <property name="NColumns">2</property>
                 <property name="RowSpacing">6</property>
                 <property name="ColumnSpacing">6</property>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <placeholder />
-                </child>
                 <child>
                   <placeholder />
                 </child>

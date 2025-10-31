@@ -11,13 +11,13 @@ public partial class MainWindow : Window
 {
     public IPackage CurrentPackage;
 
-    public Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
+    public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
-    public Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
+    public readonly Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
-    public Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
+    public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
 
-    public ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
+    public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public MainWindow() : base(WindowType.Toplevel)
     {
@@ -25,20 +25,49 @@ public partial class MainWindow : Window
         Rescale();
         BuildResourceTable();
         GameFoldersDialog.LoadGameFolders();
-        PresetNotebook.RemovePage(0);
+        ResourcePropertyNotebook.RemovePage(0);
     }
 
     public void AddCASPartWidgets(CASPart casPart)
     {
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category", "ClothingCategory"), 0, 1, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing Type", "Clothing"), 1, 2, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "Data Type", "DataType"), 2, 3, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age", "AgeGender", "Age"), 3, 4, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Gender", "AgeGender", "Gender"), 4, 5, 0, 1);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "Species", "AgeGender", "Species"), 5, 6, 0, 2);
-        CASPartFlagTable.Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Handedness", "AgeGender", "Handedness"), 4, 5, 1, 2);
-        CASPartFlagTable.ShowAll();
-        casPart.Presets.ForEach(x => ComponentUtils.AddPresetToNotebook(x, PresetNotebook, Image));
+        Notebook flagNotebook = new Notebook
+            {
+                ShowTabs = false
+            }, presetNotebook = new Notebook();
+        var flagTables = new Table[2];
+        for (var i = 0; i < flagTables.Length; i++)
+        {
+            flagTables[i] = new Table(2, 3, true);
+            flagNotebook.AppendPage(flagTables[i], new Label());
+        }
+        var flagPageButtonHBox = new HBox(false, 0);
+        var flagPageVBox = new VBox(false, 0);
+        flagPageVBox.PackStart(flagPageButtonHBox, false, false, 0);
+        flagPageVBox.PackEnd(flagNotebook, true, true, 0);
+        Button backButton = new Button("Previous"), forwardButton = new Button("Next");
+        backButton.Clicked += (sender, e) =>
+            {
+                flagNotebook.PrevPage();
+            };
+        forwardButton.Clicked += (sender, e) =>
+            {
+                flagNotebook.NextPage();
+            };
+        flagPageButtonHBox.PackStart(backButton, false, true, 4);
+        flagPageButtonHBox.PackStart(forwardButton, false, true, 4);
+        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category", "ClothingCategory"), 0, 1, 0, 2);
+        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing Type", "Clothing"), 1, 2, 0, 2);
+        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "Data Type", "DataType"), 2, 3, 0, 2);
+        flagTables[0].ShowAll();
+        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age", "AgeGender", "Age"), 0, 1, 0, 2);
+        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Gender", "AgeGender", "Gender"), 1, 2, 0, 1);
+        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "Species", "AgeGender", "Species"), 2, 3, 0, 2);
+        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Handedness", "AgeGender", "Handedness"), 1, 2, 1, 2);
+        flagTables[1].ShowAll();
+        ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
+        ResourcePropertyTable.Attach(presetNotebook, 1, 2, 0, 1);
+        ResourcePropertyTable.ShowAll();
+        casPart.Presets.ForEach(x => ComponentUtils.AddPresetToNotebook(x, presetNotebook, Image));
     }
 
     public void BuildResourceTable()
@@ -73,14 +102,14 @@ public partial class MainWindow : Window
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
                 Image.Clear();
-                foreach (var child in CASPartFlagTable.Children)
+                foreach (var child in ResourcePropertyTable.Children)
                 {
-                    CASPartFlagTable.Remove(child);
+                    ResourcePropertyTable.Remove(child);
                     child.Dispose();
                 }
-                while (PresetNotebook.NPages > 0)
+                while (ResourcePropertyNotebook.NPages > 0)
                 {
-                    PresetNotebook.RemovePage(0);
+                    ResourcePropertyNotebook.RemovePage(0);
                 }
                 TreeIter iter;
                 TreeModel model;
@@ -96,7 +125,7 @@ public partial class MainWindow : Window
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                         case "GEOM":
-                            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], PresetNotebook, Image);
+                            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image);
                             break;
                         case "TXTC":
                             break;
@@ -138,14 +167,14 @@ public partial class MainWindow : Window
         ClearTemporaryData();
         Image.Clear();
         ResourceListStore.Clear();
-        foreach (var child in CASPartFlagTable.Children)
+        foreach (var child in ResourcePropertyTable.Children)
         {
-            CASPartFlagTable.Remove(child);
+            ResourcePropertyTable.Remove(child);
             child.Dispose();
         }
-        while (PresetNotebook.NPages > 0)
+        while (ResourcePropertyNotebook.NPages > 0)
         {
-            PresetNotebook.RemovePage(0);
+            ResourcePropertyNotebook.RemovePage(0);
         }
         foreach (var action in new Gtk.Action[]
             {
@@ -204,7 +233,7 @@ public partial class MainWindow : Window
         }
         foreach (var geometryResource in GeometryResources.Values)
         {
-            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, PresetNotebook, Image);
+            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image);
         }
         foreach (var vpxyResource in VPXYResources.Values)
         {
@@ -222,10 +251,10 @@ public partial class MainWindow : Window
         SetDefaultSize((int)(DefaultWidth * ComponentUtils.Scale), (int)(DefaultHeight * ComponentUtils.Scale));
         foreach (var widget in new Widget[]
             {
-                CASPartFlagTable,
+                ResourcePropertyTable,
                 Image,
                 MainTable,
-                PresetNotebook,
+                ResourcePropertyNotebook,
                 this
             })
         {

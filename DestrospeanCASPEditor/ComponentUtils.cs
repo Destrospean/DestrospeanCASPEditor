@@ -190,7 +190,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         Xalign = 0
                     }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
                 alignment.Add(valueWidget);
-                table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+                table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
         }
@@ -303,6 +303,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 var elementTextureRef = element as ElementTextureRef;
                 if (elementTextureRef != null)
                 {
+                    alignment.Xscale = 1;
                     var value = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
                     var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
                     var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<s3pi.Interfaces.IResourceIndexEntry, Tuple<Gdk.Pixbuf, string>>(x => new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
@@ -363,7 +364,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         Xalign = 0
                     }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
                 alignment.Add(valueWidget);
-                table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+                table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
         }

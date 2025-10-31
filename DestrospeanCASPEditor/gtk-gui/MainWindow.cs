@@ -45,11 +45,11 @@ public partial class MainWindow
 	
 	private global::Gtk.Image Image;
 	
-	private global::Gtk.Notebook PresetNotebook;
+	private global::Gtk.Notebook ResourcePropertyNotebook;
 	
 	private global::Gtk.Label PresetLabel;
 	
-	private global::Gtk.Table CASPartFlagTable;
+	private global::Gtk.Table ResourcePropertyTable;
 
 	protected virtual void Build ()
 	{
@@ -158,22 +158,22 @@ public partial class MainWindow
 		w5.XOptions = ((global::Gtk.AttachOptions)(4));
 		w5.YOptions = ((global::Gtk.AttachOptions)(4));
 		// Container child MainTable.Gtk.Table+TableChild
-		this.PresetNotebook = new global::Gtk.Notebook ();
-		this.PresetNotebook.WidthRequest = 432;
-		this.PresetNotebook.CanFocus = true;
-		this.PresetNotebook.Name = "PresetNotebook";
-		this.PresetNotebook.CurrentPage = 0;
+		this.ResourcePropertyNotebook = new global::Gtk.Notebook ();
+		this.ResourcePropertyNotebook.WidthRequest = 432;
+		this.ResourcePropertyNotebook.CanFocus = true;
+		this.ResourcePropertyNotebook.Name = "ResourcePropertyNotebook";
+		this.ResourcePropertyNotebook.CurrentPage = 0;
 		// Notebook tab
 		global::Gtk.Label w6 = new global::Gtk.Label ();
 		w6.Visible = true;
-		this.PresetNotebook.Add (w6);
+		this.ResourcePropertyNotebook.Add (w6);
 		this.PresetLabel = new global::Gtk.Label ();
 		this.PresetLabel.Name = "PresetLabel";
 		this.PresetLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Page");
-		this.PresetNotebook.SetTabLabel (w6, this.PresetLabel);
+		this.ResourcePropertyNotebook.SetTabLabel (w6, this.PresetLabel);
 		this.PresetLabel.ShowAll ();
-		this.MainTable.Add (this.PresetNotebook);
-		global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.MainTable [this.PresetNotebook]));
+		this.MainTable.Add (this.ResourcePropertyNotebook);
+		global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ResourcePropertyNotebook]));
 		w7.LeftAttach = ((uint)(2));
 		w7.RightAttach = ((uint)(3));
 		w7.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -184,12 +184,12 @@ public partial class MainWindow
 		w8.Expand = false;
 		w8.Fill = false;
 		// Container child MainVBox.Gtk.Box+BoxChild
-		this.CASPartFlagTable = new global::Gtk.Table (((uint)(2)), ((uint)(6)), true);
-		this.CASPartFlagTable.Name = "CASPartFlagTable";
-		this.CASPartFlagTable.RowSpacing = ((uint)(6));
-		this.CASPartFlagTable.ColumnSpacing = ((uint)(6));
-		this.MainVBox.Add (this.CASPartFlagTable);
-		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.CASPartFlagTable]));
+		this.ResourcePropertyTable = new global::Gtk.Table (((uint)(1)), ((uint)(2)), false);
+		this.ResourcePropertyTable.Name = "ResourcePropertyTable";
+		this.ResourcePropertyTable.RowSpacing = ((uint)(6));
+		this.ResourcePropertyTable.ColumnSpacing = ((uint)(6));
+		this.MainVBox.Add (this.ResourcePropertyTable);
+		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.ResourcePropertyTable]));
 		w9.Position = 2;
 		this.MainPane.Add (this.MainVBox);
 		this.Add (this.MainPane);
