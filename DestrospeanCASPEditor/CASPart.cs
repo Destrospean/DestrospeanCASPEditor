@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using s3pi.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Destrospean.DestrospeanCASPEditor
     {
         public readonly CASPartResource.CASPartResource CASPartResource;
 
-        public readonly IPackage CurrentPackage;
+        public readonly IPackage ParentPackage;
 
         public readonly List<Preset> Presets;
 
@@ -17,14 +18,14 @@ namespace Destrospean.DestrospeanCASPEditor
         public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry)
         {
             CASPartResource = (CASPartResource.CASPartResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
-            CurrentPackage = package;
+            ParentPackage = package;
             ResourceIndexEntry = resourceIndexEntry;
             Presets = CASPartResource.Presets.ConvertAll(new System.Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
         }
 
         public interface IComplate
         {
-            IPackage CurrentPackage
+            IPackage ParentPackage
             {
                 get;
             }
@@ -52,11 +53,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
             readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
 
-            public IPackage CurrentPackage
+            public IPackage ParentPackage
             {
                 get
                 {
-                    return Preset.CurrentPackage;
+                    return Preset.ParentPackage;
                 }
             }
 
@@ -91,9 +92,9 @@ namespace Destrospean.DestrospeanCASPEditor
             public Complate(Preset preset, XmlNode complateXmlNode)
             {
                 Preset = preset;
-                var evaluated = ResourceUtils.EvaluateResourceKey(CurrentPackage, complateXmlNode);
+                var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, complateXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in complateXmlNode.ChildNodes)
@@ -147,15 +148,15 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Complate Complate;
 
-            public IPackage CurrentPackage
+            public readonly string Name;
+
+            public IPackage ParentPackage
             {
                 get
                 {
-                    return Complate.CurrentPackage;
+                    return Complate.ParentPackage;
                 }
             }
-
-            public readonly string Name;
 
             public Dictionary<string, string> PropertiesTyped
             {
@@ -177,9 +178,9 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 Complate = complate;
                 Name = patternXmlNode.Attributes["variable"].Value;
-                var evaluated = ResourceUtils.EvaluateResourceKey(CurrentPackage, patternXmlNode);
+                var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, patternXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
@@ -226,11 +227,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly CASPart CASPart;
 
-            public IPackage CurrentPackage
+            public IPackage ParentPackage
             {
                 get
                 {
-                    return CASPart.CurrentPackage;
+                    return CASPart.ParentPackage;
                 }
             }
 
@@ -266,12 +267,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-
-            public System.IO.StringReader XmlFile
+            public StringReader XmlFile
             {
                 get
                 {
-                    return new System.IO.StringReader(XmlDocument.InnerXml);
+                    return new StringReader(XmlDocument.InnerXml);
                 }
             }
 
@@ -279,7 +279,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
             }
 
-            public Preset(CASPart casPart, System.IO.TextReader xmlFile)
+            public Preset(CASPart casPart, TextReader xmlFile)
             {
                 CASPart = casPart;
                 XmlDocument = new XmlDocument();

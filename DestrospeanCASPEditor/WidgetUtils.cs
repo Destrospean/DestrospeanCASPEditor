@@ -136,7 +136,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         break;
                     case "texture":
                         ComboBox comboBox;
-                        var entries = BuildImageResourceComboBoxEntries(complate.CurrentPackage, value, out comboBox, imageWidget);
+                        var entries = BuildImageResourceComboBoxEntries(complate.ParentPackage, value, out comboBox, imageWidget);
                         comboBox.Changed += (sender, e) => complate.SetValue(name, entries[comboBox.Active].Item2);
                         valueWidget = comboBox;
                         break;
@@ -401,7 +401,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                         }
                         FinalSteps:
-                        //casPart.CurrentPackage.ReplaceResource(casPart.ResourceIndexEntry, casPart.CASPartResource);
+                        //casPart.ParentPackage.ReplaceResource(casPart.ResourceIndexEntry, casPart.CASPartResource);
                         return;
                     };
                 vBox.PackStart(checkButton, false, false, 0);

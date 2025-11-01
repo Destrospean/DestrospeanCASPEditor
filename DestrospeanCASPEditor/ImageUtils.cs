@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
+using Gdk;
 using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ImageUtils
     {
-        static Dictionary<IResourceIndexEntry, IPackage> mGameImageResources;
+        static Dictionary<IResourceIndexEntry, IPackage> mGameImageResourcePackages;
 
-        public static Dictionary<IResourceIndexEntry, IPackage> GameImageResources
+        public static Dictionary<IResourceIndexEntry, IPackage> GameImageResourcePackages
         {
             get
             {
-                if (mGameImageResources == null)
+                if (mGameImageResourcePackages == null)
                 {
-                    mGameImageResources = new Dictionary<IResourceIndexEntry, IPackage>();
+                    mGameImageResourcePackages = new Dictionary<IResourceIndexEntry, IPackage>();
                     foreach (var game in s3pi.Filetable.GameFolders.Games)
                     {
                         var enumerator = game.DDSImages.GetEnumerator();
@@ -22,44 +23,44 @@ namespace Destrospean.DestrospeanCASPEditor
                             var package = s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path);
                             foreach (var resourceIndexEntry in package.FindAll(x => x.ResourceType == 0xB2D882))
                             {
-                                mGameImageResources.Add(resourceIndexEntry, package);
+                                mGameImageResourcePackages.Add(resourceIndexEntry, package);
                             }
                         }
                     }
                 }
-                return mGameImageResources;
+                return mGameImageResourcePackages;
             }
         }
 
-        public static readonly Dictionary<string, List<Gdk.Pixbuf>> PreloadedGameImages = new Dictionary<string, List<Gdk.Pixbuf>>();
+        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImages = new Dictionary<string, List<Pixbuf>>();
 
-        public static readonly Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>> PreloadedImages = new Dictionary<IResourceIndexEntry, List<Gdk.Pixbuf>>();
+        public static readonly Dictionary<IResourceIndexEntry, List<Pixbuf>> PreloadedImages = new Dictionary<IResourceIndexEntry, List<Pixbuf>>();
 
-        public static Gdk.Pixbuf ConvertToPixbuf(IResource imageResource)
+        public static Pixbuf ConvertToPixbuf(IResource imageResource)
         {
             using (var stream = new System.IO.MemoryStream())
             {
                 GDImageLibrary._DDS.LoadImage(imageResource.AsBytes).Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, System.IO.SeekOrigin.Begin);
-                return new Gdk.Pixbuf(stream);
+                return new Pixbuf(stream);
             }
         }
 
         public static void PreloadGameImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            PreloadedGameImages.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry), new List<Gdk.Pixbuf>
+            PreloadedGameImages.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry), new List<Pixbuf>
                 {
-                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear)
+                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
                 });
         }
 
         public static void PreloadImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            PreloadedImages.Add(resourceIndexEntry, new List<Gdk.Pixbuf>
+            PreloadedImages.Add(resourceIndexEntry, new List<Pixbuf>
                 {
-                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear)
+                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
                 });
         }
     }

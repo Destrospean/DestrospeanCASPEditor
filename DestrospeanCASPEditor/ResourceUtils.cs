@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using s3pi.Extensions;
 using s3pi.Interfaces;
 
@@ -42,7 +43,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public class AttributeNotFoundException : System.Exception
+        public class AttributeNotFoundException : Exception
         {
             public AttributeNotFoundException()
             {
@@ -52,7 +53,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
             }
 
-            public AttributeNotFoundException(string message, System.Exception innerException) : base(message, innerException)
+            public AttributeNotFoundException(string message, Exception innerException) : base(message, innerException)
             {
             }
 
@@ -63,7 +64,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public class ResourceIndexEntryNotFoundException : System.Exception
+        public class ResourceIndexEntryNotFoundException : Exception
         {
             public ResourceIndexEntryNotFoundException()
             {
@@ -73,7 +74,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
             }
 
-            public ResourceIndexEntryNotFoundException(string message, System.Exception innerException) : base(message, innerException)
+            public ResourceIndexEntryNotFoundException(string message, Exception innerException) : base(message, innerException)
             {
             }
 
@@ -135,10 +136,16 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public int CompareTo(IResourceKey other)
             {
-                var res = ResourceType.CompareTo(other.ResourceType);
-                if (res != 0) return res;
-                res = ResourceGroup.CompareTo(other.ResourceGroup);
-                if (res != 0) return res;
+                var result = ResourceType.CompareTo(other.ResourceType);
+                if (result != 0)
+                {
+                    return result;
+                }
+                result = ResourceGroup.CompareTo(other.ResourceGroup);
+                if (result != 0)
+                {
+                    return result;
+                }
                 return Instance.CompareTo(other.Instance);
             }
 
@@ -147,9 +154,9 @@ namespace Destrospean.DestrospeanCASPEditor
                 return CompareTo(other) == 0;
             }
 
-            public bool Equals(IResourceKey x, IResourceKey y)
+            public bool Equals(IResourceKey a, IResourceKey b)
             {
-                return x.Equals(y);
+                return a.Equals(b);
             }
 
             public override int GetHashCode()
@@ -163,28 +170,28 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static IResourceIndexEntry AddResource(IPackage package, string filename)
-        {
-            return package.AddResource(new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(System.Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
-        }
-
-        static System.Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
+        static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
         {   
             var tgi = new ulong[3];
             var i = 0;
             foreach (var hex in key.Substring(4).Split(':'))
             {
-                tgi[i++] = System.Convert.ToUInt64(hex, 16);
+                tgi[i++] = Convert.ToUInt64(hex, 16);
             }
             var results = package.FindAll(x => x.ResourceType == tgi[0] && x.ResourceGroup == tgi[1] && x.Instance == tgi[2]);
             if (results.Count == 0)
             {
                 throw new ResourceIndexEntryNotFoundException();
             }
-            return new System.Tuple<IPackage, IResourceIndexEntry>(package, results[0]);
+            return new Tuple<IPackage, IResourceIndexEntry>(package, results[0]);
         }
 
-        public static System.Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(IPackage package, string key)
+        public static IResourceIndexEntry AddResource(IPackage package, string filename)
+        {
+            return package.AddResource(new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
+        }
+
+        public static Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(IPackage package, string key)
         {   
             try
             {
@@ -192,7 +199,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (ResourceIndexEntryNotFoundException)
             {
-                foreach (var gamePackage in ImageUtils.GameImageResources.Values)
+                foreach (var gamePackage in ImageUtils.GameImageResourcePackages.Values)
                 {
                     try
                     {
@@ -206,7 +213,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static System.Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKey(IPackage package, System.Xml.XmlNode xmlNode)
+        public static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKey(IPackage package, System.Xml.XmlNode xmlNode)
         {   
             if (!((System.Xml.XmlElement)xmlNode).HasAttribute("reskey"))
             {
@@ -239,15 +246,15 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 if (ExtList.Ext[type].Contains(tag))
                 {
-                    return System.Convert.ToUInt32(type, 16);
+                    return Convert.ToUInt32(type, 16);
                 }
             }
             return 0;
         }
 
-        public static string GetResourceTypeTag(IResourceIndexEntry resourceIndexEntry)
+        public static string GetResourceTypeTag(IResourceKey resourceKey)
         {
-            return ExtList.Ext[resourceIndexEntry.ResourceType][0];
+            return ExtList.Ext[resourceKey.ResourceType][0];
         }
 
         public static void ResolveResourceType(IPackage package, IResourceIndexEntry resourceIndexEntry)
@@ -259,6 +266,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 GDImageLibrary._DDS.LoadImage(resource.AsBytes);
                 tag = "_IMG";
+                goto FinalSteps;
             }
             catch
             {
@@ -267,6 +275,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 castResource = new CASPartResource.CASPartResource(0, resource.Stream);
                 tag = "CASP";
+                goto FinalSteps;
             }
             catch
             {
@@ -275,6 +284,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 castResource = new meshExpImp.ModelBlocks.GeometryResource(0, resource.Stream);
                 tag = "GEOM";
+                goto FinalSteps;
             }
             catch
             {
@@ -283,6 +293,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 castResource = new TxtcResource.TxtcResource(0, resource.Stream);
                 tag = "TXTC";
+                goto FinalSteps;
             }
             catch
             {
@@ -292,10 +303,12 @@ namespace Destrospean.DestrospeanCASPEditor
                 var genericRCOLResource = new s3pi.GenericRCOLResource.GenericRCOLResource(0, resource.Stream);
                 castResource = genericRCOLResource;
                 tag = genericRCOLResource.ChunkEntries[0].RCOLBlock.Tag;
+                goto FinalSteps;
             }
             catch
             {
             }
+            FinalSteps:
             if (!string.IsNullOrEmpty(tag))
             {
                 package.ReplaceResource(resourceIndexEntry, castResource ?? resource);
@@ -306,11 +319,11 @@ namespace Destrospean.DestrospeanCASPEditor
         public static string ReverseEvaluateResourceKey(IResourceKey resourceKey)
         {   
             var output = "key";
-            foreach (var value in new System.Tuple<ulong, string>[]
+            foreach (var value in new Tuple<ulong, string>[]
                 {
-                    new System.Tuple<ulong, string>(resourceKey.ResourceType, "X8"),
-                    new System.Tuple<ulong, string>(resourceKey.ResourceGroup, "X8"),
-                    new System.Tuple<ulong, string>(resourceKey.Instance, "X16")
+                    new Tuple<ulong, string>(resourceKey.ResourceType, "X8"),
+                    new Tuple<ulong, string>(resourceKey.ResourceGroup, "X8"),
+                    new Tuple<ulong, string>(resourceKey.Instance, "X16")
                 })
             {
                 output += ":" + value.Item1.ToString(value.Item2);

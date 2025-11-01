@@ -29,11 +29,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public GameFoldersDialog(Window parent) : base("Game Folders", parent, DialogFlags.Modal)
         {
             Build();
-            SetSizeRequest(WidthRequest == -1 ? -1 : (int)(WidthRequest * WidgetUtils.Scale), HeightRequest == -1 ? -1 : (int)(HeightRequest * WidgetUtils.Scale));
-            int parentHeight, parentWidth, parentX, parentY;
-            parent.GetPosition(out parentX, out parentY);
-            parent.GetSize(out parentWidth, out parentHeight);
-            Move(parentX + parentWidth / 2 - WidthRequest / 2, parentY + parentHeight / 2 - HeightRequest / 2);
+            RescaleAndReposition(parent);
             foreach (var game in GameFolders.Games)
             {
                 var alignment = new Alignment(0, .5f, 1, 0);
@@ -42,8 +38,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         Text = InstallDirectories.TryGetValue(game, out path) ? path : ""
                     };
-                alignment.Add(entry);
                 entry.Changed += (sender, e) => SetInstallDirectory(game, entry.Text);
+                alignment.Add(entry);
                 GameFolderTable.Attach(new Label
                     {
                         Text = game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""),
@@ -69,6 +65,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
                 GameFolders.InstallDirs = output.Substring(1);
             }
+        }
+
+        public void RescaleAndReposition(Window parent)
+        {
+            SetSizeRequest(WidthRequest == -1 ? -1 : (int)(WidthRequest * WidgetUtils.Scale), HeightRequest == -1 ? -1 : (int)(HeightRequest * WidgetUtils.Scale));
+            int parentHeight, parentWidth, parentX, parentY;
+            parent.GetPosition(out parentX, out parentY);
+            parent.GetSize(out parentWidth, out parentHeight);
+            Move(parentX + parentWidth / 2 - WidthRequest / 2, parentY + parentHeight / 2 - HeightRequest / 2);
         }
 
         public static void SetInstallDirectory(Game game, string path)

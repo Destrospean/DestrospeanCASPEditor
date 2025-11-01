@@ -27,7 +27,7 @@ public partial class MainWindow : Window
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
-        Rescale();
+        RescaleAndReposition();
         BuildResourceTable();
         GameFoldersDialog.LoadGameFolders();
         ResourcePropertyNotebook.RemovePage(0);
@@ -268,7 +268,7 @@ public partial class MainWindow : Window
         ShowAll();
     }
 
-    public void Rescale()
+    public void RescaleAndReposition()
     {
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
