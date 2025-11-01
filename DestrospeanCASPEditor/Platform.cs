@@ -65,7 +65,7 @@ public static class Platform
         }
     }
 
-    [System.Flags]
+    [Flags]
     public enum OSFlags
     {
         Windows = 0x1,
@@ -78,22 +78,22 @@ public static class Platform
     {
         get
         {
-            switch ((int)System.Environment.OSVersion.Platform)
+            switch ((int)Environment.OSVersion.Platform)
             {
                 case 4:
                 case 128:
-                    var os = Platform.OSFlags.Unix;
+                    var os = OSFlags.Unix;
                     var uname = GetCommandOutput("uname").TrimEnd('\n');
                     switch (uname)
                     {
                         case "Darwin":
                         case "Linux":
-                            os |= (Platform.OSFlags)System.Enum.Parse(typeof(Platform.OSFlags), uname);
+                            os |= (OSFlags)Enum.Parse(typeof(OSFlags), uname);
                             break;
                     }
                     return os;
                 default:
-                    return Platform.OSFlags.Windows;
+                    return OSFlags.Windows;
             }
         }
     }
