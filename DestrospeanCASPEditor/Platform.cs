@@ -25,11 +25,43 @@ public static class Platform
         }
     }
 
+    public static bool IsLinux
+    {
+        get
+        {
+            return OS.HasFlag(OSFlags.Linux);
+        }
+    }
+
+    public static bool IsMac
+    {
+        get
+        {
+            return OS.HasFlag(OSFlags.Darwin);
+        }
+    }
+
     public static bool IsRunningUnderWine
     {
         get
         {
-            return OS.HasFlag(OSFlags.Windows) && WineDetector.IsRunningUnderWine;
+            return IsWindows && WineDetector.IsRunningUnderWine;
+        }
+    }
+
+    public static bool IsUnix
+    {
+        get
+        {
+            return OS.HasFlag(OSFlags.Unix);
+        }
+    }
+
+    public static bool IsWindows
+    {
+        get
+        {
+            return OS.HasFlag(OSFlags.Windows);
         }
     }
 

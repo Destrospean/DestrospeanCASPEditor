@@ -1,22 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using Gdk;
 using Gtk;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
+using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
-    public static class ComponentUtils
+    public static class WidgetUtils
     {
         public static float Scale, WineScale;
 
-        public static void AddPresetToNotebook(CASPart.Preset preset, Notebook notebook, Image imageWidget)
+        public const int DefaultTableCellHeight = 48, DefaultTableColumnSpacing = 12;
+
+        public static void AddPresetToNotebook(CASPart.Preset preset, Notebook notebook, Gtk.Image imageWidget, bool isSubNotebook = false)
         {
-            var subNotebook = new Notebook();
-            notebook.AppendPage(subNotebook, new Label
-                {
-                    Text = "Preset " + (notebook.NPages + 1).ToString()
-                });
+            var subNotebook = isSubNotebook ? notebook : new Notebook();
+            if (!isSubNotebook)
+            {
+                notebook.AppendPage(subNotebook, new Label
+                    {
+                        Text = "Preset " + (notebook.NPages + 1).ToString()
+                    });
+            }
             var complates = new List<CASPart.IComplate>
                 {
                     preset
@@ -28,7 +35,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 var scrolledWindow = new ScrolledWindow();
                 var table = new Table(1, 2, false)
                     {
-                        ColumnSpacing = 12
+                        ColumnSpacing = DefaultTableColumnSpacing
                     };
                 scrolledWindow.AddWithViewport(table);
                 subNotebook.AppendPage(scrolledWindow, new Label
@@ -40,12 +47,12 @@ namespace Destrospean.DestrospeanCASPEditor
             notebook.ShowAll();
         }
 
-        public static void AddPropertiesToNotebook(s3pi.Interfaces.IPackage package, GeometryResource geometryResource, Notebook notebook, Image imageWidget)
+        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
                 {
-                    ColumnSpacing = 12
+                    ColumnSpacing = DefaultTableColumnSpacing
                 };
             scrolledWindow.AddWithViewport(table);
             notebook.AppendPage(scrolledWindow, new Label
@@ -56,7 +63,7 @@ namespace Destrospean.DestrospeanCASPEditor
             notebook.ShowAll();
         }
 
-        public static void AddPropertiesToTable(CASPart.IComplate complate, Table table, Image imageWidget)
+        public static void AddPropertiesToTable(CASPart.IComplate complate, Table table, Gtk.Image imageWidget)
         {
             var propertyNames = complate.PropertyNames;
             propertyNames.Sort();
@@ -70,7 +77,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 1, 0)
                     {
-                        HeightRequest = 48
+                        HeightRequest = DefaultTableCellHeight
                     };
                 var value = complate.GetValue(name);
                 switch (type)
@@ -90,7 +97,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         var colorButton = new ColorButton
                             {
                                 Alpha = rgba[3],
-                                Color = new Gdk.Color
+                                Color = new Color
                                     {
                                         Blue = rgba[2],
                                         Green = rgba[1],
@@ -128,58 +135,24 @@ namespace Destrospean.DestrospeanCASPEditor
                         valueWidget = entry;
                         break;
                     case "texture":
-                        var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
-                        var entries = complate.CurrentPackage.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<s3pi.Interfaces.IResourceIndexEntry, Tuple<Gdk.Pixbuf, string>>(x => new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
-                        entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
-                        var missing = ResourceUtils.MissingResourceKeys.Contains(value);
-                        if (!entries.Exists(x => x.Item2 == value))
-                        {
-                            if (!ImageUtils.PreloadedGameImages.ContainsKey(value) && !missing)
-                            {
-                                try
-                                {
-                                    var evaluated = ResourceUtils.EvaluateImageResourceKey(complate.CurrentPackage, value);
-                                    ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                                    ImageUtils.PreloadedGameImages[value].Add(ImageUtils.PreloadedGameImages[value][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
-                                }
-                                catch
-                                {
-                                    ResourceUtils.MissingResourceKeys.Add(value);
-                                    missing = true;
-                                }
-                            }
-                            entries.Add(new Tuple<Gdk.Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[value][1], value));
-                            listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
-                        }
-                        var comboBox = new ComboBox
-                            {
-                                Active = entries.FindIndex(x => x.Item2 == value),
-                                Model = listStore
-                            };
-                        var pixbufRenderer = new CellRendererPixbuf
-                            {
-                                Xpad = 4
-                            };
-                        var textRenderer = new CellRendererText
-                            {
-                                Xpad = 4
-                            };
-                        comboBox.PackStart(pixbufRenderer, false);
-                        comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
-                        comboBox.PackStart(textRenderer, false);
-                        comboBox.AddAttribute(textRenderer, "text", 1);
+                        ComboBox comboBox;
+                        var entries = BuildImageResourceComboBoxEntries(complate.CurrentPackage, value, out comboBox, imageWidget);
                         comboBox.Changed += (sender, e) => complate.SetValue(name, entries[comboBox.Active].Item2);
                         valueWidget = comboBox;
                         break;
                     case "vec2":
                         var hBox = new HBox();
                         var coordinates = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
-                        SpinButton spinButtonX = new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 0, 4), spinButtonY = new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 0, 4);
-                        EventHandler valueChanged = (sender, e) => complate.SetValue(name, spinButtonX.Value.ToString("F4") + "," + spinButtonY.Value.ToString("F4"));
-                        spinButtonX.ValueChanged += valueChanged;
-                        spinButtonY.ValueChanged += valueChanged;
-                        hBox.PackStart(spinButtonX, false, false, 0);
-                        hBox.PackStart(spinButtonY, false, false, 0);
+                        var spinButtons = new List<SpinButton>
+                            {
+                                new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 0, 4),
+                                new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 0, 4)
+                            };
+                        spinButtons.ForEach(x =>
+                            {
+                                x.ValueChanged += (sender, e) => complate.SetValue(name, spinButtons[0].Value.ToString("F4") + "," + spinButtons[1].Value.ToString("F4"));
+                                hBox.PackStart(x, false, false, 0);
+                            });
                         valueWidget = hBox;
                         break;
                 }
@@ -195,7 +168,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void AddPropertiesToTable(s3pi.Interfaces.IPackage package, GeometryResource geometryResource, Table table, Image imageWidget)
+        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, Gtk.Image imageWidget)
         {
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
             var shaders = new List<string>();
@@ -209,7 +182,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var shaderComboBox = new ComboBox(shaders.ToArray())
                 {
                     Active = shaders.IndexOf(geom.Shader.ToString()),
-                    HeightRequest = 48
+                    HeightRequest = DefaultTableCellHeight
                 };
             shaderComboBox.Changed += (sender, e) => geom.Shader = (ShaderType)Enum.Parse(typeof(ShaderType), shaderComboBox.ActiveText);
             table.Attach(new Label
@@ -224,7 +197,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 0, 0)
                     {
-                        HeightRequest = 48
+                        HeightRequest = DefaultTableCellHeight
                     };
                 var elementFloat = element as ElementFloat;
                 if (elementFloat != null)
@@ -232,6 +205,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     var spinButton = new SpinButton(new Adjustment(elementFloat.Data, 0, 1, .0001, 10, 0), 0, 4);
                     spinButton.ValueChanged += (sender, e) => elementFloat.Data = (float)spinButton.Value;
                     valueWidget = spinButton;
+                    goto AttachLabelAndValueWidget;
                 }
                 var elementFloat2 = element as ElementFloat2;
                 if (elementFloat2 != null)
@@ -249,13 +223,14 @@ namespace Destrospean.DestrospeanCASPEditor
                         hBox.PackStart(spinButton, false, false, 0);
                     }
                     valueWidget = hBox;
+                    goto AttachLabelAndValueWidget;
                 }
                 var elementFloat3 = element as ElementFloat3;
                 if (elementFloat3 != null)
                 {
                     var colorButton = new ColorButton
                         {
-                            Color = new Gdk.Color
+                            Color = new Color
                                 {
                                     Blue = (ushort)(elementFloat3.Data2 * ushort.MaxValue),
                                     Green = (ushort)(elementFloat3.Data1 * ushort.MaxValue),
@@ -269,6 +244,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             elementFloat3.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
                         };
                     valueWidget = colorButton;
+                    goto AttachLabelAndValueWidget;
                 }
                 var elementFloat4 = element as ElementFloat4;
                 if (elementFloat4 != null)
@@ -276,7 +252,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     var colorButton = new ColorButton
                         {
                             Alpha = (ushort)(elementFloat4.Data3 * ushort.MaxValue),
-                            Color = new Gdk.Color
+                            Color = new Color
                                 {
                                     Blue = (ushort)(elementFloat4.Data2 * ushort.MaxValue),
                                     Green = (ushort)(elementFloat4.Data1 * ushort.MaxValue),
@@ -292,6 +268,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             elementFloat4.Data3 = (float)colorButton.Alpha / ushort.MaxValue;
                         };
                     valueWidget = colorButton;
+                    goto AttachLabelAndValueWidget;
                 }
                 var elementInt = element as ElementInt;
                 if (elementInt != null)
@@ -299,64 +276,27 @@ namespace Destrospean.DestrospeanCASPEditor
                     var spinButton = new SpinButton(new Adjustment(elementInt.Data, int.MinValue, int.MaxValue, 1, 10, 0), 0, 0);
                     spinButton.ValueChanged += (sender, e) => elementInt.Data = spinButton.ValueAsInt;
                     valueWidget = spinButton;
+                    goto AttachLabelAndValueWidget;
                 }
                 var elementTextureRef = element as ElementTextureRef;
                 if (elementTextureRef != null)
                 {
                     alignment.Xscale = 1;
-                    var value = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
-                    var listStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string));
-                    var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<s3pi.Interfaces.IResourceIndexEntry, Tuple<Gdk.Pixbuf, string>>(x => new Tuple<Gdk.Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
-                    entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
-                    var missing = ResourceUtils.MissingResourceKeys.Contains(value);
-                    if (!entries.Exists(x => x.Item2 == value))
-                    {
-                        if (!ImageUtils.PreloadedGameImages.ContainsKey(value) && !missing)
-                        {
-                            try
-                            {
-                                var evaluated = ResourceUtils.EvaluateImageResourceKey(package, value);
-                                ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                                ImageUtils.PreloadedGameImages[value].Add(ImageUtils.PreloadedGameImages[value][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
-                            }
-                            catch
-                            {
-                                ResourceUtils.MissingResourceKeys.Add(value);
-                                missing = true;
-                            }
-                        }
-                        entries.Add(new Tuple<Gdk.Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[value][1], value));
-                        listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
-                    }
-                    var comboBox = new ComboBox
-                        {
-                            Active = entries.FindIndex(x => x.Item2 == value),
-                            Model = listStore
-                        };
-                    var pixbufRenderer = new CellRendererPixbuf
-                        {
-                            Xpad = 4
-                        };
-                    var textRenderer = new CellRendererText
-                        {
-                            Xpad = 4
-                        };
-                    comboBox.PackStart(pixbufRenderer, false);
-                    comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
-                    comboBox.PackStart(textRenderer, false);
-                    comboBox.AddAttribute(textRenderer, "text", 1);
+                    ComboBox comboBox;
+                    var entries = BuildImageResourceComboBoxEntries(package, ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]), out comboBox, imageWidget);
                     comboBox.Changed += (sender, e) =>
                         {
                             var index = element.ParentTGIBlocks.FindIndex(x => ResourceUtils.ReverseEvaluateResourceKey(x) == entries[comboBox.Active].Item2);
                             if (index == -1)
                             {
-                                element.ParentTGIBlocks.Add(new s3pi.Interfaces.TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, entries[comboBox.Active].Item2).Item2));
+                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, entries[comboBox.Active].Item2).Item2));
                                 index = element.ParentTGIBlocks.Count - 1;
                             }
                             elementTextureRef.Index = index;
                         };
                     valueWidget = comboBox;
                 }
+                AttachLabelAndValueWidget:
                 table.Attach(new Label
                     {
                         Text = element.Field.ToString(),
@@ -369,7 +309,52 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Frame GetFlagsInNewFrame(CASPart casPart, Type enumType, Enum enumInstance, string label, params string[] propertyPathParts)
+        public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(IPackage package, string currentValue, out ComboBox comboBox, Gtk.Image imageWidget)
+        {
+            var listStore = new ListStore(typeof(Pixbuf), typeof(string));
+            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
+            entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
+            var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
+            if (!entries.Exists(x => x.Item2 == currentValue))
+            {
+                if (!ImageUtils.PreloadedGameImages.ContainsKey(currentValue) && !missing)
+                {
+                    try
+                    {
+                        var evaluated = ResourceUtils.EvaluateImageResourceKey(package, currentValue);
+                        ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
+                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(32, 32, InterpType.Bilinear));
+                    }
+                    catch
+                    {
+                        ResourceUtils.MissingResourceKeys.Add(currentValue);
+                        missing = true;
+                    }
+                }
+                entries.Add(new Tuple<Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[currentValue][1], currentValue));
+                listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
+            }
+            comboBox = new ComboBox
+                {
+                    Active = entries.FindIndex(x => x.Item2 == currentValue),
+                    Model = listStore
+                };
+            var pixbufRenderer = new CellRendererPixbuf
+                {
+                    Xpad = 4
+                };
+            var textRenderer = new CellRendererText
+                {
+                    Xpad = 4
+                };
+            comboBox.PackStart(pixbufRenderer, false);
+            comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
+            comboBox.PackStart(textRenderer, false);
+            comboBox.AddAttribute(textRenderer, "text", 1);
+            return entries;
+        }
+
+        public static Frame GetFlagsInNewFrame(string label, CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
         {
             var frame = new Frame
                 {
@@ -402,6 +387,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             var value = (byte)propertyInfo.GetValue(property);
                             propertyInfo.SetValue(property, (byte)(value ^ (byte)flag));
+                            goto FinalSteps;
                         }
                         catch (InvalidCastException)
                         {
@@ -414,7 +400,9 @@ namespace Destrospean.DestrospeanCASPEditor
                         catch (InvalidCastException)
                         {
                         }
-                        casPart.CurrentPackage.ReplaceResource(casPart.ResourceIndexEntry, casPart.CASPartResource);
+                        FinalSteps:
+                        //casPart.CurrentPackage.ReplaceResource(casPart.ResourceIndexEntry, casPart.CASPartResource);
+                        return;
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }

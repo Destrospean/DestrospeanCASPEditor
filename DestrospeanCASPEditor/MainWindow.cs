@@ -19,6 +19,11 @@ public partial class MainWindow : Window
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
+    public class CustomNotebook : Notebook
+    {
+        public int LastSelectedPage = 0;
+    }
+
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
@@ -30,44 +35,63 @@ public partial class MainWindow : Window
 
     public void AddCASPartWidgets(CASPart casPart)
     {
-        Notebook flagNotebook = new Notebook
+        var flagNotebook = new Notebook
             {
                 ShowTabs = false
-            }, presetNotebook = new Notebook();
+            };
+        var flagPageButtonHBox = new HBox(false, 0);
+        var flagPageVBox = new VBox(false, 0);
         var flagTables = new Table[2];
         for (var i = 0; i < flagTables.Length; i++)
         {
             flagTables[i] = new Table(2, 3, true);
             flagNotebook.AppendPage(flagTables[i], new Label());
         }
-        var flagPageButtonHBox = new HBox(false, 0);
-        var flagPageVBox = new VBox(false, 0);
         flagPageVBox.PackStart(flagPageButtonHBox, false, false, 0);
-        flagPageVBox.PackEnd(flagNotebook, true, true, 0);
-        Button backButton = new Button("Previous"), forwardButton = new Button("Next");
-        backButton.Clicked += (sender, e) =>
+        flagPageVBox.PackStart(flagNotebook, true, true, 0);
+        Button nextButton = new Button(), prevButton = new Button();
+        flagNotebook.SwitchPage += (o, args) =>
             {
-                flagNotebook.PrevPage();
+                nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
+                prevButton.Sensitive = flagNotebook.CurrentPage > 0;
             };
-        forwardButton.Clicked += (sender, e) =>
-            {
-                flagNotebook.NextPage();
-            };
-        flagPageButtonHBox.PackStart(backButton, false, true, 4);
-        flagPageButtonHBox.PackStart(forwardButton, false, true, 4);
-        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "Clothing Category", "ClothingCategory"), 0, 1, 0, 2);
-        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing Type", "Clothing"), 1, 2, 0, 2);
-        flagTables[0].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "Data Type", "DataType"), 2, 3, 0, 2);
+        nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None));
+        prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None));
+        nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
+        prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
+        flagPageButtonHBox.PackStart(prevButton, false, true, 4);
+        flagPageButtonHBox.PackStart(nextButton, false, true, 4);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Category", casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "ClothingCategory"), 0, 1, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Type", casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Data Type", casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "DataType"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Age", casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "AgeGender", "Age"), 0, 1, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Gender", casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "AgeGender", "Gender"), 1, 2, 0, 1);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Species", casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "AgeGender", "Species"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "AgeGender", "Handedness"), 1, 2, 1, 2);
         flagTables[0].ShowAll();
-        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "Age", "AgeGender", "Age"), 0, 1, 0, 2);
-        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "Gender", "AgeGender", "Gender"), 1, 2, 0, 1);
-        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "Species", "AgeGender", "Species"), 2, 3, 0, 2);
-        flagTables[1].Attach(ComponentUtils.GetFlagsInNewFrame(casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "Handedness", "AgeGender", "Handedness"), 1, 2, 1, 2);
         flagTables[1].ShowAll();
+        var presetNotebook = new CustomNotebook();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
         ResourcePropertyTable.Attach(presetNotebook, 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
-        casPart.Presets.ForEach(x => ComponentUtils.AddPresetToNotebook(x, presetNotebook, Image));
+        casPart.Presets.ForEach(x => WidgetUtils.AddPresetToNotebook(x, presetNotebook, Image));
+        presetNotebook.AppendPage(new Notebook(), new Image(Stock.Add, IconSize.Button));
+        presetNotebook.SwitchPage += (o, args) =>
+            {
+                if (presetNotebook.NPages > 1 && presetNotebook.CurrentPage == presetNotebook.NPages - 1)
+                {
+                    casPart.Presets.Add(new CASPart.Preset(casPart, casPart.Presets[presetNotebook.LastSelectedPage].XmlFile));
+                    WidgetUtils.AddPresetToNotebook(casPart.Presets[casPart.Presets.Count - 1], (Notebook)presetNotebook.CurrentPageWidget, Image, true);
+                    presetNotebook.SetTabLabel(presetNotebook.CurrentPageWidget, new Label
+                        {
+                            Text = "Preset " + presetNotebook.NPages.ToString()
+                        });
+                    presetNotebook.AppendPage(new Notebook(), new Image(Stock.Add, IconSize.Button));
+                    presetNotebook.ShowAll();
+                }
+                presetNotebook.LastSelectedPage = presetNotebook.CurrentPage;
+            };
+        presetNotebook.ShowAll();
     }
 
     public void BuildResourceTable()
@@ -125,11 +149,12 @@ public partial class MainWindow : Window
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                         case "GEOM":
-                            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image);
+                            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image);
                             break;
                         case "TXTC":
                             break;
                         case "VPXY":
+                            /*
                             var vpxy = (VPXY)VPXYResources[resourceIndexEntry].ChunkEntries[0].RCOLBlock;
                             foreach (var entry in vpxy.Entries)
                             {
@@ -147,6 +172,7 @@ public partial class MainWindow : Window
                                 {
                                 }
                             }
+                            */
                             break;
                     }
                 }
@@ -233,7 +259,7 @@ public partial class MainWindow : Window
         }
         foreach (var geometryResource in GeometryResources.Values)
         {
-            ComponentUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image);
+            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image);
         }
         foreach (var vpxyResource in VPXYResources.Values)
         {
@@ -246,24 +272,24 @@ public partial class MainWindow : Window
     {
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
-        ComponentUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.OS.HasFlag(Platform.OSFlags.Unix) ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
-        ComponentUtils.WineScale = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
-        SetDefaultSize((int)(DefaultWidth * ComponentUtils.Scale), (int)(DefaultHeight * ComponentUtils.Scale));
+        WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
+        WidgetUtils.WineScale = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
+        SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
         foreach (var widget in new Widget[]
             {
-                ResourcePropertyTable,
                 Image,
                 MainTable,
                 ResourcePropertyNotebook,
+                ResourcePropertyTable,
                 this
             })
         {
-            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * ComponentUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * ComponentUtils.Scale));
+            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
         }
         Resize(DefaultWidth, DefaultHeight);
-        if (Platform.OS.HasFlag(Platform.OSFlags.Unix) || Platform.IsRunningUnderWine)
+        if (Platform.IsRunningUnderWine || Platform.IsUnix)
         {
-            Move(((int)((float)monitorGeometry.Width / ComponentUtils.WineScale) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / ComponentUtils.WineScale) - HeightRequest) / 2);
+            Move(((int)((float)monitorGeometry.Width / WidgetUtils.WineScale) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / WidgetUtils.WineScale) - HeightRequest) / 2);
         }
         AllowShrink = Platform.IsRunningUnderWine;
     }
@@ -302,12 +328,12 @@ public partial class MainWindow : Window
 
     protected void OnImportResourceActionActivated(object sender, EventArgs e)
     {
-        FileChooserDialog fileChooser = new FileChooserDialog("Import Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-        if (fileChooser.Run() == (int)ResponseType.Accept)
+        var fileChooserDialog = new FileChooserDialog("Import Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
             try
             {
-                ResourceUtils.ResolveResourceType(CurrentPackage, ResourceUtils.AddResource(CurrentPackage, fileChooser.Filename));
+                ResourceUtils.ResolveResourceType(CurrentPackage, ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename));
                 RefreshWidgets();
             }
             catch (System.IO.InvalidDataException ex)
@@ -315,7 +341,7 @@ public partial class MainWindow : Window
                 Console.WriteLine(ex);
             }
         }
-        fileChooser.Destroy();
+        fileChooserDialog.Destroy();
     }
 
     protected void OnNewActionActivated(object sender, EventArgs e)
@@ -324,12 +350,18 @@ public partial class MainWindow : Window
 
     protected void OnOpenActionActivated(object sender, EventArgs e)
     {
-        FileChooserDialog fileChooser = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-        if (fileChooser.Run() == (int)ResponseType.Accept)
+        var fileChooserDialog = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        var fileFilter = new FileFilter
+            {
+                Name = "The Sims 3 DBPF Packages"
+            };
+        fileFilter.AddPattern("*.package");
+        fileChooserDialog.AddFilter(fileFilter);
+        if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
             try
             {
-                var package = s3pi.Package.Package.OpenPackage(0, fileChooser.Filename, true);
+                var package = s3pi.Package.Package.OpenPackage(0, fileChooserDialog.Filename, true);
                 s3pi.Package.Package.ClosePackage(0, CurrentPackage);
                 CurrentPackage = package;
                 ResourceUtils.MissingResourceKeys.Clear();
@@ -340,7 +372,7 @@ public partial class MainWindow : Window
                 Console.WriteLine(ex);
             }
         }
-        fileChooser.Destroy();
+        fileChooserDialog.Destroy();
     }
 
     protected void OnQuitActionActivated(object sender, EventArgs e)
@@ -350,8 +382,8 @@ public partial class MainWindow : Window
 
     protected void OnReplaceResourceActionActivated(object sender, EventArgs e)
     {
-        FileChooserDialog fileChooser = new FileChooserDialog("Replace Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-        if (fileChooser.Run() == (int)ResponseType.Accept)
+        var fileChooserDialog = new FileChooserDialog("Replace Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
             try
             {
@@ -359,7 +391,7 @@ public partial class MainWindow : Window
                 TreeModel model;
                 if (ResourceTreeView.Selection.GetSelected(out model, out iter))
                 {
-                    IResourceIndexEntry addedResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooser.Filename), resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+                    IResourceIndexEntry addedResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename), resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
                     ResourceUtils.ResolveResourceType(CurrentPackage, addedResourceIndexEntry);
                     CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, addedResourceIndexEntry));
                     CurrentPackage.DeleteResource(addedResourceIndexEntry);
@@ -371,7 +403,7 @@ public partial class MainWindow : Window
                 Console.WriteLine(ex);
             }
         }
-        fileChooser.Destroy();
+        fileChooserDialog.Destroy();
     }
 
     protected void OnSaveActionActivated(object sender, EventArgs e)

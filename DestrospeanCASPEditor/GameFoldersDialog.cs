@@ -29,7 +29,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public GameFoldersDialog(Window parent) : base("Game Folders", parent, DialogFlags.Modal)
         {
             Build();
-            SetSizeRequest(WidthRequest == -1 ? -1 : (int)(WidthRequest * ComponentUtils.Scale), HeightRequest == -1 ? -1 : (int)(HeightRequest * ComponentUtils.Scale));
+            SetSizeRequest(WidthRequest == -1 ? -1 : (int)(WidthRequest * WidgetUtils.Scale), HeightRequest == -1 ? -1 : (int)(HeightRequest * WidgetUtils.Scale));
             int parentHeight, parentWidth, parentX, parentY;
             parent.GetPosition(out parentX, out parentY);
             parent.GetSize(out parentWidth, out parentHeight);

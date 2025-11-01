@@ -275,11 +275,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Preset(CASPart casPart, CASPartResource.CASPartResource.Preset preset)
+            public Preset(CASPart casPart, CASPartResource.CASPartResource.Preset preset) : this(casPart, preset.XmlFile)
+            {
+            }
+
+            public Preset(CASPart casPart, System.IO.TextReader xmlFile)
             {
                 CASPart = casPart;
                 XmlDocument = new XmlDocument();
-                XmlDocument.LoadXml(preset.XmlFile.ReadToEnd());
+                XmlDocument.LoadXml(xmlFile.ReadToEnd());
                 Complate = new Complate(this, XmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
