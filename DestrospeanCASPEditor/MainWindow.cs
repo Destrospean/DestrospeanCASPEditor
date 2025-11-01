@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CASPartResource;
 using Destrospean.DestrospeanCASPEditor;
 using Gtk;
 using meshExpImp.ModelBlocks;
@@ -61,13 +62,13 @@ public partial class MainWindow : Window
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
         flagPageButtonHBox.PackStart(prevButton, false, true, 4);
         flagPageButtonHBox.PackStart(nextButton, false, true, 4);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Category", casPart, typeof(CASPartResource.ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "ClothingCategory"), 0, 1, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Type", casPart, typeof(CASPartResource.ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Data Type", casPart, typeof(CASPartResource.DataTypeFlags), casPart.CASPartResource.DataType, "DataType"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Age", casPart, typeof(CASPartResource.AgeFlags), casPart.CASPartResource.AgeGender.Age, "AgeGender", "Age"), 0, 1, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Gender", casPart, typeof(CASPartResource.GenderFlags), casPart.CASPartResource.AgeGender.Gender, "AgeGender", "Gender"), 1, 2, 0, 1);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Species", casPart, typeof(CASPartResource.SpeciesType), casPart.CASPartResource.AgeGender.Species, "AgeGender", "Species"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart, typeof(CASPartResource.HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "AgeGender", "Handedness"), 1, 2, 1, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Category", casPart, typeof(ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "ClothingCategory"), 0, 1, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Type", casPart, typeof(ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Data Type", casPart, typeof(DataTypeFlags), casPart.CASPartResource.DataType, "DataType"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Age", casPart, typeof(AgeFlags), casPart.CASPartResource.AgeGender.Age, "AgeGender", "Age"), 0, 1, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Gender", casPart, typeof(GenderFlags), casPart.CASPartResource.AgeGender.Gender, "AgeGender", "Gender"), 1, 2, 0, 1);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Species", casPart, typeof(SpeciesType), casPart.CASPartResource.AgeGender.Species, "AgeGender", "Species"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart, typeof(HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "AgeGender", "Handedness"), 1, 2, 1, 2);
         flagTables[0].ShowAll();
         flagTables[1].ShowAll();
         var presetNotebook = new CustomNotebook();
