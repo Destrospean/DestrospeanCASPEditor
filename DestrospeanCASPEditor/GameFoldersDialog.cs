@@ -91,7 +91,7 @@ namespace Destrospean.DestrospeanCASPEditor
             System.IO.File.WriteAllText(ConfigurationPath, JsonConvert.SerializeObject(outputDictionary, Formatting.Indented));
         }
 
-        protected void OnButtonOkClicked(object sender, System.EventArgs e)
+        protected void OnOKButtonClicked(object sender, System.EventArgs e)
         {
             Destroy();
         }

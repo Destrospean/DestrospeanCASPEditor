@@ -200,6 +200,8 @@
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
+    <Compile Include="AddGEOMPropertyDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -5,6 +5,7 @@ using Gtk;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
+using System.Reflection;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -14,7 +15,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public const int DefaultTableCellHeight = 48, DefaultTableColumnSpacing = 12;
 
-        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget)
+        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, Gtk.Window window)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
@@ -26,18 +27,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     Text = "Configuration"
                 });
-            AddPropertiesToTable(package, geometryResource, table, imageWidget);
+            AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
             notebook.ShowAll();
         }
 
-        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, Gtk.Image imageWidget)
+        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, ScrolledWindow scrolledWindow, Gtk.Image imageWidget, Gtk.Window window)
         {
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
-            var shaders = new List<string>();
-            foreach (var shader in Enum.GetValues(typeof(ShaderType)))
-            {
-                shaders.Add(shader.ToString());
-            }
+            var shaders = new List<string>(Enum.GetNames(typeof(ShaderType)));
             shaders.RemoveAt(0);
             shaders.Sort();
             shaders.Insert(0, "None");
@@ -169,6 +166,40 @@ namespace Destrospean.DestrospeanCASPEditor
                 table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
+            var propertyButtonHBox = new HBox(false, 4);
+            propertyButtonHBox.PackStart(new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                {
+                    Xalign = 1
+                }, true, true, 0);
+            propertyButtonHBox.PackStart(new Label
+                {
+                    Text = "Add Property",
+                    Xalign = 0
+                }, true, true, 0);
+            var addPropertyButton = new Button();
+            addPropertyButton.Add(propertyButtonHBox);
+            addPropertyButton.Clicked += (sender, e) =>
+                {
+                    var addGEOMPropertyDialog = new AddGEOMPropertyDialog(window);
+                    if (addGEOMPropertyDialog.Run() == (int)ResponseType.Ok)
+                    {
+                        foreach (var child in table.Children)
+                        {
+                            table.Remove(child);
+                        }
+                        var element = (ShaderData)Activator.CreateInstance(addGEOMPropertyDialog.DataType, 0, new EventHandler((sender1, e1) => 
+                            {
+                            }));
+                        element.Field = addGEOMPropertyDialog.Field;
+                        geom.Mtnf.SData.Add(element);
+                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
+                        table.ShowAll();
+                        scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;
+                    }
+                    addGEOMPropertyDialog.Destroy();
+                };
+            table.Attach(addPropertyButton, 0, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.NRows++;
         }
 
         public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(IPackage package, string currentValue, out ComboBox comboBox, Gtk.Image imageWidget)
@@ -216,9 +247,20 @@ namespace Destrospean.DestrospeanCASPEditor
             return entries;
         }
 
-        public static Frame GetFlagsInNewFrame(string label, CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
+        public static Frame GetFlagsInNewFrame(string label, object obj, params string[] propertyPathParts)
         {
-            bool disableToggled = false, isFlagType = enumType.IsDefined(typeof(FlagsAttribute), false);
+            object property = obj;
+            var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
+            if (propertyPathParts.Length > 1)
+            {
+                for (var i = 1; i < propertyPathParts.Length; i++)
+                {
+                    property = propertyInfo.GetValue(property);
+                    propertyInfo = property.GetType().GetProperty(propertyPathParts[i]);
+                }
+            }
+            var enumInstance = (Enum)propertyInfo.GetValue(property);
+            bool disableToggled = false, isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
             var frame = new Frame
                 {
                     Label = label
@@ -228,7 +270,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var vBox = new VBox();
             frame.Add(scrolledWindow);
             scrolledWindow.AddWithViewport(vBox);
-            foreach (var flag in Enum.GetValues(enumType))
+            foreach (var flag in Enum.GetValues(enumInstance.GetType()))
             {
                 CheckButton checkButton;
                 if (isFlagType)
@@ -263,32 +305,14 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             return;
                         }
-                        object property = casPart.CASPartResource;
-                        var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
-                        if (propertyPathParts.Length > 1)
+                        switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
                         {
-                            for (var i = 1; i < propertyPathParts.Length; i++)
-                            {
-                                property = propertyInfo.GetValue(property);
-                                propertyInfo = property.GetType().GetProperty(propertyPathParts[i]);
-                            }
-                        }
-                        try
-                        {
-                            var value = (byte)propertyInfo.GetValue(property);
-                            propertyInfo.SetValue(property, (byte)(isFlagType ? value ^ (byte)flag : (byte)flag));
-                            return;
-                        }
-                        catch (InvalidCastException)
-                        {
-                        }
-                        try
-                        {
-                            var value = (uint)propertyInfo.GetValue(property);
-                            propertyInfo.SetValue(property, isFlagType ? value ^ (uint)flag : (uint)flag);
-                        }
-                        catch (InvalidCastException)
-                        {
+                            case "Byte":
+                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)propertyInfo.GetValue(property) ^ (byte)flag) : flag);
+                                break;
+                            case "UInt32":
+                                propertyInfo.SetValue(property, isFlagType ? (uint)propertyInfo.GetValue(property) ^ (uint)flag : flag);
+                                break;
                         }
                     };
                 vBox.PackStart(checkButton, false, false, 0);

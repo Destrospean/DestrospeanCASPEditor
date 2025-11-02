@@ -224,7 +224,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             ShowAll();
         }
 
-        public static PresetNotebook Create(CASPart casPart, Gtk.Image imageWidget)
+        public static PresetNotebook CreateInstance(CASPart casPart, Gtk.Image imageWidget)
         {
             var notebook = new PresetNotebook(casPart, imageWidget);
             casPart.Presets.ForEach(notebook.AddPreset);

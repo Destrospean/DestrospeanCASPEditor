@@ -8,7 +8,7 @@ namespace Destrospean.DestrospeanCASPEditor
 		
 		private global::Gtk.Table GameFolderTable;
 		
-		private global::Gtk.Button ButtonOk;
+		private global::Gtk.Button OKButton;
 
 		protected virtual void Build ()
 		{
@@ -50,15 +50,15 @@ namespace Destrospean.DestrospeanCASPEditor
 			w6.BorderWidth = ((uint)(5));
 			w6.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(4));
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
-			this.ButtonOk = new global::Gtk.Button ();
-			this.ButtonOk.CanDefault = true;
-			this.ButtonOk.CanFocus = true;
-			this.ButtonOk.Name = "ButtonOk";
-			this.ButtonOk.UseStock = true;
-			this.ButtonOk.UseUnderline = true;
-			this.ButtonOk.Label = "gtk-ok";
-			this.AddActionWidget (this.ButtonOk, -5);
-			global::Gtk.ButtonBox.ButtonBoxChild w7 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.ButtonOk]));
+			this.OKButton = new global::Gtk.Button ();
+			this.OKButton.CanDefault = true;
+			this.OKButton.CanFocus = true;
+			this.OKButton.Name = "OKButton";
+			this.OKButton.UseStock = true;
+			this.OKButton.UseUnderline = true;
+			this.OKButton.Label = "gtk-ok";
+			this.AddActionWidget (this.OKButton, -5);
+			global::Gtk.ButtonBox.ButtonBoxChild w7 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.OKButton]));
 			w7.Expand = false;
 			w7.Fill = false;
 			if ((this.Child != null)) {
@@ -67,7 +67,7 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.DefaultWidth = 480;
 			this.DefaultHeight = 584;
 			this.Show ();
-			this.ButtonOk.Clicked += new global::System.EventHandler (this.OnButtonOkClicked);
+			this.OKButton.Clicked += new global::System.EventHandler (this.OnOKButtonClicked);
 		}
 	}
 }

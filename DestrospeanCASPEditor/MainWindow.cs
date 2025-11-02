@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CASPartResource;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gtk;
@@ -58,17 +57,17 @@ public partial class MainWindow : Window
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
         flagPageButtonHBox.PackStart(prevButton, false, true, 4);
         flagPageButtonHBox.PackStart(nextButton, false, true, 4);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Category", casPart, typeof(ClothingCategoryFlags), casPart.CASPartResource.ClothingCategory, "ClothingCategory"), 0, 1, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Type", casPart, typeof(ClothingType), casPart.CASPartResource.Clothing, "Clothing"), 1, 2, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Data Type", casPart, typeof(DataTypeFlags), casPart.CASPartResource.DataType, "DataType"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Age", casPart, typeof(AgeFlags), casPart.CASPartResource.AgeGender.Age, "AgeGender", "Age"), 0, 1, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Gender", casPart, typeof(GenderFlags), casPart.CASPartResource.AgeGender.Gender, "AgeGender", "Gender"), 1, 2, 0, 1);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Species", casPart, typeof(SpeciesType), casPart.CASPartResource.AgeGender.Species, "AgeGender", "Species"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart, typeof(HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "AgeGender", "Handedness"), 1, 2, 1, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Category", casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Clothing Type", casPart.CASPartResource, "Clothing"), 1, 2, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetFlagsInNewFrame("Data Type", casPart.CASPartResource, "DataType"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Age", casPart.CASPartResource.AgeGender, "Age"), 0, 1, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Gender", casPart.CASPartResource.AgeGender, "Gender"), 1, 2, 0, 1);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Species", casPart.CASPartResource.AgeGender, "Species"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart.CASPartResource.AgeGender, "Handedness"), 1, 2, 1, 2);
         flagTables[0].ShowAll();
         flagTables[1].ShowAll();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
-        ResourcePropertyTable.Attach(PresetNotebook.Create(casPart, Image), 1, 2, 0, 1);
+        ResourcePropertyTable.Attach(PresetNotebook.CreateInstance(casPart, Image), 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
     }
 
@@ -107,7 +106,6 @@ public partial class MainWindow : Window
                 foreach (var child in ResourcePropertyTable.Children)
                 {
                     ResourcePropertyTable.Remove(child);
-                    child.Dispose();
                 }
                 while (ResourcePropertyNotebook.NPages > 0)
                 {
@@ -127,7 +125,7 @@ public partial class MainWindow : Window
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                         case "GEOM":
-                            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image);
+                            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image, this);
                             break;
                         case "TXTC":
                             break;
@@ -174,7 +172,6 @@ public partial class MainWindow : Window
         foreach (var child in ResourcePropertyTable.Children)
         {
             ResourcePropertyTable.Remove(child);
-            child.Dispose();
         }
         while (ResourcePropertyNotebook.NPages > 0)
         {
@@ -237,7 +234,7 @@ public partial class MainWindow : Window
         }
         foreach (var geometryResource in GeometryResources.Values)
         {
-            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image);
+            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image, this);
         }
         foreach (var vpxyResource in VPXYResources.Values)
         {
