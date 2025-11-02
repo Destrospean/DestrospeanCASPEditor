@@ -14,39 +14,6 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public const int DefaultTableCellHeight = 48, DefaultTableColumnSpacing = 12;
 
-        public static void AddPresetToNotebook(CASPart.Preset preset, Notebook notebook, Gtk.Image imageWidget, bool isSubNotebook = false)
-        {
-            var subNotebook = isSubNotebook ? notebook : new Notebook();
-            if (!isSubNotebook)
-            {
-                notebook.AppendPage(subNotebook, new Label
-                    {
-                        Text = "Preset " + (notebook.NPages + 1).ToString()
-                    });
-            }
-            var complates = new List<CASPart.IComplate>
-                {
-                    preset
-                };
-            complates.AddRange(preset.Patterns);
-            foreach (var complate in complates)
-            {
-                var pattern = complate as CASPart.Pattern;
-                var scrolledWindow = new ScrolledWindow();
-                var table = new Table(1, 2, false)
-                    {
-                        ColumnSpacing = DefaultTableColumnSpacing
-                    };
-                scrolledWindow.AddWithViewport(table);
-                subNotebook.AppendPage(scrolledWindow, new Label
-                    {
-                        Text = pattern == null ? "Configuration" : pattern.Name
-                    });
-                AddPropertiesToTable(complate, table, imageWidget);
-            }
-            notebook.ShowAll();
-        }
-
         public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget)
         {
             var scrolledWindow = new ScrolledWindow();
@@ -61,111 +28,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 });
             AddPropertiesToTable(package, geometryResource, table, imageWidget);
             notebook.ShowAll();
-        }
-
-        public static void AddPropertiesToTable(CASPart.IComplate complate, Table table, Gtk.Image imageWidget)
-        {
-            var propertyNames = complate.PropertyNames;
-            propertyNames.Sort();
-            foreach (var name in propertyNames)
-            {
-                string type;
-                if (!complate.PropertiesTyped.TryGetValue(name, out type))
-                {
-                    continue;
-                }
-                Widget valueWidget = null;
-                var alignment = new Alignment(0, .5f, 1, 0)
-                    {
-                        HeightRequest = DefaultTableCellHeight
-                    };
-                var value = complate.GetValue(name);
-                switch (type)
-                {
-                    case "bool":
-                        var checkButton = new CheckButton
-                            {
-                                Active = bool.Parse(value),
-                                UseUnderline = false
-                            };
-                        checkButton.Toggled += (sender, e) => complate.SetValue(name, checkButton.Active.ToString());
-                        valueWidget = checkButton;
-                        break;
-                    case "color":
-                        alignment.Xscale = 0;
-                        var rgba = new List<string>(value.Split(',')).ConvertAll(new Converter<string, ushort>(x => (ushort)(float.Parse(x) * ushort.MaxValue)));
-                        var colorButton = new ColorButton
-                            {
-                                Alpha = rgba[3],
-                                Color = new Color
-                                    {
-                                        Blue = rgba[2],
-                                        Green = rgba[1],
-                                        Red = rgba[0]
-                                    },
-                                UseAlpha = true
-                            };
-                        colorButton.ColorSet += (sender, e) =>
-                            {
-                                rgba = new List<ushort>
-                                    {
-                                        colorButton.Color.Red,
-                                        colorButton.Color.Green,
-                                        colorButton.Color.Blue,
-                                        colorButton.Alpha
-                                    };
-                                var output = "";
-                                rgba.ForEach(x => output += "," + ((float)x / ushort.MaxValue).ToString("F4"));
-                                complate.SetValue(name, output.Substring(1));
-                            };
-                        valueWidget = colorButton;
-                        break;
-                    case "float":
-                        alignment.Xscale = 0;
-                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), 0, 1, .0001, 10, 0), 0, 4);
-                        spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
-                        valueWidget = spinButton;
-                        break;
-                    case "pattern":
-                        var entry = new Entry
-                            {
-                                Text = value
-                            };
-                        entry.Changed += (sender, e) => complate.SetValue(name, entry.Text);
-                        valueWidget = entry;
-                        break;
-                    case "texture":
-                        ComboBox comboBox;
-                        var entries = BuildImageResourceComboBoxEntries(complate.ParentPackage, value, out comboBox, imageWidget);
-                        comboBox.Changed += (sender, e) => complate.SetValue(name, entries[comboBox.Active].Item2);
-                        valueWidget = comboBox;
-                        break;
-                    case "vec2":
-                        var hBox = new HBox();
-                        var coordinates = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse));
-                        var spinButtons = new List<SpinButton>
-                            {
-                                new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 0, 4),
-                                new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 0, 4)
-                            };
-                        spinButtons.ForEach(x =>
-                            {
-                                x.ValueChanged += (sender, e) => complate.SetValue(name, spinButtons[0].Value.ToString("F4") + "," + spinButtons[1].Value.ToString("F4"));
-                                hBox.PackStart(x, false, false, 0);
-                            });
-                        valueWidget = hBox;
-                        break;
-                }
-                table.Attach(new Label
-                    {
-                        Text = name,
-                        UseUnderline = false,
-                        Xalign = 0
-                    }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
-                alignment.Add(valueWidget);
-                table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
-                table.NRows++;
-            }
         }
 
         public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, Gtk.Image imageWidget)
@@ -410,4 +272,3 @@ namespace Destrospean.DestrospeanCASPEditor
         }
     }
 }
-

@@ -199,6 +199,10 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
+    <Compile Include="Widgets\PresetNotebook.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Widgets\" />
+  </ItemGroup>
 </Project>

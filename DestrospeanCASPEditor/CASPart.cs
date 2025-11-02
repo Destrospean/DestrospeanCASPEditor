@@ -47,11 +47,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class Complate : IComplate
         {
-            readonly XmlDocument mXmlDocument;
-
             readonly Dictionary<string, string> mPropertiesTyped;
 
             readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
+
+            readonly XmlDocument mXmlDocument;
 
             public IPackage ParentPackage
             {
@@ -106,7 +106,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     if (childNode.Name == "pattern")
                     {
-                        Patterns.Add(new Pattern(this, childNode));
+                        Patterns.Add(new Pattern(Preset, childNode));
                     }
                 }
                 mPropertiesTyped = new Dictionary<string, string>();
@@ -140,13 +140,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class Pattern : IComplate
         {
-            readonly XmlDocument mXmlDocument;
-
             readonly Dictionary<string, string> mPropertiesTyped;
 
             readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
 
-            public readonly Complate Complate;
+            readonly XmlDocument mXmlDocument;
 
             public readonly string Name;
 
@@ -154,9 +152,11 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Complate.ParentPackage;
+                    return Preset.ParentPackage;
                 }
             }
+
+            public readonly Preset Preset;
 
             public Dictionary<string, string> PropertiesTyped
             {
@@ -174,9 +174,9 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Pattern(Complate complate, XmlNode patternXmlNode)
+            public Pattern(Preset preset, XmlNode patternXmlNode)
             {
-                Complate = complate;
+                Preset = preset;
                 Name = patternXmlNode.Attributes["variable"].Value;
                 var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, patternXmlNode);
                 mXmlDocument = new XmlDocument();
@@ -221,9 +221,9 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class Preset : IComplate
         {
-            readonly XmlDocument XmlDocument;
+            readonly Complate mComplate;
 
-            readonly Complate Complate;
+            readonly XmlDocument mXmlDocument;
 
             public readonly CASPart CASPart;
 
@@ -239,7 +239,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Complate.PatternNames;
+                    return mComplate.PatternNames;
                 }
             }
 
@@ -247,7 +247,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Complate.Patterns;
+                    return mComplate.Patterns;
                 }
             }
 
@@ -255,7 +255,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Complate.PropertiesTyped;
+                    return mComplate.PropertiesTyped;
                 }
             }
 
@@ -263,7 +263,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return Complate.PropertyNames;
+                    return mComplate.PropertyNames;
                 }
             }
 
@@ -271,7 +271,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return new StringReader(XmlDocument.InnerXml);
+                    return new StringReader(mXmlDocument.InnerXml);
                 }
             }
 
@@ -282,19 +282,19 @@ namespace Destrospean.DestrospeanCASPEditor
             public Preset(CASPart casPart, TextReader xmlFile)
             {
                 CASPart = casPart;
-                XmlDocument = new XmlDocument();
-                XmlDocument.LoadXml(xmlFile.ReadToEnd());
-                Complate = new Complate(this, XmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
+                mXmlDocument = new XmlDocument();
+                mXmlDocument.LoadXml(xmlFile.ReadToEnd());
+                mComplate = new Complate(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
             public string GetValue(string propertyName)
             {
-                return Complate.GetValue(propertyName);
+                return mComplate.GetValue(propertyName);
             }
 
             public void SetValue(string propertyName, string newValue)
             {
-                Complate.SetValue(propertyName, newValue);
+                mComplate.SetValue(propertyName, newValue);
             }
         }
 

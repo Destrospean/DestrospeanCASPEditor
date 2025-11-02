@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CASPartResource;
 using Destrospean.DestrospeanCASPEditor;
+using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gtk;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
@@ -19,11 +20,6 @@ public partial class MainWindow : Window
     public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
-
-    public class CustomNotebook : Notebook
-    {
-        public int LastSelectedPage = 0;
-    }
 
     public MainWindow() : base(WindowType.Toplevel)
     {
@@ -71,28 +67,9 @@ public partial class MainWindow : Window
         flagTables[1].Attach(WidgetUtils.GetFlagsInNewFrame("Handedness", casPart, typeof(HandednessFlags), casPart.CASPartResource.AgeGender.Handedness, "AgeGender", "Handedness"), 1, 2, 1, 2);
         flagTables[0].ShowAll();
         flagTables[1].ShowAll();
-        var presetNotebook = new CustomNotebook();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
-        ResourcePropertyTable.Attach(presetNotebook, 1, 2, 0, 1);
+        ResourcePropertyTable.Attach(PresetNotebook.Create(casPart, Image), 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
-        casPart.Presets.ForEach(x => WidgetUtils.AddPresetToNotebook(x, presetNotebook, Image));
-        presetNotebook.AppendPage(new Notebook(), new Image(Stock.Add, IconSize.Button));
-        presetNotebook.SwitchPage += (o, args) =>
-            {
-                if (presetNotebook.NPages > 1 && presetNotebook.CurrentPage == presetNotebook.NPages - 1)
-                {
-                    casPart.Presets.Add(new CASPart.Preset(casPart, casPart.Presets[presetNotebook.LastSelectedPage].XmlFile));
-                    WidgetUtils.AddPresetToNotebook(casPart.Presets[casPart.Presets.Count - 1], (Notebook)presetNotebook.CurrentPageWidget, Image, true);
-                    presetNotebook.SetTabLabel(presetNotebook.CurrentPageWidget, new Label
-                        {
-                            Text = "Preset " + presetNotebook.NPages.ToString()
-                        });
-                    presetNotebook.AppendPage(new Notebook(), new Image(Stock.Add, IconSize.Button));
-                    presetNotebook.ShowAll();
-                }
-                presetNotebook.LastSelectedPage = presetNotebook.CurrentPage;
-            };
-        presetNotebook.ShowAll();
     }
 
     public void BuildResourceTable()
