@@ -218,23 +218,51 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static Frame GetFlagsInNewFrame(string label, CASPart casPart, Type enumType, Enum enumInstance, params string[] propertyPathParts)
         {
+            bool disableToggled = false, isFlagType = enumType.IsDefined(typeof(FlagsAttribute), false);
             var frame = new Frame
                 {
                     Label = label
                 };
+            RadioButton groupRadioButton = null;
             var scrolledWindow = new ScrolledWindow();
             var vBox = new VBox();
             frame.Add(scrolledWindow);
             scrolledWindow.AddWithViewport(vBox);
             foreach (var flag in Enum.GetValues(enumType))
             {
-                var checkButton = new CheckButton(flag.ToString())
+                CheckButton checkButton;
+                if (isFlagType)
+                {
+                    checkButton = new CheckButton(flag.ToString())
+                        {
+                            Active = enumInstance.HasFlag((Enum)flag),
+                            UseUnderline = false
+                        };
+                }
+                else
+                {
+                    disableToggled = true;
+                    checkButton = new RadioButton(flag.ToString())
+                        {
+                            UseUnderline = false
+                        };
+                    if (groupRadioButton == null)
                     {
-                        Active = enumInstance.HasFlag((Enum)flag),
-                        UseUnderline = false
-                    };
+                        groupRadioButton = (RadioButton)checkButton;
+                    }
+                    else
+                    {
+                        ((RadioButton)checkButton).Group = groupRadioButton.Group;
+                    }
+                    checkButton.Active = enumInstance.ToString() == flag.ToString();
+                    disableToggled = false;
+                }
                 checkButton.Toggled += (sender, e) =>
                     {
+                        if (disableToggled)
+                        {
+                            return;
+                        }
                         object property = casPart.CASPartResource;
                         var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
                         if (propertyPathParts.Length > 1)
@@ -248,8 +276,8 @@ namespace Destrospean.DestrospeanCASPEditor
                         try
                         {
                             var value = (byte)propertyInfo.GetValue(property);
-                            propertyInfo.SetValue(property, (byte)(value ^ (byte)flag));
-                            goto FinalSteps;
+                            propertyInfo.SetValue(property, (byte)(isFlagType ? value ^ (byte)flag : (byte)flag));
+                            return;
                         }
                         catch (InvalidCastException)
                         {
@@ -257,14 +285,11 @@ namespace Destrospean.DestrospeanCASPEditor
                         try
                         {
                             var value = (uint)propertyInfo.GetValue(property);
-                            propertyInfo.SetValue(property, value ^ (uint)flag);
+                            propertyInfo.SetValue(property, isFlagType ? value ^ (uint)flag : (uint)flag);
                         }
                         catch (InvalidCastException)
                         {
                         }
-                        FinalSteps:
-                        //casPart.ParentPackage.ReplaceResource(casPart.ResourceIndexEntry, casPart.CASPartResource);
-                        return;
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }

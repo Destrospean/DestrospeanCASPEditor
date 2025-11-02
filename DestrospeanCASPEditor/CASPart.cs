@@ -305,7 +305,20 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public void SavePresets()
         {
-            for (int i = 0; i < CASPartResource.Presets.Count; i++)
+            if (CASPartResource.Presets.Count < Presets.Count)
+            {
+                for (var i = CASPartResource.Presets.Count; i < Presets.Count; i++)
+                {
+                    CASPartResource.Presets.Add((CASPartResource.CASPartResource.Preset)CASPartResource.Presets[0].Clone((sender, e) =>
+                        {
+                        }));
+                }
+            }
+            while (CASPartResource.Presets.Count > Presets.Count)
+            {
+                CASPartResource.Presets.RemoveAt(CASPartResource.Presets.Count - 1);
+            }
+            for (var i = 0; i < CASPartResource.Presets.Count; i++)
             {
                 SavePreset(i);
             }
