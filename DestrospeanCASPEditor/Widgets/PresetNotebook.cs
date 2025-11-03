@@ -46,7 +46,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         ((PresetNotebook)CurrentPageWidget).AddPreset(CASPart.Presets[CASPart.Presets.Count - 1]);
                         SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASPart.Presets.Count));
                         SetTabLabel(CurrentPageWidget, GetPageLabelHBox(-1));
-                        AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.Button));
+                        AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                            {
+                                Xalign = Platform.IsWindows ? 1 : .5f
+                            });
                         ShowAll();
                     }
                     LastSelectedPage = CurrentPage;
@@ -166,7 +169,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     Relief = ReliefStyle.None,
                 };
             var hBox = new HBox(false, 0);
-            deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.SmallToolbar));
+            deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.Menu));
             deleteButton.Clicked += (sender, e) =>
                 {
                     mDisableSwitchPage = true;
@@ -177,7 +180,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     }
                     CASPart.Presets.ForEach(AddPreset);
                     CurrentPage = LastSelectedPage < NPages ? LastSelectedPage : NPages - 1;
-                    AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.Button));
+                    AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                        {
+                            Xalign = Platform.IsWindows ? 1 : .5f
+                        });
                     ShowAll();
                     LastSelectedPage = CurrentPage;
                     mDisableSwitchPage = false;
@@ -228,7 +234,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
         {
             var notebook = new PresetNotebook(casPart, imageWidget);
             casPart.Presets.ForEach(notebook.AddPreset);
-            notebook.AppendPage(new PresetNotebook(casPart, imageWidget, true), new Gtk.Image(Stock.Add, IconSize.Button));
+            notebook.AppendPage(new PresetNotebook(casPart, imageWidget, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                {
+                    Xalign = Platform.IsWindows ? 1 : .5f
+                });
             notebook.ShowAll();
             return notebook;
         }

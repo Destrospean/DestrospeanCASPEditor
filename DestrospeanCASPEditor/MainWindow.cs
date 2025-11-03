@@ -51,8 +51,14 @@ public partial class MainWindow : Window
                 nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
                 prevButton.Sensitive = flagNotebook.CurrentPage > 0;
             };
-        nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None));
-        prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None));
+        nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
+            {
+                Xalign = .5f
+            });
+        prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None)
+            {
+                Xalign = .5f
+            });
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
         flagPageButtonHBox.PackStart(prevButton, false, true, 4);
@@ -100,6 +106,8 @@ public partial class MainWindow : Window
         ResourceTreeView.AppendColumn(groupColumn);
         ResourceTreeView.AppendColumn(instanceColumn);
         ResourceTreeView.Model = ResourceListStore;
+        ResourceTreeView.AddEvents((int)Gdk.EventMask.ButtonPressMask);
+        ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
                 Image.Clear();
@@ -213,7 +221,7 @@ public partial class MainWindow : Window
             {
                 case "_IMG":
                     ImageUtils.PreloadImage(CurrentPackage, resourceIndexEntry, Image);
-                    ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(32, 32, Gdk.InterpType.Bilinear));
+                    ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageHeight, WidgetUtils.SmallImageHeight, Gdk.InterpType.Bilinear));
                     break;
                 case "CASP":
                     CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry));
@@ -248,7 +256,7 @@ public partial class MainWindow : Window
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
         WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? (float)monitorGeometry.Height / 1080 : 1 : float.Parse(scaleEnvironmentVariable);
-        WidgetUtils.WineScale = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
+        WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
         SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
         foreach (var widget in new Widget[]
             {
@@ -262,10 +270,7 @@ public partial class MainWindow : Window
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
         }
         Resize(DefaultWidth, DefaultHeight);
-        if (Platform.IsRunningUnderWine || Platform.IsUnix)
-        {
-            Move(((int)((float)monitorGeometry.Width / WidgetUtils.WineScale) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / WidgetUtils.WineScale) - HeightRequest) / 2);
-        }
+        Move(((int)((float)monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) / 2);
         AllowShrink = Platform.IsRunningUnderWine;
     }
 
@@ -379,6 +384,28 @@ public partial class MainWindow : Window
             }
         }
         fileChooserDialog.Destroy();
+    }
+
+    [GLib.ConnectBeforeAttribute]
+    public void OnResourceTreeViewButtonPress(object o, ButtonPressEventArgs args)
+    {
+        TreeViewColumn column;
+        TreeIter iter;
+        TreePath path;
+        int x, y;
+        ResourceTreeView.GetPathAtPos((int)args.Event.X, (int)args.Event.Y, out path, out column, out x, out y);
+        ResourceListStore.GetIter(out iter, path);
+        switch (args.Event.Button)
+        {
+            case 1:
+                ResourceTreeView.Selection.SelectIter(iter);
+                break;
+            case 3:
+                var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
+                Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                break;
+        }
+        args.RetVal = true;
     }
 
     protected void OnSaveActionActivated(object sender, EventArgs e)

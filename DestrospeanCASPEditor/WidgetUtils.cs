@@ -11,9 +11,31 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class WidgetUtils
     {
-        public static float Scale, WineScale;
+        public static float Scale, WineScaleDenominator;
 
-        public const int DefaultTableCellHeight = 48, DefaultTableColumnSpacing = 12;
+        public static int DefaultTableCellHeight
+        {
+            get
+            {
+                return (int)(24 * Scale);
+            }
+        }
+
+        public static uint DefaultTableColumnSpacing
+        {
+            get
+            {
+                return (uint)(6 * Scale);
+            }
+        }
+
+        public static int SmallImageHeight
+        {
+            get
+            {
+                return (int)(16 * Scale);
+            }
+        }
 
         public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, Gtk.Window window)
         {
@@ -38,18 +60,22 @@ namespace Destrospean.DestrospeanCASPEditor
             shaders.RemoveAt(0);
             shaders.Sort();
             shaders.Insert(0, "None");
-            var shaderComboBox = new ComboBox(shaders.ToArray())
+            var shaderComboBoxAlignment = new Alignment(0, .5f, 1, 0)
                 {
-                    Active = shaders.IndexOf(geom.Shader.ToString()),
                     HeightRequest = DefaultTableCellHeight
                 };
+            var shaderComboBox = new ComboBox(shaders.ToArray())
+                {
+                    Active = shaders.IndexOf(geom.Shader.ToString())
+                };
+            shaderComboBoxAlignment.Add(shaderComboBox);
             shaderComboBox.Changed += (sender, e) => geom.Shader = (ShaderType)Enum.Parse(typeof(ShaderType), shaderComboBox.ActiveText);
             table.Attach(new Label
                 {
                     Text = "Shader",
                     Xalign = 0
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
-            table.Attach(shaderComboBox, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+            table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
             foreach (var element in geom.Mtnf.SData)
             {
@@ -216,7 +242,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         var evaluated = ResourceUtils.EvaluateImageResourceKey(package, currentValue);
                         ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(32, 32, InterpType.Bilinear));
+                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(WidgetUtils.SmallImageHeight, WidgetUtils.SmallImageHeight, InterpType.Bilinear));
                     }
                     catch
                     {
@@ -255,11 +281,11 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 for (var i = 1; i < propertyPathParts.Length; i++)
                 {
-                    property = propertyInfo.GetValue(property);
+                    property = propertyInfo.GetValue(property, null);
                     propertyInfo = property.GetType().GetProperty(propertyPathParts[i]);
                 }
             }
-            var enumInstance = (Enum)propertyInfo.GetValue(property);
+            var enumInstance = (Enum)propertyInfo.GetValue(property, null);
             bool disableToggled = false, isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
             var frame = new Frame
                 {
@@ -308,10 +334,10 @@ namespace Destrospean.DestrospeanCASPEditor
                         switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
                         {
                             case "Byte":
-                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)propertyInfo.GetValue(property) ^ (byte)flag) : flag);
+                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)propertyInfo.GetValue(property, null) ^ (byte)flag) : flag, null);
                                 break;
                             case "UInt32":
-                                propertyInfo.SetValue(property, isFlagType ? (uint)propertyInfo.GetValue(property) ^ (uint)flag : flag);
+                                propertyInfo.SetValue(property, isFlagType ? (uint)propertyInfo.GetValue(property, null) ^ (uint)flag : flag, null);
                                 break;
                         }
                     };
