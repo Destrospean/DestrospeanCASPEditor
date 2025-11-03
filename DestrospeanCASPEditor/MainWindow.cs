@@ -289,7 +289,7 @@ public partial class MainWindow : Window
         TreeModel model;
         if (ResourceTreeView.Selection.GetSelected(out model, out iter))
         {
-            var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
+            var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
             CurrentPackage.DeleteResource(resourceIndexEntry);
             ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
             RefreshWidgets();
@@ -366,10 +366,10 @@ public partial class MainWindow : Window
                 TreeModel model;
                 if (ResourceTreeView.Selection.GetSelected(out model, out iter))
                 {
-                    IResourceIndexEntry addedResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename), resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 2);
-                    ResourceUtils.ResolveResourceType(CurrentPackage, addedResourceIndexEntry);
-                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, addedResourceIndexEntry));
-                    CurrentPackage.DeleteResource(addedResourceIndexEntry);
+                    IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4), tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
+                    ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
+                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
+                    CurrentPackage.DeleteResource(tempResourceIndexEntry);
                     RefreshWidgets();
                 }
             }

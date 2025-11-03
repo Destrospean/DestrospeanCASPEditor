@@ -186,9 +186,9 @@ namespace Destrospean.DestrospeanCASPEditor
             return new Tuple<IPackage, IResourceIndexEntry>(package, results[0]);
         }
 
-        public static IResourceIndexEntry AddResource(IPackage package, string filename)
+        public static IResourceIndexEntry AddResource(IPackage package, string filename, IResourceKey resourceKey = null, bool rejectDups = true)
         {
-            return package.AddResource(new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), true);
+            return package.AddResource(resourceKey ?? new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), rejectDups);
         }
 
         public static Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(IPackage package, string key)

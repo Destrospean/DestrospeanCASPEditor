@@ -298,12 +298,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public void SavePreset(int index)
-        {
-            CASPartResource.Presets[index].XmlFile = Presets[index].XmlFile;
-        }
-
-        public void SavePresets()
+        public void AdjustPresetCount()
         {
             while (CASPartResource.Presets.Count < Presets.Count)
             {
@@ -315,6 +310,16 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 CASPartResource.Presets.RemoveAt(0);
             }
+        }
+
+        public void SavePreset(int index)
+        {
+            CASPartResource.Presets[index].XmlFile = Presets[index].XmlFile;
+        }
+
+        public void SavePresets()
+        {
+            AdjustPresetCount();
             for (var i = 0; i < CASPartResource.Presets.Count; i++)
             {
                 SavePreset(i);
