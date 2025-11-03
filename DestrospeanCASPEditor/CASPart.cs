@@ -316,7 +316,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             while (CASPartResource.Presets.Count > Presets.Count)
             {
-                CASPartResource.Presets.RemoveAt(CASPartResource.Presets.Count - 1);
+                CASPartResource.Presets.RemoveAt(0);
             }
             for (var i = 0; i < CASPartResource.Presets.Count; i++)
             {

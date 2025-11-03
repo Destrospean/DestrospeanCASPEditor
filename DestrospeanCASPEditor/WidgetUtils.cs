@@ -319,5 +319,14 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             return frame;
         }
+
+        public static void RescaleAndReposition(this Gtk.Window self, Gtk.Window parent)
+        {
+            self.SetSizeRequest(self.WidthRequest == -1 ? -1 : (int)(self.WidthRequest * WidgetUtils.Scale), self.HeightRequest == -1 ? -1 : (int)(self.HeightRequest * WidgetUtils.Scale));
+            int parentHeight, parentWidth, parentX, parentY;
+            parent.GetPosition(out parentX, out parentY);
+            parent.GetSize(out parentWidth, out parentHeight);
+            self.Move(parentX + parentWidth / 2 - self.WidthRequest / 2, parentY + parentHeight / 2 - self.HeightRequest / 2);
+        }
     }
 }

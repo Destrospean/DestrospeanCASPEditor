@@ -21,6 +21,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public AddGEOMPropertyDialog(Window parent) : base("Add Property", parent, DialogFlags.Modal)
         {
             Build();
+            this.RescaleAndReposition(parent);
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(ShaderData));
             CellRendererText dataTypeCell = new CellRendererText(), fieldCell = new CellRendererText();
             ListStore dataTypeListStore = new ListStore(typeof(string)), fieldListStore = new ListStore(typeof(string));

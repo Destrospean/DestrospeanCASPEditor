@@ -22,14 +22,16 @@ namespace Destrospean.DestrospeanCASPEditor
 		{
 			global::Stetic.Gui.Initialize (this);
 			// Widget Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog
+			this.WidthRequest = 400;
+			this.HeightRequest = 160;
 			this.Name = "Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog";
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Resizable = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;
-			w1.Name = "MainVBox";
+			w1.Name = "VBox";
 			w1.BorderWidth = ((uint)(2));
-			// Container child MainVBox.Gtk.Box+BoxChild
+			// Container child VBox.Gtk.Box+BoxChild
 			this.ComboBoxTable = new global::Gtk.Table (((uint)(2)), ((uint)(2)), false);
 			this.ComboBoxTable.Name = "ComboBoxTable";
 			this.ComboBoxTable.RowSpacing = ((uint)(6));
@@ -75,8 +77,6 @@ namespace Destrospean.DestrospeanCASPEditor
 			w1.Add (this.ComboBoxTable);
 			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(w1 [this.ComboBoxTable]));
 			w6.Position = 0;
-			w6.Expand = false;
-			w6.Fill = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.ActionArea
 			global::Gtk.HButtonBox w7 = this.ActionArea;
 			w7.Name = "ActionArea";
@@ -112,7 +112,7 @@ namespace Destrospean.DestrospeanCASPEditor
 				this.Child.ShowAll ();
 			}
 			this.DefaultWidth = 400;
-			this.DefaultHeight = 152;
+			this.DefaultHeight = 160;
 			this.Show ();
 		}
 	}
