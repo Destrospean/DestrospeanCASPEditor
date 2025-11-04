@@ -273,16 +273,16 @@ namespace Destrospean.DestrospeanCASPEditor
             return entries;
         }
 
-        public static Frame GetCheckButtonsForPropertiesInNewFrame(string label, object obj, params string[] propertyPathParts)
+        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, object propertyHolder, params string[] propertyPathComponents)
         {
-            var property = obj;
-            var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
-            if (propertyPathParts.Length > 1)
+            var property = propertyHolder;
+            var propertyInfo = property.GetType().GetProperty(propertyPathComponents[0]);
+            if (propertyPathComponents.Length > 1)
             {
-                for (var i = 1; i < propertyPathParts.Length; i++)
+                for (var i = 1; i < propertyPathComponents.Length; i++)
                 {
                     property = propertyInfo.GetValue(property, null);
-                    propertyInfo = property.GetType().GetProperty(propertyPathParts[i]);
+                    propertyInfo = property.GetType().GetProperty(propertyPathComponents[i]);
                 }
             }
             var enumInstance = (Enum)propertyInfo.GetValue(property, null);
