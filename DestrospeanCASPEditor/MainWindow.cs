@@ -291,13 +291,11 @@ public partial class MainWindow : Window
     {
         TreeIter iter;
         TreeModel model;
-        if (ResourceTreeView.Selection.GetSelected(out model, out iter))
-        {
-            var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
-            CurrentPackage.DeleteResource(resourceIndexEntry);
-            ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
-            RefreshWidgets();
-        }
+        ResourceTreeView.Selection.GetSelected(out model, out iter);
+        var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
+        CurrentPackage.DeleteResource(resourceIndexEntry);
+        ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+        RefreshWidgets();
     }
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
@@ -368,14 +366,12 @@ public partial class MainWindow : Window
             {
                 TreeIter iter;
                 TreeModel model;
-                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
-                {
-                    IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4), tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
-                    ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
-                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
-                    CurrentPackage.DeleteResource(tempResourceIndexEntry);
-                    RefreshWidgets();
-                }
+                ResourceTreeView.Selection.GetSelected(out model, out iter);
+                IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4), tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
+                ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
+                CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
+                CurrentPackage.DeleteResource(tempResourceIndexEntry);
+                RefreshWidgets();
             }
             catch (System.IO.InvalidDataException ex)
             {
