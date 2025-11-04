@@ -25,7 +25,7 @@ public partial class MainWindow : Window
         Build();
         RescaleAndReposition();
         BuildResourceTable();
-        GameFoldersDialog.LoadGameFolders();
+        ApplicationSpecificSettings.LoadSettings();
         ResourcePropertyNotebook.RemovePage(0);
     }
 

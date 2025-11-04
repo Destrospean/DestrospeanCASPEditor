@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using Gtk;
-using Newtonsoft.Json;
 using s3pi.Filetable;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
     public partial class GameFoldersDialog : Dialog
     {
-        public static readonly string ConfigurationPath = System.AppDomain.CurrentDomain.BaseDirectory + System.IO.Path.DirectorySeparatorChar + "GameFolders.json";
-
         public static Dictionary<Game, string> InstallDirectories
         {
             get
@@ -51,22 +48,6 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void LoadGameFolders()
-        {
-            if (System.IO.File.Exists(ConfigurationPath))
-            {
-                var output = "";
-                using (var stream = System.IO.File.OpenText(ConfigurationPath))
-                {
-                    foreach (var installDirectoryKvp in JsonConvert.DeserializeObject<Dictionary<string, string>>(stream.ReadToEnd()))
-                    {
-                        output += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
-                    }
-                }
-                GameFolders.InstallDirs = output.Substring(1);
-            }
-        }
-
         public static void SetInstallDirectory(Game game, string path)
         {
             var installDirectories = InstallDirectories;
@@ -79,7 +60,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 outputDictionary.Add(installDirectoryKvp.Key.Name, installDirectoryKvp.Value);
             }
             GameFolders.InstallDirs = output.Substring(1);
-            System.IO.File.WriteAllText(ConfigurationPath, JsonConvert.SerializeObject(outputDictionary, Formatting.Indented));
+            ApplicationSpecificSettings.Settings[ApplicationSpecificSettings.JSONNodeNames.GameFolders] = outputDictionary;
+            ApplicationSpecificSettings.SaveSettings();
         }
 
         protected void OnOKButtonClicked(object sender, System.EventArgs e)
