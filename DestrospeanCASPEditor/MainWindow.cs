@@ -106,7 +106,6 @@ public partial class MainWindow : Window
         ResourceTreeView.AppendColumn(groupColumn);
         ResourceTreeView.AppendColumn(instanceColumn);
         ResourceTreeView.Model = ResourceListStore;
-        ResourceTreeView.AddEvents((int)Gdk.EventMask.ButtonPressMask);
         ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
@@ -387,7 +386,7 @@ public partial class MainWindow : Window
     }
 
     [GLib.ConnectBeforeAttribute]
-    public void OnResourceTreeViewButtonPress(object o, ButtonPressEventArgs args)
+    protected void OnResourceTreeViewButtonPress(object o, ButtonPressEventArgs args)
     {
         TreeViewColumn column;
         TreeIter iter;
