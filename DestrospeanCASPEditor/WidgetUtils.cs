@@ -275,7 +275,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static Frame GetFlagsInNewFrame(string label, object obj, params string[] propertyPathParts)
         {
-            object property = obj;
+            var property = obj;
             var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
             if (propertyPathParts.Length > 1)
             {
