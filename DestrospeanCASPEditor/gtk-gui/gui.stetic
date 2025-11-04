@@ -204,7 +204,7 @@
                 <child>
                   <widget class="Gtk.Notebook" id="ResourcePropertyNotebook">
                     <property name="MemberName" />
-                    <property name="WidthRequest">432</property>
+                    <property name="WidthRequest">440</property>
                     <property name="CanFocus">True</property>
                     <property name="CurrentPage">0</property>
                     <child>

@@ -77,7 +77,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
-            foreach (var element in geom.Mtnf.SData)
+            var elements = new List<ShaderData>(geom.Mtnf.SData);
+            foreach (var element in elements)
             {
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 0, 0)
@@ -182,12 +183,30 @@ namespace Destrospean.DestrospeanCASPEditor
                     valueWidget = comboBox;
                 }
                 AttachLabelAndValueWidget:
-                table.Attach(new Label
+                var deleteButton = new Button
+                    {
+                        Relief = ReliefStyle.None,
+                    };
+                var labelHBox = new HBox(false, 6);
+                deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.Menu));
+                deleteButton.Clicked += (sender, e) =>
+                    {
+                        geom.Mtnf.SData.Remove(element);
+                        foreach (var child in table.Children)
+                        {
+                            table.Remove(child);
+                        }
+                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
+                        table.ShowAll();
+                    };
+                labelHBox.PackStart(new Label
                     {
                         Text = element.Field.ToString(),
                         UseUnderline = false,
                         Xalign = 0
-                    }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
+                    }, true, true, 0);
+                labelHBox.PackEnd(deleteButton, false, true, 0);
+                table.Attach(labelHBox, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
                 alignment.Add(valueWidget);
                 table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
