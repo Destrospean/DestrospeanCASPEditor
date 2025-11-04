@@ -273,7 +273,7 @@ namespace Destrospean.DestrospeanCASPEditor
             return entries;
         }
 
-        public static Frame GetFlagsInNewFrame(string label, object obj, params string[] propertyPathParts)
+        public static Frame GetCheckButtonsForPropertiesInNewFrame(string label, object obj, params string[] propertyPathParts)
         {
             var property = obj;
             var propertyInfo = property.GetType().GetProperty(propertyPathParts[0]);
@@ -296,21 +296,21 @@ namespace Destrospean.DestrospeanCASPEditor
             var vBox = new VBox();
             frame.Add(scrolledWindow);
             scrolledWindow.AddWithViewport(vBox);
-            foreach (var flag in Enum.GetValues(enumInstance.GetType()))
+            foreach (var value in Enum.GetValues(enumInstance.GetType()))
             {
                 CheckButton checkButton;
                 if (isFlagType)
                 {
-                    checkButton = new CheckButton(flag.ToString())
+                    checkButton = new CheckButton(value.ToString())
                         {
-                            Active = enumInstance.HasFlag((Enum)flag),
+                            Active = enumInstance.HasFlag((Enum)value),
                             UseUnderline = false
                         };
                 }
                 else
                 {
                     disableToggled = true;
-                    checkButton = new RadioButton(flag.ToString())
+                    checkButton = new RadioButton(value.ToString())
                         {
                             UseUnderline = false
                         };
@@ -322,7 +322,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         ((RadioButton)checkButton).Group = groupRadioButton.Group;
                     }
-                    checkButton.Active = enumInstance.ToString() == flag.ToString();
+                    checkButton.Active = enumInstance.ToString() == value.ToString();
                     disableToggled = false;
                 }
                 checkButton.Toggled += (sender, e) =>
@@ -334,10 +334,10 @@ namespace Destrospean.DestrospeanCASPEditor
                         switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
                         {
                             case "Byte":
-                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)propertyInfo.GetValue(property, null) ^ (byte)flag) : flag, null);
+                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)(object)enumInstance ^ (byte)value) : value, null);
                                 break;
                             case "UInt32":
-                                propertyInfo.SetValue(property, isFlagType ? (uint)propertyInfo.GetValue(property, null) ^ (uint)flag : flag, null);
+                                propertyInfo.SetValue(property, isFlagType ? (uint)(object)enumInstance ^ (uint)value : value, null);
                                 break;
                         }
                     };
