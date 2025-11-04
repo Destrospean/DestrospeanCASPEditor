@@ -277,13 +277,10 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             var property = propertyHolder;
             var propertyInfo = property.GetType().GetProperty(propertyPathComponents[0]);
-            if (propertyPathComponents.Length > 1)
+            for (var i = 1; i < propertyPathComponents.Length; i++)
             {
-                for (var i = 1; i < propertyPathComponents.Length; i++)
-                {
-                    property = propertyInfo.GetValue(property, null);
-                    propertyInfo = property.GetType().GetProperty(propertyPathComponents[i]);
-                }
+                property = propertyInfo.GetValue(property, null);
+                propertyInfo = property.GetType().GetProperty(propertyPathComponents[i]);
             }
             var enumInstance = (Enum)propertyInfo.GetValue(property, null);
             bool disableToggled = false, isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
