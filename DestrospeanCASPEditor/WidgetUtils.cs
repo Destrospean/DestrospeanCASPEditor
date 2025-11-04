@@ -282,7 +282,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 property = propertyInfo.GetValue(property, null);
                 propertyInfo = property.GetType().GetProperty(propertyPathComponents[i]);
             }
-            var enumInstance = (Enum)propertyInfo.GetValue(property, null);
+            var enumInstance = propertyInfo.GetValue(property, null);
             bool disableToggled = false, isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
             var frame = new Frame
                 {
@@ -300,7 +300,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     checkButton = new CheckButton(value.ToString())
                         {
-                            Active = enumInstance.HasFlag((Enum)value),
+                            Active = ((Enum)enumInstance).HasFlag((Enum)value),
                             UseUnderline = false
                         };
                 }
@@ -328,15 +328,41 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             return;
                         }
-                        switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
+                        if (isFlagType)
                         {
-                            case "Byte":
-                                propertyInfo.SetValue(property, isFlagType ? (byte)((byte)(object)enumInstance ^ (byte)value) : value, null);
-                                break;
-                            case "UInt32":
-                                propertyInfo.SetValue(property, isFlagType ? (uint)(object)enumInstance ^ (uint)value : value, null);
-                                break;
+                            switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
+                            {
+                                case "Byte":
+                                    propertyInfo.SetValue(property, (byte)((byte)enumInstance ^ (byte)value), null);
+                                    return;
+                                case "Char":
+                                    propertyInfo.SetValue(property, (char)((char)enumInstance ^ (char)value), null);
+                                    return;
+                                case "Int16":
+                                    propertyInfo.SetValue(property, (short)((short)enumInstance ^ (short)value), null);
+                                    return;
+                                case "Int32":
+                                    propertyInfo.SetValue(property, (int)enumInstance ^ (int)value, null);
+                                    return;
+                                case "Int64":
+                                    propertyInfo.SetValue(property, (long)enumInstance ^ (long)value, null);
+                                    return;
+                                case "SByte":
+                                    propertyInfo.SetValue(property, (sbyte)((sbyte)enumInstance ^ (sbyte)value), null);
+                                    return;
+                                case "UInt16":
+                                    propertyInfo.SetValue(property, (ushort)((ushort)enumInstance ^ (ushort)value), null);
+                                    return;
+                                case "UInt32":
+                                    propertyInfo.SetValue(property, (uint)enumInstance ^ (uint)value, null);
+                                    return;
+                                case "UInt64":
+                                    propertyInfo.SetValue(property, (ulong)enumInstance ^ (ulong)value, null);
+                                    return;
+                            }
                         }
+                        propertyInfo.SetValue(property, value, null);
+
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }
