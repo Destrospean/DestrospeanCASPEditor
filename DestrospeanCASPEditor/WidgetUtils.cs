@@ -37,7 +37,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, Gtk.Window window)
+        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, Gtk.Window window, int pageIndexOffset = 0)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
@@ -47,7 +47,7 @@ namespace Destrospean.DestrospeanCASPEditor
             scrolledWindow.AddWithViewport(table);
             notebook.AppendPage(scrolledWindow, new Label
                 {
-                    Text = notebook.NPages.ToString()
+                    Text = "GEOM " + (notebook.NPages + pageIndexOffset).ToString()
                 });
             AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
             notebook.ShowAll();

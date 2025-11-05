@@ -75,10 +75,95 @@ public partial class MainWindow : Window
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
         ResourcePropertyTable.Attach(PresetNotebook.CreateInstance(casPart, Image), 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
+        BuildLODNotebook(casPart);
+    }
+
+    public void BuildLODNotebook(CASPart casPart)
+    {
         foreach (var lod in casPart.LODs)
         {
-            var notebook = new Notebook();
-            ResourcePropertyNotebook.AppendPage(notebook, new Label
+            var notebook = new Notebook
+                {
+                    ShowTabs = false
+                };
+            HBox hBox = new HBox(false, 0);
+            Button nextButton = new Button(), prevButton = new Button();
+            var replaceGEOMAction = new Gtk.Action("ReplaceGEOMAction", "Replace GEOM", null, Stock.Convert);
+            var actionGroup = new ActionGroup("Default");
+            actionGroup.Add(new Gtk.Action("ExportAction", "Export"));
+            actionGroup.Add(new Gtk.Action("ImportAction", "Import"));
+            actionGroup.Add(replaceGEOMAction);
+            var uiManager = new UIManager();
+            uiManager.InsertActionGroup(actionGroup, 0);
+            uiManager.AddUiFromString(@"
+                <ui>
+                    <menubar name='GEOMPropertiesMenuBar'>
+                        <menu name='ExportAction' action='ExportAction'></menu>
+                        <menu name='ImportAction' action='ImportAction'>
+                            <menuitem name='ReplaceGEOMAction' action='ReplaceGEOMAction'/>
+                        </menu>
+                    </menubar>
+                </ui>");
+            var menuBar = (MenuBar)uiManager.GetWidget("/GEOMPropertiesMenuBar");
+            menuBar.PackDirection = PackDirection.Rtl;
+            var vBox = new VBox(false, 0);
+            vBox.PackStart(hBox, false, true, 0);
+            vBox.PackStart(notebook, true, true, 0);
+            nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
+                {
+                    Xalign = .5f
+                });
+            prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None)
+                {
+                    Xalign = .5f
+                });
+            nextButton.Clicked += (sender, e) => notebook.NextPage();
+            prevButton.Clicked += (sender, e) => notebook.PrevPage();
+            replaceGEOMAction.Activated += (sender, e) =>
+                {
+                    var fileChooserDialog = new FileChooserDialog("Replace GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+                    var fileFilter = new FileFilter
+                        {
+                            Name = "The Sims 3 GEOM Resources"
+                        };
+                    fileFilter.AddPattern("*.simgeom");
+                    fileChooserDialog.AddFilter(fileFilter);
+                    if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                    {
+                        try
+                        {
+                            foreach (var geometryResourceKvp in GeometryResources)
+                            {
+                                if (geometryResourceKvp.Value == lod[notebook.CurrentPage])
+                                {
+                                    Console.WriteLine("test");
+                                    IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key, tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
+                                    ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
+                                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
+                                    CurrentPackage.DeleteResource(tempResourceIndexEntry);
+                                    RefreshWidgets();
+                                    break;
+                                }
+                            }
+                        }
+                        catch (System.IO.InvalidDataException ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }
+                    fileChooserDialog.Destroy();
+                };
+            notebook.SwitchPage += (o, args) =>
+                {
+                    nextButton.Sensitive = notebook.CurrentPage < notebook.NPages - 1;
+                    prevButton.Sensitive = notebook.CurrentPage > 0;
+                };
+            hBox.PackEnd(menuBar, true, true, 4);
+            hBox.PackStart(prevButton, false, true, 4);
+            hBox.PackStart(nextButton, false, true, 4);
+            hBox.ShowAll();
+            vBox.ShowAll();
+            ResourcePropertyNotebook.AppendPage(vBox, new Label
                 {
                     Text = "LOD " + ResourcePropertyNotebook.NPages.ToString()
                 });
@@ -140,9 +225,6 @@ public partial class MainWindow : Window
                         case "CASP":
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
-                        case "GEOM":
-                            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image, this);
-                            break;
                     }
                 }
             };
@@ -193,7 +275,6 @@ public partial class MainWindow : Window
             {
                 case "_IMG":
                 case "CASP":
-                case "GEOM":
                     if (!resourceIndexEntry.IsDeleted)
                     {
                         ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
@@ -246,6 +327,7 @@ public partial class MainWindow : Window
             {
                 Image,
                 MainTable,
+                RendererNotebook,
                 ResourcePropertyNotebook,
                 ResourcePropertyTable,
                 this

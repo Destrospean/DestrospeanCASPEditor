@@ -85,7 +85,6 @@
     </Reference>
     <Reference Include="s3pi.GenericRCOLResource">
       <HintPath>..\libs\s3pi.GenericRCOLResource.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.Helpers">
       <HintPath>..\libs\s3pi.Helpers.dll</HintPath>
@@ -106,7 +105,6 @@
     </Reference>
     <Reference Include="s3pi.RCOLChunks">
       <HintPath>..\libs\s3pi.RCOLChunks.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.ImageResource">
       <HintPath>..\libs\s3pi.ImageResource.dll</HintPath>
@@ -177,6 +175,12 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="GLWidget">
+      <HintPath>..\libs\GLWidget.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\libs\OpenTK.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
