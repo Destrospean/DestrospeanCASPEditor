@@ -136,7 +136,6 @@ public partial class MainWindow : Window
                             {
                                 if (geometryResourceKvp.Value == lod[notebook.CurrentPage])
                                 {
-                                    Console.WriteLine("test");
                                     IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key, tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
                                     ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
                                     CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
