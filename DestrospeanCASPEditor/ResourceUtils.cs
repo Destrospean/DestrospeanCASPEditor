@@ -240,6 +240,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public static IResourceIndexEntry GetResourceIndexEntry(IPackage package, IResourceKey resourceKey)
+        {
+            return package.Find(x => x.ResourceType == resourceKey.ResourceType && x.ResourceGroup == resourceKey.ResourceGroup && x.Instance == resourceKey.Instance);
+        }
+
         public static uint GetResourceType(string tag)
         {
             foreach (var type in ExtList.Ext.Keys)

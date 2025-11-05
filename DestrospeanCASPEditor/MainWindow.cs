@@ -75,6 +75,15 @@ public partial class MainWindow : Window
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
         ResourcePropertyTable.Attach(PresetNotebook.CreateInstance(casPart, Image), 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
+        foreach (var lod in casPart.LODs)
+        {
+            var notebook = new Notebook();
+            ResourcePropertyNotebook.AppendPage(notebook, new Label
+                {
+                    Text = "LOD " + ResourcePropertyNotebook.NPages.ToString()
+                });
+            lod.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, notebook, Image, this));
+        }
     }
 
     public void BuildResourceTable()
@@ -134,29 +143,6 @@ public partial class MainWindow : Window
                         case "GEOM":
                             WidgetUtils.AddPropertiesToNotebook(CurrentPackage, GeometryResources[resourceIndexEntry], ResourcePropertyNotebook, Image, this);
                             break;
-                        case "TXTC":
-                            break;
-                        case "VPXY":
-                            /*
-                            var vpxy = (VPXY)VPXYResources[resourceIndexEntry].ChunkEntries[0].RCOLBlock;
-                            foreach (var entry in vpxy.Entries)
-                            {
-                                var entry00 = entry as VPXY.Entry00;
-                                if (entry00 != null)
-                                {
-                                    Console.WriteLine(entry00.EntryID);
-                                    foreach (var tgiIndex in entry00.TGIIndexes)
-                                    {
-                                        Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(entry00.ParentTGIBlocks[tgiIndex]));
-                                    }
-                                }
-                                var entry01 = entry as VPXY.Entry01;
-                                if (entry01 != null)
-                                {
-                                }
-                            }
-                            */
-                            break;
                     }
                 }
             };
@@ -208,8 +194,6 @@ public partial class MainWindow : Window
                 case "_IMG":
                 case "CASP":
                 case "GEOM":
-                case "TXTC":
-                case "VPXY":
                     if (!resourceIndexEntry.IsDeleted)
                     {
                         ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
@@ -223,15 +207,19 @@ public partial class MainWindow : Window
                     ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageHeight, WidgetUtils.SmallImageHeight, Gdk.InterpType.Bilinear));
                     break;
                 case "CASP":
-                    CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry));
+                    CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry, GeometryResources, VPXYResources));
                     break;
                 case "GEOM":
-                    GeometryResources.Add(resourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
-                    break;
-                case "TXTC":
+                    if (!GeometryResources.ContainsKey(resourceIndexEntry))
+                    {
+                        GeometryResources.Add(resourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    }
                     break;
                 case "VPXY":
-                    VPXYResources.Add(resourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    if (!VPXYResources.ContainsKey(resourceIndexEntry))
+                    {
+                        VPXYResources.Add(resourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                    }
                     break;
             }
         }
@@ -242,9 +230,6 @@ public partial class MainWindow : Window
         foreach (var geometryResource in GeometryResources.Values)
         {
             WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image, this);
-        }
-        foreach (var vpxyResource in VPXYResources.Values)
-        {
         }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
         ShowAll();

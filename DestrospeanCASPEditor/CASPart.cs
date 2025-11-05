@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using meshExpImp.ModelBlocks;
+using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
+using s3pi.WrapperDealer;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -9,18 +12,21 @@ namespace Destrospean.DestrospeanCASPEditor
     {
         public readonly CASPartResource.CASPartResource CASPartResource;
 
+        public readonly List<GeometryResource>[] LODs = new List<GeometryResource>[4];
+
         public readonly IPackage ParentPackage;
 
         public readonly List<Preset> Presets;
 
         public readonly IResourceIndexEntry ResourceIndexEntry;
 
-        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry)
+        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
         {
-            CASPartResource = (CASPartResource.CASPartResource)s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
+            CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
             ParentPackage = package;
             ResourceIndexEntry = resourceIndexEntry;
             Presets = CASPartResource.Presets.ConvertAll(new System.Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            LoadLODs(geometryResources, vpxyResources);
         }
 
         public interface IComplate
@@ -94,7 +100,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 Preset = preset;
                 var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, complateXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in complateXmlNode.ChildNodes)
@@ -180,7 +186,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 Name = patternXmlNode.Attributes["variable"].Value;
                 var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, patternXmlNode);
                 mXmlDocument = new XmlDocument();
-                mXmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
@@ -309,6 +315,41 @@ namespace Destrospean.DestrospeanCASPEditor
             while (CASPartResource.Presets.Count > Presets.Count)
             {
                 CASPartResource.Presets.RemoveAt(0);
+            }
+        }
+
+        public void LoadLODs(Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
+        {
+            var vpxyResourceIndexEntry = ResourceUtils.GetResourceIndexEntry(ParentPackage, CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
+            GenericRCOLResource vpxyResource;
+            if (!vpxyResources.TryGetValue(vpxyResourceIndexEntry, out vpxyResource))
+            {
+                vpxyResources.Add(vpxyResourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
+                vpxyResource = vpxyResources[vpxyResourceIndexEntry];
+            }
+            foreach (var entry in ((VPXY)vpxyResource.ChunkEntries[0].RCOLBlock).Entries)
+            {
+                var entry00 = entry as VPXY.Entry00;
+                if (entry00 != null)
+                {
+                    LODs[entry00.EntryID] = new List<GeometryResource>();
+                    foreach (var tgiIndex in entry00.TGIIndexes)
+                    {
+                        var geometryResourceIndexEntry = ResourceUtils.GetResourceIndexEntry(ParentPackage, entry00.ParentTGIBlocks[tgiIndex]);
+                        GeometryResource geometryResource;
+                        if (!geometryResources.TryGetValue(geometryResourceIndexEntry, out geometryResource))
+                        {
+                            geometryResources.Add(geometryResourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, ParentPackage, geometryResourceIndexEntry));
+                            geometryResource = geometryResources[geometryResourceIndexEntry];
+                        }
+                        LODs[entry00.EntryID].Add(geometryResource);
+                    }
+                    continue;
+                }
+                var entry01 = entry as VPXY.Entry01;
+                if (entry01 != null)
+                {
+                }
             }
         }
 

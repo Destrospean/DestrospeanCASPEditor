@@ -47,7 +47,7 @@ namespace Destrospean.DestrospeanCASPEditor
             scrolledWindow.AddWithViewport(table);
             notebook.AppendPage(scrolledWindow, new Label
                 {
-                    Text = "Configuration"
+                    Text = notebook.NPages.ToString()
                 });
             AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
             notebook.ShowAll();

@@ -190,7 +190,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 };
             hBox.PackStart(new Label
                 {
-                    Text = "Preset " + (pageIndex + 1).ToString()
+                    Text = "Preset " + pageIndex.ToString()
                 }, true, true, 0);
             if (CASPart.Presets.Count > 1)
             {
