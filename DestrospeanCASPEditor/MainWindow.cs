@@ -27,6 +27,13 @@ public partial class MainWindow : Window
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
         ResourcePropertyNotebook.RemovePage(0);
+        ImageFixed.Remove(Image);
+        ImageFixed.Put(new Image
+            {
+                Pixbuf = ImageUtils.CreateCheckerboard(RendererNotebook.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127))
+            }, 0, 0);
+        ImageFixed.Put(Image, 0, 0);
+        ImageFixed.ShowAll();
     }
 
     public void AddCASPartWidgets(CASPart casPart)
@@ -313,7 +320,7 @@ public partial class MainWindow : Window
             {
                 case "_IMG":
                     ImageUtils.PreloadImage(CurrentPackage, resourceIndexEntry, Image);
-                    ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageHeight, WidgetUtils.SmallImageHeight, Gdk.InterpType.Bilinear));
+                    ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
                     break;
                 case "CASP":
                     CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry, GeometryResources, VPXYResources));
@@ -364,7 +371,7 @@ public partial class MainWindow : Window
             widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
         }
         Resize(DefaultWidth, DefaultHeight);
-        Move(((int)((float)monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) / 2, ((int)((float)monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) / 2);
+        Move(((int)((float)monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)((float)monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
         AllowShrink = Platform.IsRunningUnderWine;
     }
 

@@ -45,6 +45,8 @@ public partial class MainWindow
 	
 	private global::Gtk.Notebook RendererNotebook;
 	
+	private global::Gtk.Fixed ImageFixed;
+	
 	private global::Gtk.Image Image;
 	
 	private global::Gtk.Label label1;
@@ -160,21 +162,26 @@ public partial class MainWindow
 		this.RendererNotebook.HeightRequest = 270;
 		this.RendererNotebook.CanFocus = true;
 		this.RendererNotebook.Name = "RendererNotebook";
-		this.RendererNotebook.CurrentPage = 1;
+		this.RendererNotebook.CurrentPage = 0;
 		this.RendererNotebook.ShowTabs = false;
 		// Container child RendererNotebook.Gtk.Notebook+NotebookChild
+		this.ImageFixed = new global::Gtk.Fixed ();
+		this.ImageFixed.Name = "ImageFixed";
+		this.ImageFixed.HasWindow = false;
+		// Container child ImageFixed.Gtk.Fixed+FixedChild
 		this.Image = new global::Gtk.Image ();
 		this.Image.WidthRequest = 270;
 		this.Image.HeightRequest = 270;
 		this.Image.Name = "Image";
 		this.Image.Xalign = 0F;
 		this.Image.Yalign = 0F;
-		this.RendererNotebook.Add (this.Image);
+		this.ImageFixed.Add (this.Image);
+		this.RendererNotebook.Add (this.ImageFixed);
 		// Notebook tab
 		this.label1 = new global::Gtk.Label ();
 		this.label1.Name = "label1";
 		this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("page1");
-		this.RendererNotebook.SetTabLabel (this.Image, this.label1);
+		this.RendererNotebook.SetTabLabel (this.ImageFixed, this.label1);
 		this.label1.ShowAll ();
 		// Container child RendererNotebook.Gtk.Notebook+NotebookChild
 		this.RendererGLWidget = new global::Gtk.GLWidget ();
@@ -189,8 +196,8 @@ public partial class MainWindow
 		this.RendererGLWidget.GlVersionMajor = 0;
 		this.RendererGLWidget.GlVersionMinor = 0;
 		this.RendererNotebook.Add (this.RendererGLWidget);
-		global::Gtk.Notebook.NotebookChild w6 = ((global::Gtk.Notebook.NotebookChild)(this.RendererNotebook [this.RendererGLWidget]));
-		w6.Position = 1;
+		global::Gtk.Notebook.NotebookChild w7 = ((global::Gtk.Notebook.NotebookChild)(this.RendererNotebook [this.RendererGLWidget]));
+		w7.Position = 1;
 		// Notebook tab
 		this.label2 = new global::Gtk.Label ();
 		this.label2.Name = "label2";
@@ -198,9 +205,9 @@ public partial class MainWindow
 		this.RendererNotebook.SetTabLabel (this.RendererGLWidget, this.label2);
 		this.label2.ShowAll ();
 		this.MainTable.Add (this.RendererNotebook);
-		global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.MainTable [this.RendererNotebook]));
-		w7.XOptions = ((global::Gtk.AttachOptions)(4));
-		w7.YOptions = ((global::Gtk.AttachOptions)(4));
+		global::Gtk.Table.TableChild w8 = ((global::Gtk.Table.TableChild)(this.MainTable [this.RendererNotebook]));
+		w8.XOptions = ((global::Gtk.AttachOptions)(4));
+		w8.YOptions = ((global::Gtk.AttachOptions)(4));
 		// Container child MainTable.Gtk.Table+TableChild
 		this.ResourcePropertyNotebook = new global::Gtk.Notebook ();
 		this.ResourcePropertyNotebook.WidthRequest = 448;
@@ -208,33 +215,33 @@ public partial class MainWindow
 		this.ResourcePropertyNotebook.Name = "ResourcePropertyNotebook";
 		this.ResourcePropertyNotebook.CurrentPage = 0;
 		// Notebook tab
-		global::Gtk.Label w8 = new global::Gtk.Label ();
-		w8.Visible = true;
-		this.ResourcePropertyNotebook.Add (w8);
+		global::Gtk.Label w9 = new global::Gtk.Label ();
+		w9.Visible = true;
+		this.ResourcePropertyNotebook.Add (w9);
 		this.PresetLabel = new global::Gtk.Label ();
 		this.PresetLabel.Name = "PresetLabel";
 		this.PresetLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Page");
-		this.ResourcePropertyNotebook.SetTabLabel (w8, this.PresetLabel);
+		this.ResourcePropertyNotebook.SetTabLabel (w9, this.PresetLabel);
 		this.PresetLabel.ShowAll ();
 		this.MainTable.Add (this.ResourcePropertyNotebook);
-		global::Gtk.Table.TableChild w9 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ResourcePropertyNotebook]));
-		w9.LeftAttach = ((uint)(2));
-		w9.RightAttach = ((uint)(3));
-		w9.XOptions = ((global::Gtk.AttachOptions)(4));
-		w9.YOptions = ((global::Gtk.AttachOptions)(4));
+		global::Gtk.Table.TableChild w10 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ResourcePropertyNotebook]));
+		w10.LeftAttach = ((uint)(2));
+		w10.RightAttach = ((uint)(3));
+		w10.XOptions = ((global::Gtk.AttachOptions)(4));
+		w10.YOptions = ((global::Gtk.AttachOptions)(4));
 		this.MainVBox.Add (this.MainTable);
-		global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainTable]));
-		w10.Position = 1;
-		w10.Expand = false;
-		w10.Fill = false;
+		global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainTable]));
+		w11.Position = 1;
+		w11.Expand = false;
+		w11.Fill = false;
 		// Container child MainVBox.Gtk.Box+BoxChild
 		this.ResourcePropertyTable = new global::Gtk.Table (((uint)(1)), ((uint)(2)), false);
 		this.ResourcePropertyTable.Name = "ResourcePropertyTable";
 		this.ResourcePropertyTable.RowSpacing = ((uint)(6));
 		this.ResourcePropertyTable.ColumnSpacing = ((uint)(6));
 		this.MainVBox.Add (this.ResourcePropertyTable);
-		global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.ResourcePropertyTable]));
-		w11.Position = 2;
+		global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.ResourcePropertyTable]));
+		w12.Position = 2;
 		this.MainPane.Add (this.MainVBox);
 		this.Add (this.MainPane);
 		if ((this.Child != null)) {

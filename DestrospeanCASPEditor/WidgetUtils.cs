@@ -29,7 +29,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static int SmallImageHeight
+        public static int SmallImageSize
         {
             get
             {
@@ -263,7 +263,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         var evaluated = ResourceUtils.EvaluateImageResourceKey(package, currentValue);
                         ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(WidgetUtils.SmallImageHeight, WidgetUtils.SmallImageHeight, InterpType.Bilinear));
+                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                     }
                     catch
                     {
@@ -396,7 +396,7 @@ namespace Destrospean.DestrospeanCASPEditor
             int parentHeight, parentWidth, parentX, parentY;
             parent.GetPosition(out parentX, out parentY);
             parent.GetSize(out parentWidth, out parentHeight);
-            self.Move(parentX + parentWidth / 2 - self.WidthRequest / 2, parentY + parentHeight / 2 - self.HeightRequest / 2);
+            self.Move(parentX + (parentWidth >> 1) - (self.WidthRequest >> 1), parentY + (parentHeight >> 1) - (self.HeightRequest >> 1));
         }
     }
 }

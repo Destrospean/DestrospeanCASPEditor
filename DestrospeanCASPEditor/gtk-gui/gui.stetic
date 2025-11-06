@@ -187,15 +187,21 @@
                     <property name="WidthRequest">270</property>
                     <property name="HeightRequest">270</property>
                     <property name="CanFocus">True</property>
-                    <property name="CurrentPage">1</property>
+                    <property name="CurrentPage">0</property>
                     <property name="ShowTabs">False</property>
                     <child>
-                      <widget class="Gtk.Image" id="Image">
+                      <widget class="Gtk.Fixed" id="ImageFixed">
                         <property name="MemberName" />
-                        <property name="WidthRequest">270</property>
-                        <property name="HeightRequest">270</property>
-                        <property name="Xalign">0</property>
-                        <property name="Yalign">0</property>
+                        <property name="HasWindow">False</property>
+                        <child>
+                          <widget class="Gtk.Image" id="Image">
+                            <property name="MemberName" />
+                            <property name="WidthRequest">270</property>
+                            <property name="HeightRequest">270</property>
+                            <property name="Xalign">0</property>
+                            <property name="Yalign">0</property>
+                          </widget>
+                        </child>
                       </widget>
                     </child>
                     <child>
