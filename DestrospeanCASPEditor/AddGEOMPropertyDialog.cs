@@ -23,9 +23,12 @@ namespace Destrospean.DestrospeanCASPEditor
             Build();
             this.RescaleAndReposition(parent);
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(ShaderData));
-            CellRendererText dataTypeCell = new CellRendererText(), fieldCell = new CellRendererText();
-            ListStore dataTypeListStore = new ListStore(typeof(string)), fieldListStore = new ListStore(typeof(string));
-            List<string> dataTypes = new List<string>(), fields = new List<string>(System.Enum.GetNames(typeof(FieldType)));
+            CellRendererText dataTypeCell = new CellRendererText(),
+            fieldCell = new CellRendererText();
+            ListStore dataTypeListStore = new ListStore(typeof(string)),
+            fieldListStore = new ListStore(typeof(string));
+            List<string> dataTypes = new List<string>(),
+            fields = new List<string>(System.Enum.GetNames(typeof(FieldType)));
             foreach (var dataType in assembly.GetTypes())
             {
                 if (dataType.IsClass && dataType.Namespace == "s3pi.GenericRCOLResource" && dataType.Name.StartsWith("Element") && !dataType.Name.EndsWith("Key"))

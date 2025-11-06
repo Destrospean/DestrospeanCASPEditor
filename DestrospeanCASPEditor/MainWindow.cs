@@ -45,12 +45,8 @@ public partial class MainWindow : Window
         }
         flagPageVBox.PackStart(flagPageButtonHBox, false, false, 0);
         flagPageVBox.PackStart(flagNotebook, true, true, 0);
-        Button nextButton = new Button(), prevButton = new Button();
-        flagNotebook.SwitchPage += (o, args) =>
-            {
-                nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
-                prevButton.Sensitive = flagNotebook.CurrentPage > 0;
-            };
+        Button nextButton = new Button(),
+        prevButton = new Button();
         nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
             {
                 Xalign = .5f
@@ -61,6 +57,11 @@ public partial class MainWindow : Window
             });
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
+        flagNotebook.SwitchPage += (o, args) =>
+            {
+                nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
+                prevButton.Sensitive = flagNotebook.CurrentPage > 0;
+            };
         flagPageButtonHBox.PackStart(prevButton, false, true, 4);
         flagPageButtonHBox.PackStart(nextButton, false, true, 4);
         flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Category", casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
@@ -87,7 +88,12 @@ public partial class MainWindow : Window
                     ShowTabs = false
                 };
             var actionGroup = new ActionGroup("Default");
-            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.Directory), exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.Directory), exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.Directory), importGEOMAction = new Gtk.Action("ImportGEOMAction", "Import GEOM", null, Stock.Directory), importOBJAction = new Gtk.Action("ImportOBJAction", "Import OBJ", null, Stock.Directory), importWSOAction = new Gtk.Action("ImportWSOAction", "Import WSO", null, Stock.Directory);
+            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.Directory),
+            exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.Directory),
+            exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.Directory),
+            importGEOMAction = new Gtk.Action("ImportGEOMAction", "Import GEOM", null, Stock.Directory),
+            importOBJAction = new Gtk.Action("ImportOBJAction", "Import OBJ", null, Stock.Directory),
+            importWSOAction = new Gtk.Action("ImportWSOAction", "Import WSO", null, Stock.Directory);
             actionGroup.Add(new Gtk.Action("ExportAction", "Export"));
             actionGroup.Add(new Gtk.Action("ImportAction", "Import"));
             actionGroup.Add(exportGEOMAction);
@@ -115,7 +121,8 @@ public partial class MainWindow : Window
                 </ui>");
             var menuBar = (MenuBar)uiManager.GetWidget("/GEOMPropertiesMenuBar");
             menuBar.PackDirection = PackDirection.Rtl;
-            Button nextButton = new Button(), prevButton = new Button();
+            Button nextButton = new Button(),
+            prevButton = new Button();
             nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
                 {
                     Xalign = .5f
@@ -126,9 +133,15 @@ public partial class MainWindow : Window
                 });
             nextButton.Clicked += (sender, e) => notebook.NextPage();
             prevButton.Clicked += (sender, e) => notebook.PrevPage();
-            Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0), prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
+            Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
+            prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
             nextButtonAlignment.Add(nextButton);
             prevButtonAlignment.Add(prevButton);
+            notebook.SwitchPage += (o, args) =>
+                {
+                    nextButton.Sensitive = notebook.CurrentPage < notebook.NPages - 1;
+                    prevButton.Sensitive = notebook.CurrentPage > 0;
+                };
             importGEOMAction.Activated += (sender, e) =>
                 {
                     var fileChooserDialog = new FileChooserDialog("Import GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
@@ -146,7 +159,8 @@ public partial class MainWindow : Window
                             {
                                 if (geometryResourceKvp.Value == lod[notebook.CurrentPage])
                                 {
-                                    IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key, tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
+                                    IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key,
+                                    tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
                                     ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
                                     CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
                                     CurrentPackage.DeleteResource(tempResourceIndexEntry);
@@ -162,21 +176,16 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
-            notebook.SwitchPage += (o, args) =>
-                {
-                    nextButton.Sensitive = notebook.CurrentPage < notebook.NPages - 1;
-                    prevButton.Sensitive = notebook.CurrentPage > 0;
-                };
-            var hBox = new HBox(false, 0);
-            hBox.PackEnd(menuBar, true, true, 4);
-            hBox.PackStart(prevButtonAlignment, false, true, 4);
-            hBox.PackStart(nextButtonAlignment, false, true, 4);
-            hBox.ShowAll();
-            var vBox = new VBox(false, 0);
-            vBox.PackStart(hBox, false, true, 0);
-            vBox.PackStart(notebook, true, true, 0);
-            vBox.ShowAll();
-            ResourcePropertyNotebook.AppendPage(vBox, new Label
+            var geomPageButtonHBox = new HBox(false, 0);
+            geomPageButtonHBox.PackEnd(menuBar, true, true, 4);
+            geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
+            geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
+            geomPageButtonHBox.ShowAll();
+            var lodPageVBox = new VBox(false, 0);
+            lodPageVBox.PackStart(geomPageButtonHBox, false, true, 0);
+            lodPageVBox.PackStart(notebook, true, true, 0);
+            lodPageVBox.ShowAll();
+            ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label
                 {
                     Text = "LOD " + ResourcePropertyNotebook.NPages.ToString()
                 });
@@ -186,17 +195,23 @@ public partial class MainWindow : Window
 
     public void BuildResourceTable()
     {
-        CellRendererText groupCell = new CellRendererText(), instanceCell = new CellRendererText(), tagCell = new CellRendererText(), typeCell = new CellRendererText();
+        CellRendererText groupCell = new CellRendererText(),
+        instanceCell = new CellRendererText(),
+        tagCell = new CellRendererText(),
+        typeCell = new CellRendererText();
         TreeViewColumn groupColumn = new TreeViewColumn
             {
                 Title = "Group"
-            }, instanceColumn = new TreeViewColumn
+            },
+        instanceColumn = new TreeViewColumn
             {
                 Title = "Instance"
-            }, tagColumn = new TreeViewColumn
+            },
+        tagColumn = new TreeViewColumn
             {
                 Title = "Tag"
-            }, typeColumn = new TreeViewColumn
+            },
+        typeColumn = new TreeViewColumn
             {
                 Title = "Type"
             };
@@ -447,7 +462,8 @@ public partial class MainWindow : Window
                 TreeIter iter;
                 TreeModel model;
                 ResourceTreeView.Selection.GetSelected(out model, out iter);
-                IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4), tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
+                IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4),
+                tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
                 ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
                 CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);

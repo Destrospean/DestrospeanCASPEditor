@@ -29,13 +29,13 @@ namespace Destrospean.DestrospeanCASPEditor
             this.RescaleAndReposition(parent);
             foreach (var game in GameFolders.Games)
             {
-                var alignment = new Alignment(0, .5f, 1, 0);
                 var path = "";
                 var entry = new Entry
                     {
                         Text = InstallDirectories.TryGetValue(game, out path) ? path : ""
                     };
                 entry.Changed += (sender, e) => SetInstallDirectory(game, entry.Text);
+                var alignment = new Alignment(0, .5f, 1, 0);
                 alignment.Add(entry);
                 GameFolderTable.Attach(new Label
                     {

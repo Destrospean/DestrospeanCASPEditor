@@ -168,7 +168,6 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 {
                     Relief = ReliefStyle.None,
                 };
-            var hBox = new HBox(false, 0);
             deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.Menu));
             deleteButton.Clicked += (sender, e) =>
                 {
@@ -188,6 +187,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     LastSelectedPage = CurrentPage;
                     mDisableSwitchPage = false;
                 };
+            var hBox = new HBox(false, 0);
             hBox.PackStart(new Label
                 {
                     Text = "Preset " + pageIndex.ToString()
@@ -214,13 +214,13 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             complates.AddRange(preset.Patterns);
             foreach (var complate in complates)
             {
-                var pattern = complate as CASPart.Pattern;
                 var scrolledWindow = new ScrolledWindow();
                 var table = new Table(1, 2, false)
                     {
                         ColumnSpacing = WidgetUtils.DefaultTableColumnSpacing
                     };
                 scrolledWindow.AddWithViewport(table);
+                var pattern = complate as CASPart.Pattern;
                 subNotebook.AppendPage(scrolledWindow, new Label
                     {
                         Text = pattern == null ? "Configuration" : pattern.Name

@@ -187,7 +187,6 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         Relief = ReliefStyle.None,
                     };
-                var labelHBox = new HBox(false, 6);
                 deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.Menu));
                 deleteButton.Clicked += (sender, e) =>
                     {
@@ -199,6 +198,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
                         table.ShowAll();
                     };
+                var labelHBox = new HBox(false, 6);
                 labelHBox.PackStart(new Label
                     {
                         Text = element.Field.ToString(),
@@ -211,18 +211,18 @@ namespace Destrospean.DestrospeanCASPEditor
                 table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
-            var propertyButtonHBox = new HBox(false, 4);
-            propertyButtonHBox.PackStart(new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+            var addPropertyButtonHBox = new HBox(false, 4);
+            addPropertyButtonHBox.PackStart(new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                 {
                     Xalign = 1
                 }, true, true, 0);
-            propertyButtonHBox.PackStart(new Label
+            addPropertyButtonHBox.PackStart(new Label
                 {
                     Text = "Add Property",
                     Xalign = 0
                 }, true, true, 0);
             var addPropertyButton = new Button();
-            addPropertyButton.Add(propertyButtonHBox);
+            addPropertyButton.Add(addPropertyButtonHBox);
             addPropertyButton.Clicked += (sender, e) =>
                 {
                     var addGEOMPropertyDialog = new AddGEOMPropertyDialog(window);
@@ -251,8 +251,8 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(IPackage package, string currentValue, out ComboBox comboBox, Gtk.Image imageWidget)
         {
-            var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
+            var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
             var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
             if (!entries.Exists(x => x.Item2 == currentValue))

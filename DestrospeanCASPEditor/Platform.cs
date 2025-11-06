@@ -115,7 +115,8 @@ public static class Platform
             })
         {
             process.Start();
-            string output = process.StandardOutput.ReadToEnd(), error = process.StandardError.ReadToEnd();
+            string output = process.StandardOutput.ReadToEnd(),
+            error = process.StandardError.ReadToEnd();
             process.WaitForExit();
             return string.IsNullOrEmpty(error) ? output : string.Format("Error: {0}\nOutput: {1}", error, output);
         }
