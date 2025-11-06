@@ -86,29 +86,36 @@ public partial class MainWindow : Window
                 {
                     ShowTabs = false
                 };
-            HBox hBox = new HBox(false, 0);
-            Button nextButton = new Button(), prevButton = new Button();
-            var replaceGEOMAction = new Gtk.Action("ReplaceGEOMAction", "Replace GEOM", null, Stock.Convert);
             var actionGroup = new ActionGroup("Default");
+            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.Directory), exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.Directory), exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.Directory), importGEOMAction = new Gtk.Action("ImportGEOMAction", "Import GEOM", null, Stock.Directory), importOBJAction = new Gtk.Action("ImportOBJAction", "Import OBJ", null, Stock.Directory), importWSOAction = new Gtk.Action("ImportWSOAction", "Import WSO", null, Stock.Directory);
             actionGroup.Add(new Gtk.Action("ExportAction", "Export"));
             actionGroup.Add(new Gtk.Action("ImportAction", "Import"));
-            actionGroup.Add(replaceGEOMAction);
+            actionGroup.Add(exportGEOMAction);
+            actionGroup.Add(exportOBJAction);
+            actionGroup.Add(exportWSOAction);
+            actionGroup.Add(importGEOMAction);
+            actionGroup.Add(importOBJAction);
+            actionGroup.Add(importWSOAction);
             var uiManager = new UIManager();
             uiManager.InsertActionGroup(actionGroup, 0);
             uiManager.AddUiFromString(@"
                 <ui>
                     <menubar name='GEOMPropertiesMenuBar'>
-                        <menu name='ExportAction' action='ExportAction'></menu>
+                        <menu name='ExportAction' action='ExportAction'>
+                            <menuitem name='ExportGEOMAction' action='ExportGEOMAction'/>
+                            <menuitem name='ExportOBJAction' action='ExportOBJAction'/>
+                            <menuitem name='ExportWSOAction' action='ExportWSOAction'/>
+                        </menu>
                         <menu name='ImportAction' action='ImportAction'>
-                            <menuitem name='ReplaceGEOMAction' action='ReplaceGEOMAction'/>
+                            <menuitem name='ImportGEOMAction' action='ImportGEOMAction'/>
+                            <menuitem name='ImportOBJAction' action='ImportOBJAction'/>
+                            <menuitem name='ImportWSOAction' action='ImportWSOAction'/>
                         </menu>
                     </menubar>
                 </ui>");
             var menuBar = (MenuBar)uiManager.GetWidget("/GEOMPropertiesMenuBar");
             menuBar.PackDirection = PackDirection.Rtl;
-            var vBox = new VBox(false, 0);
-            vBox.PackStart(hBox, false, true, 0);
-            vBox.PackStart(notebook, true, true, 0);
+            Button nextButton = new Button(), prevButton = new Button();
             nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
                 {
                     Xalign = .5f
@@ -119,9 +126,12 @@ public partial class MainWindow : Window
                 });
             nextButton.Clicked += (sender, e) => notebook.NextPage();
             prevButton.Clicked += (sender, e) => notebook.PrevPage();
-            replaceGEOMAction.Activated += (sender, e) =>
+            Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0), prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
+            nextButtonAlignment.Add(nextButton);
+            prevButtonAlignment.Add(prevButton);
+            importGEOMAction.Activated += (sender, e) =>
                 {
-                    var fileChooserDialog = new FileChooserDialog("Replace GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+                    var fileChooserDialog = new FileChooserDialog("Import GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
                     var fileFilter = new FileFilter
                         {
                             Name = "The Sims 3 GEOM Resources"
@@ -157,10 +167,14 @@ public partial class MainWindow : Window
                     nextButton.Sensitive = notebook.CurrentPage < notebook.NPages - 1;
                     prevButton.Sensitive = notebook.CurrentPage > 0;
                 };
+            var hBox = new HBox(false, 0);
             hBox.PackEnd(menuBar, true, true, 4);
-            hBox.PackStart(prevButton, false, true, 4);
-            hBox.PackStart(nextButton, false, true, 4);
+            hBox.PackStart(prevButtonAlignment, false, true, 4);
+            hBox.PackStart(nextButtonAlignment, false, true, 4);
             hBox.ShowAll();
+            var vBox = new VBox(false, 0);
+            vBox.PackStart(hBox, false, true, 0);
+            vBox.PackStart(notebook, true, true, 0);
             vBox.ShowAll();
             ResourcePropertyNotebook.AppendPage(vBox, new Label
                 {
