@@ -14,7 +14,7 @@ public partial class MainWindow : Window
 {
     OpenTK.Vector3[] mColorData, mVertexData;
 
-    int mFSID, mProgramID, mUniformModelview, mVBOColor, mVBOModelview, mVBOPosition, mVColor, mVPosition, mVSID;
+    int mFSID, mProgramID, mUniformModelview, mVBOColor, mVBOModelview, mVBOPosition, mVertexColor, mVertexPosition, mVSID;
 
     Matrix4[] mModelviewData;
 
@@ -129,11 +129,11 @@ public partial class MainWindow : Window
         BuildLODNotebook(casPart);
     }
 
-    public void BuildLODNotebook(CASPart casPart)
+    public void BuildLODNotebook(CASPart casPart, int startLODPageIndex = 0, int startGEOMPageIndex = 0)
     {
         foreach (var lod in casPart.LODs)
         {
-            var notebook = new Notebook
+            var geomNotebook = new Notebook
                 {
                     ShowTabs = false
                 };
@@ -181,16 +181,16 @@ public partial class MainWindow : Window
                 {
                     Xalign = .5f
                 });
-            nextButton.Clicked += (sender, e) => notebook.NextPage();
-            prevButton.Clicked += (sender, e) => notebook.PrevPage();
+            nextButton.Clicked += (sender, e) => geomNotebook.NextPage();
+            prevButton.Clicked += (sender, e) => geomNotebook.PrevPage();
             Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
             prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
             nextButtonAlignment.Add(nextButton);
             prevButtonAlignment.Add(prevButton);
-            notebook.SwitchPage += (o, args) =>
+            geomNotebook.SwitchPage += (o, args) =>
                 {
-                    nextButton.Sensitive = notebook.CurrentPage < notebook.NPages - 1;
-                    prevButton.Sensitive = notebook.CurrentPage > 0;
+                    nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
+                    prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                 };
             importGEOMAction.Activated += (sender, e) =>
                 {
@@ -207,14 +207,23 @@ public partial class MainWindow : Window
                         {
                             foreach (var geometryResourceKvp in GeometryResources)
                             {
-                                if (geometryResourceKvp.Value == lod[notebook.CurrentPage])
+                                int selectedGEOMIndex = geomNotebook.CurrentPage,
+                                selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
+                                if (geometryResourceKvp.Value == lod[selectedGEOMIndex])
                                 {
                                     IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key,
                                     tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
                                     ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
-                                    CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
+                                    var resource = WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry);
+                                    CurrentPackage.ReplaceResource(resourceIndexEntry, resource);
                                     CurrentPackage.DeleteResource(tempResourceIndexEntry);
-                                    RefreshWidgets();
+                                    GeometryResources[resourceIndexEntry] = (GeometryResource)resource;
+                                    casPart.LoadLODs(GeometryResources, VPXYResources);
+                                    foreach (var child in ResourcePropertyNotebook.Children)
+                                    {
+                                        ResourcePropertyNotebook.Remove(child);
+                                    }
+                                    BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex);
                                     break;
                                 }
                             }
@@ -233,13 +242,18 @@ public partial class MainWindow : Window
             geomPageButtonHBox.ShowAll();
             var lodPageVBox = new VBox(false, 0);
             lodPageVBox.PackStart(geomPageButtonHBox, false, true, 0);
-            lodPageVBox.PackStart(notebook, true, true, 0);
+            lodPageVBox.PackStart(geomNotebook, true, true, 0);
             lodPageVBox.ShowAll();
             ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label
                 {
                     Text = "LOD " + ResourcePropertyNotebook.NPages.ToString()
                 });
-            lod.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, notebook, Image, this));
+            lod.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image, this));
+            if (lod == casPart.LODs[startLODPageIndex])
+            {
+                ResourcePropertyNotebook.CurrentPage = startLODPageIndex;
+                geomNotebook.CurrentPage = startGEOMPageIndex;
+            }
         }
     }
 
@@ -344,10 +358,10 @@ public partial class MainWindow : Window
             }", OpenTK.Graphics.OpenGL.ShaderType.FragmentShader, mProgramID, out mFSID);
         GL.LinkProgram(mProgramID);
         Console.WriteLine(GL.GetProgramInfoLog(mProgramID));
-        mVPosition = GL.GetAttribLocation(mProgramID, "vPosition");
-        mVColor = GL.GetAttribLocation(mProgramID, "vColor");
+        mVertexPosition = GL.GetAttribLocation(mProgramID, "vPosition");
+        mVertexColor = GL.GetAttribLocation(mProgramID, "vColor");
         mUniformModelview = GL.GetUniformLocation(mProgramID, "modelview");
-        if (mVPosition == -1 || mVColor == -1 || mUniformModelview == -1)
+        if (mVertexPosition == -1 || mVertexColor == -1 || mUniformModelview == -1)
         {
             Console.WriteLine("Error binding attributes");
         }
@@ -365,9 +379,12 @@ public partial class MainWindow : Window
         Console.WriteLine(GL.GetShaderInfoLog(address));
     }
 
-    public void RefreshWidgets()
+    public void RefreshWidgets(bool clearTemporaryData = true)
     {
-        ClearTemporaryData();
+        if (clearTemporaryData)
+        {
+            ClearTemporaryData();
+        }
         Image.Clear();
         ResourceListStore.Clear();
         foreach (var child in ResourcePropertyTable.Children)
@@ -394,40 +411,48 @@ public partial class MainWindow : Window
         }
         var resourceList = CurrentPackage.GetResourceList;
         resourceList.Sort((a, b) => ResourceUtils.GetResourceTypeTag(a).CompareTo(ResourceUtils.GetResourceTypeTag(b)));
-        foreach (var resourceIndexEntry in resourceList)
+        foreach (var resourceIndexEntry in resourceList.FindAll(x => !x.IsDeleted))
         {
             var tag = ResourceUtils.GetResourceTypeTag(resourceIndexEntry);
             switch (tag)
             {
                 case "_IMG":
                 case "CASP":
-                    if (!resourceIndexEntry.IsDeleted)
-                    {
-                        ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
-                    }
+                    ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
                     break;
             }
+            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
             switch (tag)
             {
                 case "_IMG":
-                    ImageUtils.PreloadImage(CurrentPackage, resourceIndexEntry, Image);
-                    ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
+                    if (!ImageUtils.PreloadedImages.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
+                    {
+                        ImageUtils.PreloadImage(CurrentPackage, resourceIndexEntry, Image);
+                        ImageUtils.PreloadedImages[resourceIndexEntry].Add(ImageUtils.PreloadedImages[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
+                    }
                     break;
                 case "CASP":
-                    CASParts.Add(resourceIndexEntry, new CASPart(CurrentPackage, resourceIndexEntry, GeometryResources, VPXYResources));
+                    if (!CASParts.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
+                    {
+                        CASParts[resourceIndexEntry] = new CASPart(CurrentPackage, resourceIndexEntry, GeometryResources, VPXYResources);
+                    }
                     break;
                 case "GEOM":
-                    if (!GeometryResources.ContainsKey(resourceIndexEntry))
+                    if (!GeometryResources.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
                     {
-                        GeometryResources.Add(resourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                        GeometryResources[resourceIndexEntry] = (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
                     }
                     break;
                 case "VPXY":
-                    if (!VPXYResources.ContainsKey(resourceIndexEntry))
+                    if (!VPXYResources.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
                     {
-                        VPXYResources.Add(resourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry));
+                        VPXYResources[resourceIndexEntry] = (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
                     }
                     break;
+            }
+            if (missingResourceKeyIndex > -1)
+            {
+                ResourceUtils.MissingResourceKeys.RemoveAt(missingResourceKeyIndex);
             }
         }
         foreach (var casPart in CASParts.Values)
@@ -486,7 +511,7 @@ public partial class MainWindow : Window
         var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
         CurrentPackage.DeleteResource(resourceIndexEntry);
         ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
-        RefreshWidgets();
+        RefreshWidgets(false);
     }
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
@@ -494,11 +519,11 @@ public partial class MainWindow : Window
         new GameFoldersDialog(this).ShowAll();
     }
 
-    protected bool OnIdleProcessMain ()
+    protected bool OnIdleProcessMain()
     {
         if (GLInit)
         {
-            RenderFrame();
+            OnRenderFrame();
             return true;
         }
         return false;
@@ -512,7 +537,7 @@ public partial class MainWindow : Window
             try
             {
                 ResourceUtils.ResolveResourceType(CurrentPackage, ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename));
-                RefreshWidgets();
+                RefreshWidgets(false);
             }
             catch (System.IO.InvalidDataException ex)
             {
@@ -558,6 +583,38 @@ public partial class MainWindow : Window
         Application.Quit();
     }
 
+    protected void OnRenderFrame()
+    {
+        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOPosition);
+        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mVertexData.Length * OpenTK.Vector3.SizeInBytes), mVertexData, BufferUsageHint.StaticDraw);
+        GL.VertexAttribPointer(mVertexPosition, 3, VertexAttribPointerType.Float, false, 0, 0);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOColor);
+        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mColorData.Length * OpenTK.Vector3.SizeInBytes), mColorData, BufferUsageHint.StaticDraw);
+        GL.VertexAttribPointer(mVertexColor, 3, VertexAttribPointerType.Float, true, 0, 0);
+        GL.UniformMatrix4(mUniformModelview, false, ref mModelviewData[0]);
+        GL.UseProgram(mProgramID);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        GL.Viewport(0, 0, Image.WidthRequest, Image.HeightRequest);
+        GL.ClearColor(System.Drawing.Color.CornflowerBlue);
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        GL.EnableVertexAttribArray(mVertexPosition);
+        GL.EnableVertexAttribArray(mVertexColor);
+        /*
+        var indexAt = 0;
+        foreach (var volume in mObjects)
+        {
+            GL.UniformMatrix4(mUniformModelview, false, ref volume.ModelViewProjectionMatrix);
+            GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
+            indexAt += volume.IndexCount;
+        }
+        */
+        GL.DrawArrays(BeginMode.Triangles, 0, 3);
+        GL.DisableVertexAttribArray(mVertexPosition);
+        GL.DisableVertexAttribArray(mVertexColor);
+        GL.Flush();
+        OpenTK.Graphics.GraphicsContext.CurrentContext.SwapBuffers();
+    }
+
     protected void OnReplaceResourceActionActivated(object sender, EventArgs e)
     {
         var fileChooserDialog = new FileChooserDialog("Replace Resource", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
@@ -573,7 +630,8 @@ public partial class MainWindow : Window
                 ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
                 CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);
-                RefreshWidgets();
+                ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                RefreshWidgets(false);
             }
             catch (System.IO.InvalidDataException ex)
             {
@@ -639,37 +697,5 @@ public partial class MainWindow : Window
             Move(x, y);
             Resize(a.Allocation.Width < DefaultWidth ? DefaultWidth : a.Allocation.Width, a.Allocation.Height < DefaultHeight - 1 ? DefaultHeight : a.Allocation.Height);
         }
-    }
-
-    protected void RenderFrame()
-    {
-        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOPosition);
-        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mVertexData.Length * OpenTK.Vector3.SizeInBytes), mVertexData, BufferUsageHint.StaticDraw);
-        GL.VertexAttribPointer(mVPosition, 3, VertexAttribPointerType.Float, false, 0, 0);
-        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOColor);
-        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mColorData.Length * OpenTK.Vector3.SizeInBytes), mColorData, BufferUsageHint.StaticDraw);
-        GL.VertexAttribPointer(mVColor, 3, VertexAttribPointerType.Float, true, 0, 0);
-        GL.UniformMatrix4(mUniformModelview, false, ref mModelviewData[0]);
-        GL.UseProgram(mProgramID);
-        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-        GL.Viewport(0, 0, Image.WidthRequest, Image.HeightRequest);
-        GL.ClearColor(System.Drawing.Color.CornflowerBlue);
-        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        GL.EnableVertexAttribArray(mVPosition);
-        GL.EnableVertexAttribArray(mVColor);
-        /*
-        int indiceat = 0;
-        foreach (Volume v in mObjects)
-        {
-            GL.UniformMatrix4(uniform_mview, false, ref v.ModelViewProjectionMatrix);
-            GL.DrawElements(BeginMode.Triangles, v.IndexCount, DrawElementsType.UnsignedInt, indiceat * sizeof(uint));
-            indiceat += v.IndexCount;
-        }
-        */
-        GL.DrawArrays(BeginMode.Triangles, 0, 3);
-        GL.DisableVertexAttribArray(mVPosition);
-        GL.DisableVertexAttribArray(mVColor);
-        GL.Flush();
-        OpenTK.Graphics.GraphicsContext.CurrentContext.SwapBuffers();
     }
 }

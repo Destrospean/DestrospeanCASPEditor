@@ -1,33 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using s3pi.Extensions;
+using s3pi.Filetable;
 using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ResourceUtils
     {
-        static Dictionary<s3pi.Filetable.PackageTag, IPackage> mGamePackages;
+        static Dictionary<PackageTag, IPackage> mGameContentPackages;
+
+        static Dictionary<PackageTag, IPackage> mGameImageResourcePackages;
 
         static List<string> mMissingResourceKeys;
 
-        public static Dictionary<s3pi.Filetable.PackageTag, IPackage> GamePackages
+        public static Dictionary<PackageTag, IPackage> GameContentPackages
         {
             get
             {
-                if (mGamePackages == null)
+                if (mGameContentPackages == null)
                 {
-                    mGamePackages = new Dictionary<s3pi.Filetable.PackageTag, IPackage>();
-                    foreach (var game in s3pi.Filetable.GameFolders.Games)
+                    mGameContentPackages = new Dictionary<PackageTag, IPackage>();
+                    foreach (var game in GameFolders.Games)
                     {
                         var enumerator = game.GameContent.GetEnumerator();
                         while (enumerator.MoveNext())
                         {
-                            mGamePackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
+                            mGameContentPackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
                         }
                     }
                 }
-                return mGamePackages;
+                return mGameContentPackages;
+            }
+        }
+
+        public static Dictionary<PackageTag, IPackage> GameImageResourcePackages
+        {
+            get
+            {
+                if (mGameImageResourcePackages == null)
+                {
+                    mGameImageResourcePackages = new Dictionary<PackageTag, IPackage>();
+                    foreach (var game in GameFolders.Games)
+                    {
+                        var enumerator = game.DDSImages.GetEnumerator();
+                        while (enumerator.MoveNext())
+                        {
+                            mGameImageResourcePackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
+                        }
+                    }
+                }
+                return mGameImageResourcePackages;
             }
         }
 
@@ -199,7 +222,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (ResourceIndexEntryNotFoundException)
             {
-                foreach (var gamePackage in ImageUtils.GameImageResourcePackages.Values)
+                foreach (var gamePackage in GameImageResourcePackages.Values)
                 {
                     try
                     {
@@ -209,7 +232,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                     }
                 }
-                throw new ResourceIndexEntryNotFoundException("No resource with the key referenced in the XML node could be found in the given package.");
+                throw new ResourceIndexEntryNotFoundException("No image resource with the given key could be found.");
             }
         }
 
@@ -226,7 +249,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (ResourceIndexEntryNotFoundException)
             {
-                foreach (var gamePackage in GamePackages.Values)
+                foreach (var gamePackage in GameContentPackages.Values)
                 {
                     try
                     {
@@ -236,7 +259,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                     }
                 }
-                throw new ResourceIndexEntryNotFoundException("No resource with the key referenced in the XML node could be found in the given package.");
+                throw new ResourceIndexEntryNotFoundException("No resource with the key referenced in the XML node could be found.");
             }
         }
 
