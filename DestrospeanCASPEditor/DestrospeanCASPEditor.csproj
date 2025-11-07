@@ -213,6 +213,7 @@
     <Compile Include="AddGEOMPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
+    <Compile Include="Volume.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

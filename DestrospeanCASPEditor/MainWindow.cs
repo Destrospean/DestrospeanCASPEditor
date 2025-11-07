@@ -4,12 +4,22 @@ using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gtk;
 using meshExpImp.ModelBlocks;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
 
 public partial class MainWindow : Window
 {
+    OpenTK.Vector3[] mColorData, mVertexData;
+
+    int mFSID, mProgramID, mUniformModelview, mVBOColor, mVBOModelview, mVBOPosition, mVColor, mVPosition, mVSID;
+
+    Matrix4[] mModelviewData;
+
+    //List<Volume> mObjects = new List<Volume>();
+
     public IPackage CurrentPackage;
 
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
@@ -17,6 +27,10 @@ public partial class MainWindow : Window
     public readonly Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
     public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
+
+    public bool GLInit;
+
+    public GLWidget GLWidget;
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
@@ -27,13 +41,42 @@ public partial class MainWindow : Window
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
         ResourcePropertyNotebook.RemovePage(0);
-        ImageFixed.Remove(Image);
-        ImageFixed.Put(new Image
+        GLWidget = new GLWidget
             {
-                Pixbuf = ImageUtils.CreateCheckerboard(RendererNotebook.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127))
-            }, 0, 0);
-        ImageFixed.Put(Image, 0, 0);
-        ImageFixed.ShowAll();
+                HeightRequest = Image.HeightRequest,
+                WidthRequest = Image.WidthRequest
+            };
+        GLWidget.Initialized += (object sender, EventArgs e) => 
+            {
+                InitProgram();
+                mVertexData = new OpenTK.Vector3[]
+                    {
+                        new OpenTK.Vector3(-.8f, -.8f, 0),
+                        new OpenTK.Vector3(.8f, -.8f, 0),
+                        new OpenTK.Vector3(0, .8f, 0)
+                    };
+                mColorData = new OpenTK.Vector3[]
+                    {
+                        new OpenTK.Vector3(1, 0, 0),
+                        new OpenTK.Vector3(0, 0, 1),
+                        new OpenTK.Vector3(0, 1, 0)
+                    };
+                mModelviewData = new Matrix4[]
+                    {
+                        Matrix4.Identity
+                    };
+                GLInit = true;
+                GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
+            };
+        MainTable.Attach(new Image
+            {
+                HeightRequest = Image.HeightRequest,
+                WidthRequest = Image.WidthRequest,
+                Pixbuf = ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127))
+            }, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        MainTable.Attach(GLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        MainTable.ShowAll();
+        GLWidget.Hide();
     }
 
     public void AddCASPartWidgets(CASPart casPart)
@@ -238,6 +281,7 @@ public partial class MainWindow : Window
         ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
+                GLWidget.Hide();
                 Image.Clear();
                 foreach (var child in ResourcePropertyTable.Children)
                 {
@@ -258,6 +302,7 @@ public partial class MainWindow : Window
                             Image.Pixbuf = ImageUtils.PreloadedImages[resourceIndexEntry][0];
                             break;
                         case "CASP":
+                            GLWidget.Show();
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                     }
@@ -272,6 +317,52 @@ public partial class MainWindow : Window
         VPXYResources.Clear();
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImages.Clear();
+    }
+
+    public void InitProgram()
+    {
+        mProgramID = GL.CreateProgram();
+        LoadShader(@"
+            #version 110
+            attribute vec3 vPosition;
+            attribute vec3 vColor;
+            varying vec4 color;
+            uniform mat4 modelview;
+ 
+            void main()
+            {
+                gl_Position = modelview * vec4(vPosition, 1.0);
+                color = vec4(vColor, 1.0);
+            }", OpenTK.Graphics.OpenGL.ShaderType.VertexShader, mProgramID, out mVSID);
+        LoadShader(@"
+            #version 110
+            varying vec4 color;
+ 
+            void main()
+            {
+                gl_FragColor = color;
+            }", OpenTK.Graphics.OpenGL.ShaderType.FragmentShader, mProgramID, out mFSID);
+        GL.LinkProgram(mProgramID);
+        Console.WriteLine(GL.GetProgramInfoLog(mProgramID));
+        mVPosition = GL.GetAttribLocation(mProgramID, "vPosition");
+        mVColor = GL.GetAttribLocation(mProgramID, "vColor");
+        mUniformModelview = GL.GetUniformLocation(mProgramID, "modelview");
+        if (mVPosition == -1 || mVColor == -1 || mUniformModelview == -1)
+        {
+            Console.WriteLine("Error binding attributes");
+        }
+        GL.GenBuffers(1, out mVBOPosition);
+        GL.GenBuffers(1, out mVBOColor);
+        GL.GenBuffers(1, out mVBOModelview);
+    }
+
+    public void LoadShader(String glsl, OpenTK.Graphics.OpenGL.ShaderType type, int program, out int address)
+    {
+        address = GL.CreateShader(type);
+        GL.ShaderSource(address, glsl);
+        GL.CompileShader(address);
+        GL.AttachShader(program, address);
+        Console.WriteLine(GL.GetShaderInfoLog(address));
     }
 
     public void RefreshWidgets()
@@ -348,7 +439,6 @@ public partial class MainWindow : Window
             WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image, this);
         }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
-        ShowAll();
     }
 
     public void RescaleAndReposition()
@@ -362,7 +452,6 @@ public partial class MainWindow : Window
             {
                 Image,
                 MainTable,
-                RendererNotebook,
                 ResourcePropertyNotebook,
                 ResourcePropertyTable,
                 this
@@ -404,6 +493,16 @@ public partial class MainWindow : Window
     {
         new GameFoldersDialog(this).ShowAll();
     }
+
+    protected bool OnIdleProcessMain ()
+    {
+        if (GLInit)
+        {
+            RenderFrame();
+            return true;
+        }
+        return false;
+    }   
 
     protected void OnImportResourceActionActivated(object sender, EventArgs e)
     {
@@ -538,5 +637,52 @@ public partial class MainWindow : Window
             Move(x, y);
             Resize(a.Allocation.Width < DefaultWidth ? DefaultWidth : a.Allocation.Width, a.Allocation.Height < DefaultHeight - 1 ? DefaultHeight : a.Allocation.Height);
         }
+    }
+
+    protected void RenderFrame()
+    {
+        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOPosition);
+        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mVertexData.Length * OpenTK.Vector3.SizeInBytes), mVertexData, BufferUsageHint.StaticDraw);
+        GL.VertexAttribPointer(mVPosition, 3, VertexAttribPointerType.Float, false, 0, 0);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, mVBOColor);
+        GL.BufferData<OpenTK.Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mColorData.Length * OpenTK.Vector3.SizeInBytes), mColorData, BufferUsageHint.StaticDraw);
+        GL.VertexAttribPointer(mVColor, 3, VertexAttribPointerType.Float, true, 0, 0);
+        GL.UniformMatrix4(mUniformModelview, false, ref mModelviewData[0]);
+        GL.UseProgram(mProgramID);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        int height = Image.HeightRequest,
+        width = Image.WidthRequest;  
+        float aspectRatio = width / height; 
+        GL.Viewport(0, 0, width, height);
+        GL.MatrixMode(MatrixMode.Modelview);
+        GL.LoadIdentity();
+        GL.ShadeModel(ShadingModel.Smooth);         
+        var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 64);
+        GL.MatrixMode(MatrixMode.Projection);           
+        GL.LoadMatrix(ref projection);          
+        GL.ClearDepth(1);              
+        GL.Disable(EnableCap.DepthTest);    
+        GL.Enable(EnableCap.Texture2D); 
+        GL.Enable(EnableCap.Blend);
+        GL.DepthFunc(DepthFunction.Always);     
+        GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); 
+        GL.ClearColor(System.Drawing.Color.CornflowerBlue);
+        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        GL.EnableVertexAttribArray(mVPosition);
+        GL.EnableVertexAttribArray(mVColor);
+        /*
+        int indiceat = 0;
+        foreach (Volume v in mObjects)
+        {
+            GL.UniformMatrix4(uniform_mview, false, ref v.ModelViewProjectionMatrix);
+            GL.DrawElements(BeginMode.Triangles, v.IndexCount, DrawElementsType.UnsignedInt, indiceat * sizeof(uint));
+            indiceat += v.IndexCount;
+        }
+        */
+        GL.DrawArrays(BeginMode.Triangles, 0, 3);
+        GL.DisableVertexAttribArray(mVPosition);
+        GL.DisableVertexAttribArray(mVColor);
+        GL.Flush();
+        OpenTK.Graphics.GraphicsContext.CurrentContext.SwapBuffers();
     }
 }
