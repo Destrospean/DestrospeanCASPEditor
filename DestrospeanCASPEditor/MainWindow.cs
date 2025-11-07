@@ -652,22 +652,7 @@ public partial class MainWindow : Window
         GL.UniformMatrix4(mUniformModelview, false, ref mModelviewData[0]);
         GL.UseProgram(mProgramID);
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-        int height = Image.HeightRequest,
-        width = Image.WidthRequest;  
-        float aspectRatio = width / height; 
-        GL.Viewport(0, 0, width, height);
-        GL.MatrixMode(MatrixMode.Modelview);
-        GL.LoadIdentity();
-        GL.ShadeModel(ShadingModel.Smooth);         
-        var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, aspectRatio, 1, 64);
-        GL.MatrixMode(MatrixMode.Projection);           
-        GL.LoadMatrix(ref projection);          
-        GL.ClearDepth(1);              
-        GL.Disable(EnableCap.DepthTest);    
-        GL.Enable(EnableCap.Texture2D); 
-        GL.Enable(EnableCap.Blend);
-        GL.DepthFunc(DepthFunction.Always);     
-        GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest); 
+        GL.Viewport(0, 0, Image.WidthRequest, Image.HeightRequest);
         GL.ClearColor(System.Drawing.Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.EnableVertexAttribArray(mVPosition);
