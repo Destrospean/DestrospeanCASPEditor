@@ -590,17 +590,19 @@ public partial class MainWindow : Window
         TreeIter iter;
         TreePath path;
         int x, y;
-        ResourceTreeView.GetPathAtPos((int)args.Event.X, (int)args.Event.Y, out path, out column, out x, out y);
-        ResourceListStore.GetIter(out iter, path);
-        switch (args.Event.Button)
+        if (ResourceTreeView.GetPathAtPos((int)args.Event.X, (int)args.Event.Y, out path, out column, out x, out y))
         {
-            case 1:
-                ResourceTreeView.Selection.SelectIter(iter);
-                break;
-            case 3:
-                var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
-                Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
-                break;
+            ResourceListStore.GetIter(out iter, path);
+            switch (args.Event.Button)
+            {
+                case 1:
+                    ResourceTreeView.Selection.SelectIter(iter);
+                    break;
+                case 3:
+                    var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
+                    Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                    break;
+            }
         }
         args.RetVal = true;
     }
