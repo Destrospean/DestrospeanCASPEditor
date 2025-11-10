@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using Gdk;
 using s3pi.Interfaces;
 
@@ -6,21 +7,25 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ImageUtils
     {
-        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImages = new Dictionary<string, List<Pixbuf>>();
+        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImagePixbufs = new Dictionary<string, List<Pixbuf>>();
 
-        public static readonly Dictionary<IResourceIndexEntry, List<Pixbuf>> PreloadedImages = new Dictionary<IResourceIndexEntry, List<Pixbuf>>();
+        public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>();
 
-        public static Pixbuf ConvertToPixbuf(IResource imageResource)
+        public static readonly Dictionary<IResourceIndexEntry, List<Pixbuf>> PreloadedImagePixbufs = new Dictionary<IResourceIndexEntry, List<Pixbuf>>();
+
+        public static readonly Dictionary<string, Bitmap> PreloadedImages = new Dictionary<string, Bitmap>();
+
+        public static Pixbuf ConvertToPixbuf(Bitmap image)
         {
             using (var stream = new System.IO.MemoryStream())
             {
-                GDImageLibrary._DDS.LoadImage(imageResource.AsBytes).Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, System.IO.SeekOrigin.Begin);
                 return new Pixbuf(stream);
             }
         }
 
-        public static Pixbuf CreateCheckerboard(int size, int checkSize, Color primary, Color secondary)
+        public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
         {
             var checkerboard = new Pixbuf(Colorspace.Rgb, true, 8, size, size);
             checkerboard.Fill(((uint)primary.Red >> 8 << 24) + ((uint)primary.Green >> 8 << 16) + ((uint)primary.Blue >> 8 << 8) + byte.MaxValue);
@@ -43,18 +48,22 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void PreloadGameImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            PreloadedGameImages[ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry)] = new List<Pixbuf>
+            var key = ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry);
+            PreloadedGameImages[key] = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes);
+            PreloadedGameImagePixbufs[key] = new List<Pixbuf>
                 {
-                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
+                    ConvertToPixbuf(PreloadedGameImages[key]).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
                 };
         }
 
         public static void PreloadImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            PreloadedImages[resourceIndexEntry] = new List<Pixbuf>
+            var key = ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry);
+            PreloadedImages[key] = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes);
+            PreloadedImagePixbufs[resourceIndexEntry] = new List<Pixbuf>
                 {
-                    ConvertToPixbuf(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry)).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
+                    ConvertToPixbuf(PreloadedImages[key]).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
                 };
         }
 
@@ -68,7 +77,8 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 throw new System.ArgumentOutOfRangeException("Coordinates are out of bounds.");
             }
-            byte* pixels = (byte*)pixbuf.Pixels, pixelPtr = pixels + (y * pixbuf.Rowstride) + (x * pixbuf.NChannels);
+            byte* pixels = (byte*)pixbuf.Pixels,
+            pixelPtr = pixels + (y * pixbuf.Rowstride) + (x * pixbuf.NChannels);
             pixelPtr[0] = r;
             pixelPtr[1] = g;
             pixelPtr[2] = b;

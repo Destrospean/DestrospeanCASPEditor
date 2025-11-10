@@ -5,7 +5,6 @@ using Gtk;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
-using System.Reflection;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -251,19 +250,19 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(IPackage package, string currentValue, out ComboBox comboBox, Gtk.Image imageWidget)
         {
-            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImages[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
+            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImagePixbufs[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
             var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
             var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
             if (!entries.Exists(x => x.Item2 == currentValue))
             {
-                if (!ImageUtils.PreloadedGameImages.ContainsKey(currentValue) && !missing)
+                if (!ImageUtils.PreloadedGameImagePixbufs.ContainsKey(currentValue) && !missing)
                 {
                     try
                     {
                         var evaluated = ResourceUtils.EvaluateImageResourceKey(package, currentValue);
                         ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
-                        ImageUtils.PreloadedGameImages[currentValue].Add(ImageUtils.PreloadedGameImages[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                        ImageUtils.PreloadedGameImagePixbufs[currentValue].Add(ImageUtils.PreloadedGameImagePixbufs[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                     }
                     catch
                     {
@@ -271,7 +270,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         missing = true;
                     }
                 }
-                entries.Add(new Tuple<Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImages[currentValue][1], currentValue));
+                entries.Add(new Tuple<Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImagePixbufs[currentValue][1], currentValue));
                 listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
             }
             comboBox = new ComboBox

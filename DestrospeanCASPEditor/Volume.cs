@@ -7,11 +7,69 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public abstract class IVolume
     {
-        public int ColorDataCount, IndexCount, VertexCount;
+        public int TextureID;
 
-        public Vector3[] ColorData, Vertices;
+        public virtual int NormalCount
+        {
+            get
+            {
+                return Normals.Length;
+            }
+        }
 
-        public List<Tuple<int, int, int>> Faces;
+        public virtual int ColorDataCount
+        {
+            get
+            {
+                return ColorData.Length;
+            }
+        }
+
+        public virtual int IndexCount
+        {
+            get;
+            set;
+        }
+
+        public virtual int TextureCoordinateCount
+        {
+            get;
+            set;
+        }
+
+        public virtual int VertexCount
+        {
+            get
+            {
+                return Vertices.Length;
+            }
+        }
+
+        public virtual Vector3[] ColorData
+        {
+            get;
+            set;
+        }
+
+        public virtual Vector3[] Normals
+        {
+            get;
+            set;
+        }
+
+        public virtual Vector3[] Vertices
+        {
+            get;
+            set;
+        }
+
+        public virtual List<Tuple<int, int, int>> Faces
+        {
+            get;
+            set;
+        }
+
+        public bool IsTextured = false;
 
         public Matrix4 ModelMatrix = Matrix4.Identity,
         ModelViewProjectionMatrix = Matrix4.Identity,
@@ -21,9 +79,34 @@ namespace Destrospean.DestrospeanCASPEditor
         Rotation = Vector3.Zero,
         Scale = Vector3.One;
 
-        public Vector2[] TextureCoordinates;
+        public virtual Vector2[] TextureCoordinates
+        {
+            get;
+            set;
+        }
 
         public abstract void CalculateModelMatrix();
+
+        public void CalculateNormals()
+        {
+            Vector3[] normals = new Vector3[VertexCount],
+            vertices = Vertices;
+            var indices = GetIndices();
+            for (int i = 0; i < IndexCount; i += 3)
+            {
+                Vector3 a = vertices[indices[i]],
+                b = vertices[indices[i + 1]],
+                c = vertices[indices[i + 2]];
+                normals[indices[i]] += Vector3.Cross(b - a, c - a);
+                normals[indices[i + 1]] += Vector3.Cross(b - a, c - a);
+                normals[indices[i + 2]] += Vector3.Cross(b - a, c - a);
+            }
+            for (int i = 0; i < NormalCount; i++)
+            {
+                normals[i].Normalize();
+            }
+            Normals = normals;
+        }
 
         public abstract int[] GetIndices(int offset = 0);
     }
@@ -32,11 +115,11 @@ namespace Destrospean.DestrospeanCASPEditor
     {
         Vector3[] mColorData, mVertices;
 
-        List<Tuple<int, int, int>> mFaces = new List<Tuple<int, int, int>>();
-
         Vector2[] mTextureCoordinates;
 
-        public new Vector3[] ColorData
+        List<Tuple<int, int, int>> mFaces = new List<Tuple<int, int, int>>();
+
+        public override Vector3[] ColorData
         {
             get
             {
@@ -48,7 +131,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new int ColorDataCount
+        public override int ColorDataCount
         {
             get
             {
@@ -56,7 +139,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new List<Tuple<int, int, int>> Faces
+        public override List<Tuple<int, int, int>> Faces
         {
             get
             {
@@ -68,7 +151,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new int IndexCount
+        public override int IndexCount
         {
             get
             {
@@ -76,7 +159,17 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new Vector2[] TextureCoordinates
+        public Material Material = new Material();
+
+        public override int TextureCoordinateCount
+        {
+            get
+            {
+                return mTextureCoordinates.Length;
+            }
+        }
+
+        public override Vector2[] TextureCoordinates
         {
             get
             {
@@ -88,7 +181,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new int VertexCount
+        public override int VertexCount
         {
             get
             {
@@ -96,7 +189,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public new Vector3[] Vertices
+        public override Vector3[] Vertices
         {
             get
             {
@@ -123,89 +216,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 indices.Add(face.Item3 + offset);
             }
             return indices.ToArray();
-        }
-    }
-
-    public class OBJ
-    {
-        public static Volume LoadFromFile(string filename)
-        {
-            var volume = new Volume();
-            try
-            {
-                using (StreamReader reader = new StreamReader(new FileStream(filename, FileMode.Open, FileAccess.Read)))
-                {
-                    volume = LoadFromString(reader.ReadToEnd());
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                Console.WriteLine("File not found: {0}", filename);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("Error loading file: {0}", filename);
-            }
-            return volume;
-        }
-
-        public static Volume LoadFromString(string obj)
-        {
-            List<Vector3> colors = new List<Vector3>(),
-            vertices = new List<Vector3>();
-            var faces = new List<Tuple<int, int, int>>();
-            var lines = new List<string>(obj.Split('\n'));
-            var textureCoordinates = new List<Vector2>();
-            foreach (String line in lines)
-            {
-                if (line.StartsWith("v "))
-                {
-                    var temp = line.Substring(2);
-                    var vector = new Vector3();
-                    if (new List<char>(temp.ToCharArray()).FindAll(c => c == ' ').Count == 2)
-                    {
-                        var vertexParts = temp.Split(' ');
-                        var success = float.TryParse(vertexParts[0], out vector.X);
-                        success &= float.TryParse(vertexParts[1], out vector.Y);
-                        success &= float.TryParse(vertexParts[2], out vector.Z);
-                        colors.Add(new Vector3((float) Math.Sin(vector.Z), (float) Math.Sin(vector.Z), (float) Math.Sin(vector.Z)));
-                        textureCoordinates.Add(new Vector2((float) Math.Sin(vector.Z), (float) Math.Sin(vector.Z)));
-                        if (!success)
-                        {
-                            Console.WriteLine("Error parsing vertex: {0}", line);
-                        }
-                    }
-                    vertices.Add(vector);
-                }
-                else if (line.StartsWith("f "))
-                {
-                    var temp = line.Substring(2);
-                    var face = new Tuple<int, int, int>(0, 0, 0);
-                    if (new List<char>(temp.ToCharArray()).FindAll(c => c == ' ').Count == 2)
-                    {
-                        var faceParts = temp.Split(' ');
-                        int x, y, z;
-                        var success = int.TryParse(faceParts[0], out x);
-                        success &= int.TryParse(faceParts[1], out y);
-                        success &= int.TryParse(faceParts[2], out z);
-                        if (success)
-                        {
-                            face = new Tuple<int, int, int>(x - 1, y - 1, z - 1);
-                            faces.Add(face);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error parsing face: {0}", line);
-                        }
-                    }
-                }
-            }
-            Volume volume = new Volume();
-            volume.Faces = new List<Tuple<int, int, int>>(faces);
-            volume.ColorData = colors.ToArray();
-            volume.TextureCoordinates = textureCoordinates.ToArray();
-            volume.Vertices = vertices.ToArray();
-            return volume;
         }
     }
 }

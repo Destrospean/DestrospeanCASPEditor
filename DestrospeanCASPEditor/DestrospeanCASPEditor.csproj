@@ -214,6 +214,10 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
     <Compile Include="Volume.cs" />
+    <Compile Include="Camera.cs" />
+    <Compile Include="ShaderProgram.cs" />
+    <Compile Include="Material.cs" />
+    <Compile Include="Light.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
