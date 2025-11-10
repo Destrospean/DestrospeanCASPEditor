@@ -101,7 +101,6 @@ public partial class MainWindow : Window
         ResourcePropertyNotebookSwitchPageHandlers.Clear();
         ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
             {
-                mObjects.Clear();
                 LoadGEOMs(casPart);
             });
         ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
@@ -302,11 +301,11 @@ public partial class MainWindow : Window
     public void ClearTemporaryData()
     {
         mObjects.Clear();
-        foreach (var textureId in mTextureIDs.Values)
+        foreach (var textureId in TextureIDs.Values)
         {
             GL.DeleteTexture(textureId);
         }
-        mTextureIDs.Clear();
+        TextureIDs.Clear();
         CASParts.Clear();
         GeometryResources.Clear();
         VPXYResources.Clear();

@@ -30,7 +30,6 @@ public partial class MainWindow : Window
 
     Vector2 mLastMousePosition;
 
-    readonly Dictionary<String, Material> mMaterials = new Dictionary<string, Material>();
 
     float mMouseX,
     mMouseY,
@@ -42,11 +41,14 @@ public partial class MainWindow : Window
 
     Vector2[] mTextureCoordinateData;
 
-    readonly Dictionary<string, int> mTextureIDs = new Dictionary<string, int>();
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
     public GLWidget GLWidget;
+
+    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+
+    public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
 
     void ProcessInput()
     {
@@ -322,6 +324,7 @@ public partial class MainWindow : Window
 
     public void LoadGEOMs(CASPart casPart)
     {
+        mObjects.Clear();
         foreach (var geometryResource in casPart.LODs[ResourcePropertyNotebook.CurrentPage])
         {
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
@@ -367,7 +370,7 @@ public partial class MainWindow : Window
                 }
             }
             Material material;
-            if (!mMaterials.TryGetValue(key, out material))
+            if (!Materials.TryGetValue(key, out material))
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMapKeys = new Dictionary<FieldType, string>();
@@ -395,7 +398,7 @@ public partial class MainWindow : Window
                         NormalMap = materialMapKeys.TryGetValue(FieldType.NormalMap, out normalMapKey) ? normalMapKey : null,
                         SpecularMap = materialMapKeys.TryGetValue(FieldType.SpecularMap, out specularMapKey) ? specularMapKey : null
                     };
-                mMaterials.Add(key, material);
+                Materials.Add(key, material);
             }
             mObjects.Add(new Volume
                 {
@@ -410,6 +413,20 @@ public partial class MainWindow : Window
         }
     }
 
+    public void LoadGEOMsFromSelection()
+    {
+        TreeIter iter;
+        TreeModel model;
+        if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+        {
+            var resourceIndexEntry = (s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4);
+            if ((string)model.GetValue(iter, 0) == "CASP")
+            {
+                LoadGEOMs(CASParts[resourceIndexEntry]);
+            }
+        }
+    }
+
     public int LoadTexture(string key)
     {
         Bitmap image;
@@ -418,10 +435,10 @@ public partial class MainWindow : Window
             return -1;
         }
         int textureID;
-        if (!mTextureIDs.TryGetValue(key, out textureID))
+        if (!TextureIDs.TryGetValue(key, out textureID))
         {
             GL.GenTextures(1, out textureID);
-            mTextureIDs.Add(key, textureID);
+            TextureIDs.Add(key, textureID);
         }
         GL.BindTexture(TextureTarget.Texture2D, textureID);
         BitmapData data = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -474,17 +491,7 @@ public partial class MainWindow : Window
             {
                 InitProgram();
                 mGLInitialized = true;
-                TreeIter iter;
-                TreeModel model;
-                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
-                {
-                    var resourceIndexEntry = (s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4);
-                    if ((string)model.GetValue(iter, 0) == "CASP")
-                    {
-                        mObjects.Clear();
-                        LoadGEOMs(CASParts[resourceIndexEntry]);
-                    }
-                }
+                LoadGEOMsFromSelection();
                 GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
             };
     }

@@ -36,7 +36,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, Gtk.Window window, int pageIndexOffset = 0)
+        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, MainWindow mainWindow, int pageIndexOffset = 0)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
@@ -48,12 +48,21 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     Text = "GEOM " + (notebook.NPages + pageIndexOffset).ToString()
                 });
-            AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
+            AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, mainWindow);
             notebook.ShowAll();
         }
 
-        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, ScrolledWindow scrolledWindow, Gtk.Image imageWidget, Gtk.Window window)
+        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, ScrolledWindow scrolledWindow, Gtk.Image imageWidget, MainWindow mainWindow)
         {
+            var geometryResourceKey = "";
+            foreach (var geometryResourceKvp in mainWindow.GeometryResources)
+            {
+                if (geometryResourceKvp.Value == geometryResource)
+                {
+                    geometryResourceKey = ResourceUtils.ReverseEvaluateResourceKey(geometryResourceKvp.Key);
+                    break;
+                }
+            }
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
             var shaders = new List<string>(Enum.GetNames(typeof(ShaderType)));
             shaders.RemoveAt(0);
@@ -127,6 +136,18 @@ namespace Destrospean.DestrospeanCASPEditor
                             elementFloat3.Data0 = (float)colorButton.Color.Red / ushort.MaxValue;
                             elementFloat3.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
                             elementFloat3.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
+                            var color = new OpenTK.Vector3(elementFloat3.Data0, elementFloat3.Data1, elementFloat3.Data2);
+                            var material = mainWindow.Materials[geometryResourceKey];
+                            switch (element.Field)
+                            {
+                                case FieldType.Diffuse:
+                                    material.DiffuseColor = color;
+                                    break;
+                                case FieldType.Specular:
+                                    material.SpecularColor = color;
+                                    break;
+                            };
+                            mainWindow.LoadGEOMsFromSelection();
                         };
                     valueWidget = colorButton;
                     goto AttachLabelAndValueWidget;
@@ -171,13 +192,28 @@ namespace Destrospean.DestrospeanCASPEditor
                     var entries = BuildImageResourceComboBoxEntries(package, ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]), out comboBox, imageWidget);
                     comboBox.Changed += (sender, e) =>
                         {
-                            var index = element.ParentTGIBlocks.FindIndex(x => ResourceUtils.ReverseEvaluateResourceKey(x) == entries[comboBox.Active].Item2);
+                            var key = entries[comboBox.Active].Item2;
+                            var index = element.ParentTGIBlocks.FindIndex(x => ResourceUtils.ReverseEvaluateResourceKey(x) == key);
                             if (index == -1)
                             {
-                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, entries[comboBox.Active].Item2).Item2));
+                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, key).Item2));
                                 index = element.ParentTGIBlocks.Count - 1;
                             }
                             elementTextureRef.Index = index;
+                            var material = mainWindow.Materials[geometryResourceKey];
+                            switch (element.Field)
+                            {
+                                case FieldType.DiffuseMap:
+                                    material.DiffuseMap = key;
+                                    break;
+                                case FieldType.NormalMap:
+                                    material.NormalMap = key;
+                                    break;
+                                case FieldType.SpecularMap:
+                                    material.SpecularMap = key;
+                                    break;
+                            };
+                            mainWindow.LoadGEOMsFromSelection();
                         };
                     valueWidget = comboBox;
                 }
@@ -194,7 +230,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             table.Remove(child);
                         }
-                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
+                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, mainWindow);
                         table.ShowAll();
                     };
                 var labelHBox = new HBox(false, 6);
@@ -224,7 +260,7 @@ namespace Destrospean.DestrospeanCASPEditor
             addPropertyButton.Add(addPropertyButtonHBox);
             addPropertyButton.Clicked += (sender, e) =>
                 {
-                    var addGEOMPropertyDialog = new AddGEOMPropertyDialog(window);
+                    var addGEOMPropertyDialog = new AddGEOMPropertyDialog(mainWindow);
                     if (addGEOMPropertyDialog.Run() == (int)ResponseType.Ok)
                     {
                         foreach (var child in table.Children)
@@ -238,7 +274,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }));
                         element.Field = addGEOMPropertyDialog.Field;
                         geom.Mtnf.SData.Add(element);
-                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, window);
+                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget, mainWindow);
                         table.ShowAll();
                         scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;
                     }
