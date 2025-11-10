@@ -205,22 +205,25 @@
     <Compile Include="ImageUtils.cs" />
     <Compile Include="CASPart.cs" />
     <Compile Include="ResourceUtils.cs" />
-    <Compile Include="GameFoldersDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
-    <Compile Include="AddGEOMPropertyDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
-    <Compile Include="Volume.cs" />
-    <Compile Include="Camera.cs" />
-    <Compile Include="ShaderProgram.cs" />
-    <Compile Include="Material.cs" />
-    <Compile Include="Light.cs" />
+    <Compile Include="Dialogs\AddGEOMPropertyDialog.cs" />
+    <Compile Include="Dialogs\GameFoldersDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
+    <Compile Include="OpenGL\Camera.cs" />
+    <Compile Include="OpenGL\Light.cs" />
+    <Compile Include="OpenGL\Material.cs" />
+    <Compile Include="OpenGL\ShaderProgram.cs" />
+    <Compile Include="OpenGL\Volume.cs" />
+    <Compile Include="OpenGL\MainWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Widgets\" />
+    <Folder Include="Dialogs\" />
+    <Folder Include="OpenGL\" />
   </ItemGroup>
 </Project>

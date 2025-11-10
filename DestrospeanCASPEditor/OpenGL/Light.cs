@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 
-namespace Destrospean.DestrospeanCASPEditor
+namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
     public class Light
     {

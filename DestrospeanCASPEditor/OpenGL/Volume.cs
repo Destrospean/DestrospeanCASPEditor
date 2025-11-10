@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OpenTK;
 
-namespace Destrospean.DestrospeanCASPEditor
+namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
     public abstract class IVolume
     {
