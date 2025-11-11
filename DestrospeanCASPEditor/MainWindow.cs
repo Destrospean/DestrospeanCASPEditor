@@ -396,10 +396,6 @@ public partial class MainWindow : Window
         {
             AddCASPartWidgets(casPart);
         }
-        foreach (var geometryResource in GeometryResources.Values)
-        {
-            WidgetUtils.AddPropertiesToNotebook(CurrentPackage, geometryResource, ResourcePropertyNotebook, Image, this);
-        }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
     }
 

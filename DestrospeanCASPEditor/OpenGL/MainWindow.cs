@@ -422,13 +422,12 @@ public partial class MainWindow : Window
         mActiveShader = "lit_advanced";
         Light pointLight = new Light(new Vector3(0, 1, 6), new Vector3(1, 1, 1));
         pointLight.QuadraticAttenuation = .05f;
-
         mLights.Add(pointLight);
         Light pointLight1 = new Light(new Vector3(0, 1, -6), new Vector3(1, 1, 1));
         pointLight1.QuadraticAttenuation = .05f;
         pointLight1.Direction = new Vector3(0, 0, -1);
         mLights.Add(pointLight1);
-        mCamera.Position += new Vector3(0f, 0f, 3f);
+        mCamera.Position += new Vector3(0f, 1f, 3f);
     }
 
     public void LoadGEOMs(CASPart casPart)
