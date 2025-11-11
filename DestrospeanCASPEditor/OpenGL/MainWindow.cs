@@ -481,7 +481,7 @@ public partial class MainWindow : Window
             if (!Materials.TryGetValue(key, out material))
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
-                var materialMapKeys = new Dictionary<FieldType, string>();
+                var materialMaps = new Dictionary<FieldType, string>();
                 foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
                 {
                     var elementFloat3 = element as ElementFloat3;
@@ -493,22 +493,22 @@ public partial class MainWindow : Window
                     var elementTextureRef = element as ElementTextureRef;
                     if (elementTextureRef != null)
                     {
-                        materialMapKeys[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
+                        materialMaps[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
                     }
                 }
-                Vector3 ambientColor, diffuseColor, specularColor;
-                string ambientMapKey, diffuseMapKey, normalMapKey, specularMapKey;
+                Vector3 color;
+                string map;
                 material = new Material
                     {
 #pragma warning disable 0618
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out ambientColor) ? ambientColor : new Vector3(),
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(),
 #pragma warning restore 0618
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out diffuseColor) ? diffuseColor : new Vector3(),
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out specularColor) ? specularColor : new Vector3(),
-                        AmbientMap = materialMapKeys.TryGetValue(FieldType.AmbientOcclusionMap, out ambientMapKey) ? ambientMapKey : "",
-                        DiffuseMap = materialMapKeys.TryGetValue(FieldType.DiffuseMap, out diffuseMapKey) ? diffuseMapKey : "",
-                        NormalMap = materialMapKeys.TryGetValue(FieldType.NormalMap, out normalMapKey) ? normalMapKey : "",
-                        SpecularMap = materialMapKeys.TryGetValue(FieldType.SpecularMap, out specularMapKey) ? specularMapKey : ""
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(),
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(),
+                        AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
+                        DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
+                        NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
+                        SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
                     };
                 Materials.Add(key, material);
             }
