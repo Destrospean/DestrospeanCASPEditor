@@ -88,13 +88,13 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         {
             foreach (var attribute in Attributes.Values)
             {
-                uint buffers = 0;
+                var buffers = 0u;
                 GL.GenBuffers(1, out buffers);
                 Buffers.Add(attribute.Name, buffers);
             }
             foreach (var uniform in Uniforms.Values)
             {
-                uint buffers = 0;
+                var buffers = 0u;
                 GL.GenBuffers(1, out buffers);
                 Buffers.Add(uniform.Name, buffers);
             }

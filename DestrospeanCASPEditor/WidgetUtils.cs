@@ -140,7 +140,9 @@ namespace Destrospean.DestrospeanCASPEditor
                             var material = mainWindow.Materials[geometryResourceKey];
                             switch (element.Field)
                             {
+#pragma warning disable 0618
                                 case FieldType.Ambient:
+#pragma warning restore 0618
                                     material.AmbientColor = color;
                                     break;
                                 case FieldType.Diffuse:

@@ -500,9 +500,11 @@ public partial class MainWindow : Window
                 string ambientMapKey, diffuseMapKey, normalMapKey, specularMapKey;
                 material = new Material
                     {
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out ambientColor) ? ambientColor : new Vector3(1, 1, 1),
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out diffuseColor) ? diffuseColor : new Vector3(1, 1, 1),
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out specularColor) ? specularColor : new Vector3(1, 1, 1),
+#pragma warning disable 0618
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out ambientColor) ? ambientColor : new Vector3(),
+#pragma warning restore 0618
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out diffuseColor) ? diffuseColor : new Vector3(),
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out specularColor) ? specularColor : new Vector3(),
                         AmbientMap = materialMapKeys.TryGetValue(FieldType.AmbientOcclusionMap, out ambientMapKey) ? ambientMapKey : "",
                         DiffuseMap = materialMapKeys.TryGetValue(FieldType.DiffuseMap, out diffuseMapKey) ? diffuseMapKey : "",
                         NormalMap = materialMapKeys.TryGetValue(FieldType.NormalMap, out normalMapKey) ? normalMapKey : "",
@@ -510,13 +512,13 @@ public partial class MainWindow : Window
                     };
                 Materials.Add(key, material);
             }
-            if (material.SpecularMap != "")
-            {
-                LoadTexture(material.SpecularMap);
-            }
             if (material.AmbientMap != "")
             {
                 LoadTexture(material.AmbientMap);
+            }
+            if (material.SpecularMap != "")
+            {
+                LoadTexture(material.SpecularMap);
             }
             mObjects.Add(new Volume
                 {
