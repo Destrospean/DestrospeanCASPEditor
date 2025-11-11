@@ -140,6 +140,9 @@ namespace Destrospean.DestrospeanCASPEditor
                             var material = mainWindow.Materials[geometryResourceKey];
                             switch (element.Field)
                             {
+                                case FieldType.Ambient:
+                                    material.AmbientColor = color;
+                                    break;
                                 case FieldType.Diffuse:
                                     material.DiffuseColor = color;
                                     break;
@@ -203,6 +206,9 @@ namespace Destrospean.DestrospeanCASPEditor
                             var material = mainWindow.Materials[geometryResourceKey];
                             switch (element.Field)
                             {
+                                case FieldType.AmbientOcclusionMap:
+                                    material.AmbientMap = key;
+                                    break;
                                 case FieldType.DiffuseMap:
                                     material.DiffuseMap = key;
                                     break;

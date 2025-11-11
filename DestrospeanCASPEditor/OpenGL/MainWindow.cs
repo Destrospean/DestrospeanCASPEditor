@@ -325,11 +325,110 @@ public partial class MainWindow : Window
                     gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                 }}
             }}", mat4InverseFunction)));
-        mActiveShader = "textured";
-        mLights.Add(new Light(new Vector3(), new Vector3(0.4f, 0.4f, 0.4f)));
-        mLights.Add(new Light(new Vector3(5, 0, 0), new Vector3(0.9f, 0.1f, 0.1f)));
-        mLights.Add(new Light(new Vector3(-5, 0, 0), new Vector3(0.1f, 0.9f, 0.1f)));
-        mLights.Add(new Light(new Vector3(0, 5, 0), new Vector3(0.1f, 0.1f, 0.9f)));
+        mShaders.Add("lit_advanced", new ShaderProgram(litVertexShader, string.Format(@"
+            #version 120
+            // Holds information about a light
+            struct Light
+            {{
+                vec3 position;
+                vec3 color;
+                float ambientIntensity;
+                float diffuseIntensity;
+                int type;
+                vec3 direction;
+                float coneAngle;
+                float linearAttenuation;
+                float quadraticAttenuation;
+                float radius;
+            }};
+            varying vec3 v_norm;
+            varying vec3 v_pos;
+            varying vec2 f_texcoord;
+            // Texture information
+            uniform sampler2D maintexture;
+            uniform bool hasSpecularMap;
+            uniform sampler2D map_specular;
+            uniform mat4 view;
+            // Material information
+            uniform vec3 material_ambient;
+            uniform vec3 material_diffuse;
+            uniform vec3 material_specular;
+            uniform float material_specExponent;
+            // Array of lights used in the shader
+            uniform Light lights[5];
+
+            {0}
+
+            void main()
+            {{
+                gl_FragColor = vec4(0, 0, 0, 1);
+                // Texture information
+                vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
+                vec4 texcolor = texture2D(maintexture, flipped_texcoord.xy);
+                vec3 n = normalize(v_norm);
+                // Loop through lights, adding the lighting from each one
+                for (int i = 0; i < 5; i++)
+                {{
+                    // Skip lights with no effect
+                    if (lights[i].color == vec3(0, 0, 0))
+                    {{
+                        continue;
+                    }}
+                    vec3 lightvec = normalize(lights[i].position - v_pos);
+                    vec4 lightcolor = vec4(0, 0, 0, 1);
+                    // Check spotlight angle
+                    bool inCone = false;
+                    if (lights[i].type == 1 && degrees(acos(dot(lightvec, lights[i].direction))) < lights[i].coneAngle)
+                    {{
+                        inCone = true;
+                    }}
+                    // Directional lighting
+                    if (lights[i].type == 2)
+                    {{
+                        lightvec = lights[i].direction;
+                    }}
+                    // Colors
+                    vec4 light_ambient = lights[i].ambientIntensity * vec4(lights[i].color, 0.0);
+                    vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
+                    // Ambient lighting
+                    lightcolor = lightcolor + texcolor * light_ambient * vec4(material_ambient, 0.0);
+                    // Diffuse lighting
+                    float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
+                    // Spotlight, limit light to specific angle
+                    if (lights[i].type != 1 || inCone)
+                    {{
+                        lightcolor = lightcolor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
+                    }}
+                    // Specular lighting
+                    vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
+                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
+                    float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
+                    // Specular map
+                    if (hasSpecularMap)
+                    {{
+                        material_specularreflection = material_specularreflection * texture2D(map_specular, flipped_texcoord.xy).r;
+                    }}
+                    // Spotlight, specular reflections are also limited by angle
+                    if (lights[i].type != 1 || inCone)
+                    {{
+                        lightcolor = lightcolor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
+                    }}
+                    // Attenuation
+                    float distancefactor = distance(lights[i].position, v_pos);
+                    float attenuation = 1.0 / (1.0 + (distancefactor * lights[i].linearAttenuation) + (distancefactor * distancefactor * lights[i].quadraticAttenuation));
+                    gl_FragColor = gl_FragColor + lightcolor * attenuation;
+                }}
+            }}", mat4InverseFunction)));
+        mActiveShader = "lit_advanced";
+        Light pointLight = new Light(new Vector3(0, 1, 6), new Vector3(1, 1, 1));
+        pointLight.QuadraticAttenuation = .05f;
+
+        mLights.Add(pointLight);
+        Light pointLight1 = new Light(new Vector3(0, 1, -6), new Vector3(1, 1, 1));
+        pointLight1.QuadraticAttenuation = .05f;
+        pointLight1.Direction = new Vector3(0, 0, -1);
+        mLights.Add(pointLight1);
+        mCamera.Position += new Vector3(0f, 0f, 3f);
     }
 
     public void LoadGEOMs(CASPart casPart)
@@ -398,17 +497,27 @@ public partial class MainWindow : Window
                         materialMapKeys[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
                     }
                 }
-                Vector3 diffuseColor, specularColor;
-                string diffuseMapKey, normalMapKey, specularMapKey;
+                Vector3 ambientColor, diffuseColor, specularColor;
+                string ambientMapKey, diffuseMapKey, normalMapKey, specularMapKey;
                 material = new Material
                     {
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out ambientColor) ? ambientColor : new Vector3(1, 1, 1),
                         DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out diffuseColor) ? diffuseColor : new Vector3(1, 1, 1),
                         SpecularColor = materialColors.TryGetValue(FieldType.Specular, out specularColor) ? specularColor : new Vector3(1, 1, 1),
-                        DiffuseMap = materialMapKeys.TryGetValue(FieldType.DiffuseMap, out diffuseMapKey) ? diffuseMapKey : null,
-                        NormalMap = materialMapKeys.TryGetValue(FieldType.NormalMap, out normalMapKey) ? normalMapKey : null,
-                        SpecularMap = materialMapKeys.TryGetValue(FieldType.SpecularMap, out specularMapKey) ? specularMapKey : null
+                        AmbientMap = materialMapKeys.TryGetValue(FieldType.AmbientOcclusionMap, out ambientMapKey) ? ambientMapKey : "",
+                        DiffuseMap = materialMapKeys.TryGetValue(FieldType.DiffuseMap, out diffuseMapKey) ? diffuseMapKey : "",
+                        NormalMap = materialMapKeys.TryGetValue(FieldType.NormalMap, out normalMapKey) ? normalMapKey : "",
+                        SpecularMap = materialMapKeys.TryGetValue(FieldType.SpecularMap, out specularMapKey) ? specularMapKey : ""
                     };
                 Materials.Add(key, material);
+            }
+            if (material.SpecularMap != "")
+            {
+                LoadTexture(material.SpecularMap);
+            }
+            if (material.AmbientMap != "")
+            {
+                LoadTexture(material.AmbientMap);
             }
             mObjects.Add(new Volume
                 {
@@ -417,7 +526,7 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = material.DiffuseMap == null ? -1 : LoadTexture(material.DiffuseMap),
+                    TextureID = material.DiffuseMap == "" ? -1 : LoadTexture(material.DiffuseMap),
                     Vertices = vertices.ToArray()
                 });
         }
@@ -525,99 +634,116 @@ public partial class MainWindow : Window
         GL.Enable(EnableCap.DepthTest);
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         mShaders[mActiveShader].EnableVertexAttribArrays();
-
         var indexAt = 0;
-
-        // Draw all objects
         foreach (var volume in mObjects)
         {
             GL.BindTexture(TextureTarget.Texture2D, volume.TextureID);
-
             GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref volume.ModelViewProjectionMatrix);
-
             if (mShaders[mActiveShader].GetAttribute("maintexture") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), volume.TextureID);
             }
-
             if (mShaders[mActiveShader].GetUniform("view") != -1)
             {
                 GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("view"), false, ref mViewMatrix);
             }
-
             if (mShaders[mActiveShader].GetUniform("model") != -1)
             {
                 GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("model"), false, ref volume.ModelMatrix);
             }
-
             if (mShaders[mActiveShader].GetUniform("material_ambient") != -1)
             {
                 GL.Uniform3(mShaders[mActiveShader].GetUniform("material_ambient"), ref volume.Material.AmbientColor);
             }
-
             if (mShaders[mActiveShader].GetUniform("material_diffuse") != -1)
             {
                 GL.Uniform3(mShaders[mActiveShader].GetUniform("material_diffuse"), ref volume.Material.DiffuseColor);
             }
-
             if (mShaders[mActiveShader].GetUniform("material_specular") != -1)
             {
                 GL.Uniform3(mShaders[mActiveShader].GetUniform("material_specular"), ref volume.Material.SpecularColor);
             }
-
             if (mShaders[mActiveShader].GetUniform("material_specExponent") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetUniform("material_specExponent"), volume.Material.SpecularExponent);
             }
-
+            if (mShaders[mActiveShader].GetUniform("map_specular") != -1)
+            {
+                if (volume.Material.SpecularMap != "")
+                {
+                    GL.ActiveTexture(TextureUnit.Texture1);
+                    int textureId;
+                    if (TextureIDs.TryGetValue(volume.Material.SpecularMap, out textureId))
+                    {
+                        GL.BindTexture(TextureTarget.Texture2D, textureId);
+                        GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
+                        GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 1);
+                        GL.ActiveTexture(TextureUnit.Texture0);
+                    }
+                }
+                else
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 0);
+                }
+            }
             if (mShaders[mActiveShader].GetUniform("light_position") != -1)
             {
                 GL.Uniform3(mShaders[mActiveShader].GetUniform("light_position"), ref mLights[0].Position);
             }
-
             if (mShaders[mActiveShader].GetUniform("light_color") != -1)
             {
                 GL.Uniform3(mShaders[mActiveShader].GetUniform("light_color"), ref mLights[0].Color);
             }
-
             if (mShaders[mActiveShader].GetUniform("light_diffuseIntensity") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetUniform("light_diffuseIntensity"), mLights[0].DiffuseIntensity);
             }
-
             if (mShaders[mActiveShader].GetUniform("light_ambientIntensity") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetUniform("light_ambientIntensity"), mLights[0].AmbientIntensity);
             }
-
-
             for (int i = 0; i < Math.Min(mLights.Count, kMaxLights); i++)
             {
                 if (mShaders[mActiveShader].GetUniform("lights[" + i + "].position") != -1)
                 {
                     GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].position"), ref mLights[i].Position);
                 }
-
                 if (mShaders[mActiveShader].GetUniform("lights[" + i + "].color") != -1)
                 {
                     GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].color"), ref mLights[i].Color);
                 }
-
                 if (mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity") != -1)
                 {
                     GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity"), mLights[i].DiffuseIntensity);
                 }
-
                 if (mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity") != -1)
                 {
                     GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity"), mLights[i].AmbientIntensity);
                 }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].direction") != -1)
+                {
+                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].direction"), ref mLights[i].Direction);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].type") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].type"), (int)mLights[i].Type);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle"), mLights[i].ConeAngle);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation"), mLights[i].LinearAttenuation);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation"), mLights[i].QuadraticAttenuation);
+                }
             }
-
             GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
             indexAt += volume.IndexCount;
         }
-
         mShaders[mActiveShader].DisableVertexAttribArrays();
         GL.Flush();
         OpenTK.Graphics.GraphicsContext.CurrentContext.SwapBuffers();
@@ -672,8 +798,6 @@ public partial class MainWindow : Window
             volume.CalculateModelMatrix();
             volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, GLWidget.WidthRequest / (float)GLWidget.HeightRequest, 1, 40);
             volume.ModelViewProjectionMatrix = volume.ModelMatrix * volume.ViewProjectionMatrix;
-            volume.Position = new Vector3(0, -1, -2);
-            volume.Scale = new Vector3(1, 1, 1);
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);

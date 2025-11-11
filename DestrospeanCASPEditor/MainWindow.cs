@@ -301,13 +301,14 @@ public partial class MainWindow : Window
     public void ClearTemporaryData()
     {
         mObjects.Clear();
+        CASParts.Clear();
+        GeometryResources.Clear();
+        Materials.Clear();
         foreach (var textureId in TextureIDs.Values)
         {
             GL.DeleteTexture(textureId);
         }
         TextureIDs.Clear();
-        CASParts.Clear();
-        GeometryResources.Clear();
         VPXYResources.Clear();
         ImageUtils.PreloadedGameImagePixbufs.Clear();
         ImageUtils.PreloadedGameImages.Clear();

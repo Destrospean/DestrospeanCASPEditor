@@ -2,20 +2,30 @@
 
 namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
+    public enum LightType
+    {
+        Directional,
+        Point,
+        Spot
+    }
+
     public class Light
     {
-        public Vector3 Color = new Vector3(),
-        Position;
+        public Vector3 Color, Direction, Position;
 
-        public float AmbientIntensity = .1f,
-        DiffuseIntensity = 1;
+        public float AmbientIntensity, ConeAngle, DiffuseIntensity, LinearAttenuation, QuadraticAttenuation;
+
+        public LightType Type;
 
         public Light(Vector3 position, Vector3 color, float diffuseIntensity = 1, float ambientIntensity = 1)
         {
             AmbientIntensity = ambientIntensity;
-            Color = color;
             DiffuseIntensity = diffuseIntensity;
+            Direction = new Vector3(0, 0, 1);
+            Color = color;
+            ConeAngle = 15;
             Position = position;
+            Type = LightType.Point;
         }
     }
 }
