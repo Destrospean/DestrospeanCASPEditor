@@ -361,10 +361,14 @@ public partial class MainWindow : Window
 
             void main()
             {{
-                gl_FragColor = vec4(0, 0, 0, 1);
                 // Texture information
                 vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
                 vec4 texcolor = texture2D(maintexture, flipped_texcoord.xy);
+                if (texcolor.a < 0.1)
+                {{
+                    discard;
+                }}
+                gl_FragColor = vec4(0, 0, 0, 1);
                 vec3 n = normalize(v_norm);
                 // Loop through lights, adding the lighting from each one
                 for (int i = 0; i < 5; i++)
@@ -420,10 +424,10 @@ public partial class MainWindow : Window
                 }}
             }}", mat4InverseFunction)));
         mActiveShader = "lit_advanced";
-        Light pointLight = new Light(new Vector3(0, 1, 6), new Vector3(1, 1, 1));
-        pointLight.QuadraticAttenuation = .05f;
-        mLights.Add(pointLight);
-        Light pointLight1 = new Light(new Vector3(0, 1, -6), new Vector3(1, 1, 1));
+        Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1));
+        pointLight0.QuadraticAttenuation = .05f;
+        mLights.Add(pointLight0);
+        Light pointLight1 = new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1));
         pointLight1.QuadraticAttenuation = .05f;
         pointLight1.Direction = new Vector3(0, 0, -1);
         mLights.Add(pointLight1);
@@ -464,7 +468,7 @@ public partial class MainWindow : Window
                     var uvElement = vertexElement as GEOM.UVElement;
                     if (uvElement != null)
                     {
-                        textureCoordinates.Add(new Vector2(uvElement.U, uvElement.V));
+                        textureCoordinates.Add(new Vector2(uvElement.U, 1 - uvElement.V));
                     }
                 }
             }
@@ -501,10 +505,10 @@ public partial class MainWindow : Window
                 material = new Material
                     {
 #pragma warning disable 0618
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(),
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(1, 1, 1),
 #pragma warning restore 0618
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(),
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(),
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
                         AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
                         DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
                         NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
