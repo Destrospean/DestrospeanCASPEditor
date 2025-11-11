@@ -70,33 +70,33 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
 
         public void DisableVertexAttribArrays()
         {
-            for (var i = 0; i < Attributes.Count; i++)
+            foreach (var attribute in Attributes.Values)
             {
-                GL.DisableVertexAttribArray(new List<AttributeInfo>(Attributes.Values)[i].Address);
+                GL.DisableVertexAttribArray(attribute.Address);
             }
         }
 
         public void EnableVertexAttribArrays()
         {
-            for (var i = 0; i < Attributes.Count; i++)
+            foreach (var attribute in Attributes.Values)
             {
-                GL.EnableVertexAttribArray(new List<AttributeInfo>(Attributes.Values)[i].Address);
+                GL.EnableVertexAttribArray(attribute.Address);
             }
         }
 
         public void GenBuffers()
         {
-            for (var i = 0; i < Attributes.Count; i++)
+            foreach (var attribute in Attributes.Values)
             {
-                uint buffer = 0;
-                GL.GenBuffers(1, out buffer);
-                Buffers.Add(new List<AttributeInfo>(Attributes.Values)[i].Name, buffer);
+                uint buffers = 0;
+                GL.GenBuffers(1, out buffers);
+                Buffers.Add(attribute.Name, buffers);
             }
-            for (var i = 0; i < Uniforms.Count; i++)
+            foreach (var uniform in Uniforms.Values)
             {
-                uint buffer = 0;
-                GL.GenBuffers(1, out buffer);
-                Buffers.Add(new List<UniformInfo>(Uniforms.Values)[i].Name, buffer);
+                uint buffers = 0;
+                GL.GenBuffers(1, out buffers);
+                Buffers.Add(uniform.Name, buffers);
             }
         }
 
@@ -145,22 +145,16 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             for (var i = 0; i < AttributeCount; i++)
             {
                 var info = new AttributeInfo();
-                var length = 0;
-                var name = new System.Text.StringBuilder();
-                GL.GetActiveAttrib(ProgramID, i, 256, out length, out info.Size, out info.Type, name);
-                info.Name = name.ToString();
+                info.Name = GL.GetActiveAttrib(ProgramID, i, out info.Size, out info.Type);
                 info.Address = GL.GetAttribLocation(ProgramID, info.Name);
-                Attributes.Add(name.ToString(), info);
+                Attributes.Add(info.Name, info);
             }
             for (var i = 0; i < UniformCount; i++)
             {
                 var info = new UniformInfo();
-                var length = 0;
-                var name = new System.Text.StringBuilder();
-                GL.GetActiveUniform(ProgramID, i, 256, out length, out info.Size, out info.Type, name);
-                info.Name = name.ToString();
-                Uniforms.Add(name.ToString(), info);
+                info.Name = GL.GetActiveUniform(ProgramID, i, out info.Size, out info.Type);
                 info.Address = GL.GetUniformLocation(ProgramID, info.Name);
+                Uniforms.Add(info.Name, info);
             }
         }
 
