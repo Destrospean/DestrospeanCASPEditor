@@ -30,7 +30,6 @@ public partial class MainWindow : Window
 
     Vector2 mLastMousePosition;
 
-
     float mMouseX,
     mMouseY,
     mTime = 0;
@@ -40,7 +39,6 @@ public partial class MainWindow : Window
     readonly Dictionary<string, ShaderProgram> mShaders = new Dictionary<string, ShaderProgram>();
 
     Vector2[] mTextureCoordinateData;
-
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
@@ -325,7 +323,7 @@ public partial class MainWindow : Window
     public void LoadGEOMs(CASPart casPart)
     {
         mObjects.Clear();
-        foreach (var geometryResource in casPart.LODs[ResourcePropertyNotebook.CurrentPage])
+        foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
             List<Vector3> colors = new List<Vector3>(),

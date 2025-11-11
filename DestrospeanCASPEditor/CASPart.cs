@@ -12,7 +12,7 @@ namespace Destrospean.DestrospeanCASPEditor
     {
         public readonly CASPartResource.CASPartResource CASPartResource;
 
-        public readonly List<GeometryResource>[] LODs = new List<GeometryResource>[4];
+        public readonly Dictionary<int, List<GeometryResource>> LODs = new Dictionary<int, List<GeometryResource>>();
 
         public readonly IPackage ParentPackage;
 

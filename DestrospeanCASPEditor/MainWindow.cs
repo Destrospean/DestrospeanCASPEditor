@@ -104,7 +104,7 @@ public partial class MainWindow : Window
                 LoadGEOMs(casPart);
             });
         ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
-        foreach (var lod in casPart.LODs)
+        foreach (var lodKvp in casPart.LODs)
         {
             var geomNotebook = new Notebook
                 {
@@ -182,7 +182,7 @@ public partial class MainWindow : Window
                             {
                                 int selectedGEOMIndex = geomNotebook.CurrentPage,
                                 selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
-                                if (geometryResourceKvp.Value == lod[selectedGEOMIndex])
+                                if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                 {
                                     IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key,
                                     tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
@@ -219,10 +219,10 @@ public partial class MainWindow : Window
             lodPageVBox.ShowAll();
             ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label
                 {
-                    Text = "LOD " + ResourcePropertyNotebook.NPages.ToString()
+                    Text = "LOD " + lodKvp.Key.ToString()
                 });
-            lod.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image, this));
-            if (lod == casPart.LODs[startLODPageIndex])
+            lodKvp.Value.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image, this));
+            if (lodKvp.Value == new List<List<GeometryResource>>(casPart.LODs.Values)[startLODPageIndex])
             {
                 ResourcePropertyNotebook.CurrentPage = startLODPageIndex;
                 geomNotebook.CurrentPage = startGEOMPageIndex;
