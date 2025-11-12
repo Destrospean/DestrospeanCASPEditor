@@ -72,7 +72,7 @@ public partial class MainWindow : Window
     public void InitProgram()
     {
         GL.GenBuffers(1, out mIBOElements);
-        string mat3InverseFunction = @"
+        string backportedFunctions = @"
             mat3 inverse(mat3 m)
             {
                 vec3 c0 = m[0];
@@ -82,61 +82,79 @@ public partial class MainWindow : Window
                 vec3 v1 = cross(c2, c0);
                 vec3 v2 = cross(c0, c1);
                 float inv_det = 1.0 / dot(c0, v0);
-                return mat3(
-                    v0.x * inv_det, v0.y * inv_det, v0.z * inv_det,
-                    v1.x * inv_det, v1.y * inv_det, v1.z * inv_det,
-                    v2.x * inv_det, v2.y * inv_det, v2.z * inv_det
-                );
-            }",
-        mat4InverseFunction = @"
+                return mat3(v0.x * inv_det, v0.y * inv_det, v0.z * inv_det, v1.x * inv_det, v1.y * inv_det, v1.z * inv_det, v2.x * inv_det, v2.y * inv_det, v2.z * inv_det);
+            }
+
             mat4 inverse(mat4 m)
             {
-                float Coef00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-                float Coef02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
-                float Coef03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
-                float Coef04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-                float Coef06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
-                float Coef07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
-                float Coef08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-                float Coef10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
-                float Coef11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
-                float Coef12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-                float Coef14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
-                float Coef15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
-                float Coef16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-                float Coef18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
-                float Coef19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
-                float Coef20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
-                float Coef22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
-                float Coef23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
-                vec4 Fac0 = vec4(Coef00, Coef00, Coef02, Coef03);
-                vec4 Fac1 = vec4(Coef04, Coef04, Coef06, Coef07);
-                vec4 Fac2 = vec4(Coef08, Coef08, Coef10, Coef11);
-                vec4 Fac3 = vec4(Coef12, Coef12, Coef14, Coef15);
-                vec4 Fac4 = vec4(Coef16, Coef16, Coef18, Coef19);
-                vec4 Fac5 = vec4(Coef20, Coef20, Coef22, Coef23);
-                vec4 Vec0 = vec4(m[1][0], m[0][0], m[0][0], m[0][0]);
-                vec4 Vec1 = vec4(m[1][1], m[0][1], m[0][1], m[0][1]);
-                vec4 Vec2 = vec4(m[1][2], m[0][2], m[0][2], m[0][2]);
-                vec4 Vec3 = vec4(m[1][3], m[0][3], m[0][3], m[0][3]);
-                vec4 Inv0 = Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2;
-                vec4 Inv1 = Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4;
-                vec4 Inv2 = Vec0 * Fac1 - Vec1 * Fac3 + Vec3 * Fac5;
-                vec4 Inv3 = Vec0 * Fac2 - Vec1 * Fac4 + Vec2 * Fac5;
-                vec4 SignA = vec4(1.0, -1.0, 1.0, -1.0);
-                vec4 SignB = vec4(-1.0, 1.0, -1.0, 1.0);
-                mat4 Inverse = mat4(
-                    Inv0 * SignA,
-                    Inv1 * SignB,
-                    Inv2 * SignA,
-                    Inv3 * SignB
-                );
-                vec4 row0 = Inverse[0];
+                float c00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+                float c01 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+                float c02 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+                float c03 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+                float c04 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+                float c05 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+                float c06 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+                float c07 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+                float c08 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+                float c09 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+                float c10 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+                float c11 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+                float c12 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+                float c13 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+                float c14 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+                float c15 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+                float c16 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+                float c17 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+                vec4 f0 = vec4(c00, c00, c01, c02);
+                vec4 f1 = vec4(c03, c03, c04, c05);
+                vec4 f2 = vec4(c06, c06, c07, c08);
+                vec4 f3 = vec4(c09, c09, c10, c11);
+                vec4 f4 = vec4(c12, c12, c13, c14);
+                vec4 f5 = vec4(c15, c15, c16, c17);
+                vec4 v0 = vec4(m[1][0], m[0][0], m[0][0], m[0][0]);
+                vec4 v1 = vec4(m[1][1], m[0][1], m[0][1], m[0][1]);
+                vec4 v2 = vec4(m[1][2], m[0][2], m[0][2], m[0][2]);
+                vec4 v3 = vec4(m[1][3], m[0][3], m[0][3], m[0][3]);
+                vec4 i0 = v1 * f0 - v2 * f1 + v3 * f2;
+                vec4 i1 = v0 * f0 - v2 * f3 + v3 * f4;
+                vec4 i2 = v0 * f1 - v1 * f3 + v3 * f5;
+                vec4 i3 = v0 * f2 - v1 * f4 + v2 * f5;
+                vec4 signA = vec4(1.0, -1.0, 1.0, -1.0);
+                vec4 signB = vec4(-1.0, 1.0, -1.0, 1.0);
+                mat4 inv = mat4(i0 * signA, i1 * signB, i2 * signA, i3 * signB);
+                vec4 row0 = inv[0];
                 float det = dot(m[0], row0);
-                return Inverse * (1.0 / det);
+                return inv * (1.0 / det);
+            }
+
+            mat3 transpose(mat3 m)
+            {
+                return mat3(vec3(m[0].x, m[1].x, m[2].x), vec3(m[0].y, m[1].y, m[2].y), vec3(m[0].z, m[1].z, m[2].z));
+            }
+
+            mat4 transpose(mat4 m)
+            {
+                mat4 result;
+                result[0][0] = m[0][0];
+                result[0][1] = m[1][0];
+                result[0][2] = m[2][0];
+                result[0][3] = m[3][0];
+                result[1][0] = m[0][1];
+                result[1][1] = m[1][1];
+                result[1][2] = m[2][1];
+                result[1][3] = m[3][1];
+                result[2][0] = m[0][2];
+                result[2][1] = m[1][2];
+                result[2][2] = m[2][2];
+                result[2][3] = m[3][2];
+                result[3][0] = m[0][3];
+                result[3][1] = m[1][3];
+                result[3][2] = m[2][3];
+                result[3][3] = m[3][3];
+                return result;
             }",
         litVertexShader = string.Format(@"
-            #version 120
+            #version 110
             attribute vec3 vPosition;
             attribute vec3 vNormal;
             attribute vec2 texcoord;
@@ -154,12 +172,12 @@ public partial class MainWindow : Window
                 gl_Position = modelview * vec4(vPosition, 1.0);
                 f_texcoord = texcoord;
 
-                mat3 normMatrix = transpose(inverse(mat3(model)));
+                mat3 normMatrix = transpose(inverse(mat3(model[0].xyz, model[1].xyz, model[2].xyz)));
                 v_norm = normMatrix * vNormal;
                 v_pos = (model * vec4(vPosition, 1.0)).xyz;
-            }}", mat3InverseFunction);
+            }}", backportedFunctions);
         mShaders.Add("default", new ShaderProgram(@"
-            #version 120
+            #version 110
             attribute vec3 vPosition;
             attribute vec3 vColor;
             varying vec4 color;
@@ -170,7 +188,7 @@ public partial class MainWindow : Window
                 gl_Position = modelview * vec4(vPosition, 1.0);
                 color = vec4(vColor, 1.0);
             }", @"
-            #version 120
+            #version 110
             varying vec4 color;
  
             void main()
@@ -178,7 +196,7 @@ public partial class MainWindow : Window
                 gl_FragColor = color;
             }"));
         mShaders.Add("textured", new ShaderProgram(@"
-            #version 120
+            #version 110
             attribute vec3 vPosition;
             attribute vec2 texcoord;
             varying vec2 f_texcoord;
@@ -189,17 +207,22 @@ public partial class MainWindow : Window
                 gl_Position = modelview * vec4(vPosition, 1.0);
                 f_texcoord = texcoord;
             }", @"
-            #version 120
+            #version 110
             varying vec2 f_texcoord;
             uniform sampler2D maintexture;
  
             void main()
             {
                 vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                gl_FragColor = texture2D(maintexture, flipped_texcoord);
+                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
+                if (texcolor.a < 0.1)
+                {{
+                    discard;
+                }}
+                gl_FragColor = texcolor;
             }"));
         mShaders.Add("normal", new ShaderProgram(@"
-            #version 120
+            #version 110
             attribute vec3 vPosition;
             attribute vec3 vNormal;
             varying vec3 v_norm;
@@ -208,10 +231,10 @@ public partial class MainWindow : Window
             void main()
             {
                 gl_Position = modelview * vec4(vPosition, 1.0);
-                v_norm = normalize(mat3(modelview) * vNormal);
+                v_norm = normalize(mat3(modelview[0].xyz, modelview[1].xyz, modelview[2].xyz) * vNormal);
                 v_norm = vNormal;
             }", @"
-            #version 120
+            #version 110
             varying vec3 v_norm;
  
             void main()
@@ -220,7 +243,7 @@ public partial class MainWindow : Window
                 gl_FragColor = vec4(0.5 + 0.5 * n, 1.0);
             }"));
         mShaders.Add("lit", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 120
+            #version 110
             varying vec3 v_norm;
             varying vec3 v_pos;
             varying vec2 f_texcoord;
@@ -256,9 +279,9 @@ public partial class MainWindow : Window
                 vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
                 float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
-            }}", mat4InverseFunction)));
+            }}", backportedFunctions)));
         mShaders.Add("lit_multiple", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 120
+            #version 110
             // Holds information about a light
             struct Light
             {{
@@ -324,9 +347,9 @@ public partial class MainWindow : Window
                     // Spotlight, specular reflections are also limited by angle
                     gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                 }}
-            }}", mat4InverseFunction)));
+            }}", backportedFunctions)));
         mShaders.Add("lit_advanced", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 120
+            #version 110
             // Holds information about a light
             struct Light
             {{
@@ -422,8 +445,8 @@ public partial class MainWindow : Window
                     float attenuation = 1.0 / (1.0 + (distancefactor * lights[i].linearAttenuation) + (distancefactor * distancefactor * lights[i].quadraticAttenuation));
                     gl_FragColor = gl_FragColor + lightcolor * attenuation;
                 }}
-            }}", mat4InverseFunction)));
-        mActiveShader = "lit_advanced";
+            }}", backportedFunctions)));
+        mActiveShader = /*Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" :*/ "lit_advanced";
         Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1));
         pointLight0.QuadraticAttenuation = .05f;
         mLights.Add(pointLight0);
@@ -627,7 +650,7 @@ public partial class MainWindow : Window
 
     protected void OnRenderFrame()
     {
-        GL.Viewport(0, 0, GLWidget.WidthRequest, GLWidget.HeightRequest);
+        GL.Viewport(0, 0, (int)(GLWidget.WidthRequest * WidgetUtils.WineScaleDenominator), (int)(GLWidget.HeightRequest * WidgetUtils.WineScaleDenominator));
         GL.ClearColor(System.Drawing.Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.Enable(EnableCap.DepthTest);

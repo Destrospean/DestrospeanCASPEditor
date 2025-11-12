@@ -33,8 +33,10 @@ public partial class MainWindow : Window
         MainTable.Attach(new Gtk.Image
             {
                 HeightRequest = Image.HeightRequest,
+                Pixbuf = ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)),
                 WidthRequest = Image.WidthRequest,
-                Pixbuf = ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127))
+                Xalign = 0,
+                Yalign = 0
             }, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         PrepareGLWidget();
         MainTable.Attach(GLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
