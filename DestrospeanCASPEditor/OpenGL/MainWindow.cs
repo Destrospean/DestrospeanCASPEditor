@@ -154,7 +154,10 @@ public partial class MainWindow : Window
                 return result;
             }",
         litVertexShader = string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             attribute vec3 vPosition;
             attribute vec3 vNormal;
             attribute vec2 texcoord;
@@ -177,7 +180,10 @@ public partial class MainWindow : Window
                 v_pos = (model * vec4(vPosition, 1.0)).xyz;
             }}", backportedFunctions);
         mShaders.Add("default", new ShaderProgram(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             attribute vec3 vPosition;
             attribute vec3 vColor;
             varying vec4 color;
@@ -188,7 +194,10 @@ public partial class MainWindow : Window
                 gl_Position = modelview * vec4(vPosition, 1.0);
                 color = vec4(vColor, 1.0);
             }", @"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             varying vec4 color;
  
             void main()
@@ -196,7 +205,10 @@ public partial class MainWindow : Window
                 gl_FragColor = color;
             }"));
         mShaders.Add("textured", new ShaderProgram(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             attribute vec3 vPosition;
             attribute vec2 texcoord;
             varying vec2 f_texcoord;
@@ -207,7 +219,10 @@ public partial class MainWindow : Window
                 gl_Position = modelview * vec4(vPosition, 1.0);
                 f_texcoord = texcoord;
             }", @"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             varying vec2 f_texcoord;
             uniform sampler2D maintexture;
  
@@ -222,7 +237,10 @@ public partial class MainWindow : Window
                 gl_FragColor = texcolor;
             }"));
         mShaders.Add("normal", new ShaderProgram(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             attribute vec3 vPosition;
             attribute vec3 vNormal;
             varying vec3 v_norm;
@@ -234,7 +252,10 @@ public partial class MainWindow : Window
                 v_norm = normalize(mat3(modelview[0].xyz, modelview[1].xyz, modelview[2].xyz) * vNormal);
                 v_norm = vNormal;
             }", @"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             varying vec3 v_norm;
  
             void main()
@@ -243,7 +264,10 @@ public partial class MainWindow : Window
                 gl_FragColor = vec4(0.5 + 0.5 * n, 1.0);
             }"));
         mShaders.Add("lit", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             varying vec3 v_norm;
             varying vec3 v_pos;
             varying vec2 f_texcoord;
@@ -281,7 +305,10 @@ public partial class MainWindow : Window
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
         mShaders.Add("lit_multiple", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             // Holds information about a light
             struct Light
             {{
@@ -349,7 +376,10 @@ public partial class MainWindow : Window
                 }}
             }}", backportedFunctions)));
         mShaders.Add("lit_advanced", new ShaderProgram(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
+
             // Holds information about a light
             struct Light
             {{
@@ -454,7 +484,7 @@ public partial class MainWindow : Window
         pointLight1.QuadraticAttenuation = .05f;
         pointLight1.Direction = new Vector3(0, 0, -1);
         mLights.Add(pointLight1);
-        mCamera.Position += new Vector3(0f, 1f, 3f);
+        mCamera.Position = new Vector3(0, 7f / 6, 5f / 3);
     }
 
     public void LoadGEOMs(CASPart casPart)
@@ -600,7 +630,7 @@ public partial class MainWindow : Window
         GLWidget = new GLWidget
             {
                 HeightRequest = Image.HeightRequest,
-                WidthRequest = Image.WidthRequest
+                WidthRequest = Image.WidthRequest,
             };
         GLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
         GLWidget.ButtonPressEvent += (o, args) => mMouseButtonHeld = (int)args.Event.Button;
@@ -617,10 +647,10 @@ public partial class MainWindow : Window
                         double deltaX = currentX - mMouseX,
                         deltaY = currentY - mMouseY,
                         distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY),
-                        secondsElapsed = (currentTime - mTime) / 1000;
+                        secondsElapsed = (currentTime - mTime) * .001;
                         if (secondsElapsed > 0)
                         {
-                            mCamera.MoveSpeed = (float)(distance / secondsElapsed) / 10000;
+                            mCamera.MoveSpeed = (float)(distance / secondsElapsed * .0001);
                         }
                     }
                     mMouseX = (float)currentX;
@@ -763,7 +793,7 @@ public partial class MainWindow : Window
                     GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation"), mLights[i].QuadraticAttenuation);
                 }
             }
-            GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
+            GL.DrawElementsInstanced(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, new IntPtr(indexAt * sizeof(uint)), 1);
             indexAt += volume.IndexCount;
         }
         mShaders[mActiveShader].DisableVertexAttribArrays();
@@ -818,7 +848,7 @@ public partial class MainWindow : Window
         foreach (var volume in mObjects)
         {
             volume.CalculateModelMatrix();
-            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, GLWidget.WidthRequest / (float)GLWidget.HeightRequest, 1, 40);
+            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, (float)GLWidget.WidthRequest / GLWidget.HeightRequest, 1, 40);
             volume.ModelViewProjectionMatrix = volume.ModelMatrix * volume.ViewProjectionMatrix;
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);

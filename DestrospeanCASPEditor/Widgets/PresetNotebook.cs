@@ -107,9 +107,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                         colorButton.Color.Blue,
                                         colorButton.Alpha
                                     };
-                                var output = "";
-                                rgba.ForEach(x => output += "," + ((float)x / ushort.MaxValue).ToString("F4"));
-                                complate.SetValue(name, output.Substring(1));
+                                complate.SetValue(name, string.Join(",", rgba.ConvertAll(new System.Converter<ushort, float>(x => (float)x / ushort.MaxValue))));
                             };
                         valueWidget = colorButton;
                         break;
