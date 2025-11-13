@@ -9,8 +9,25 @@ using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
 
+[Flags]
+public enum NextStateOptions : byte
+{
+    NoUnsavedChanges,
+    UnsavedChanges,
+    Rerender,
+    UnsavedChangesToRerender
+}
+
 public partial class MainWindow : Window
 {
+    bool mHasUnsavedChanges = false;
+
+    public static MainWindow Singleton
+    {
+        get;
+        private set;
+    }
+
     public IPackage CurrentPackage;
 
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
@@ -23,8 +40,45 @@ public partial class MainWindow : Window
 
     public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
 
+    public bool HasUnsavedChanges
+    {
+        get
+        {
+            return mHasUnsavedChanges;
+        }
+    }
+
+    public NextStateOptions NextState
+    {
+        set
+        {
+            if (value.HasFlag(NextStateOptions.Rerender))
+            {
+                TreeIter iter;
+                TreeModel model;
+                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                {
+                    if ((string)model.GetValue(iter, 0) == "CASP")
+                    {
+                        LoadGEOMs(CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)]);
+                    }
+                }
+            }
+            if (value.HasFlag(NextStateOptions.UnsavedChanges))
+            {
+                Title += mHasUnsavedChanges ? "" : " *";
+            }
+            else if (value == NextStateOptions.NoUnsavedChanges)
+            {
+                Title = Title.Substring(0, mHasUnsavedChanges && Title.EndsWith(" *") ? Title.Length - 2 : Title.Length);
+            }
+            mHasUnsavedChanges = value.HasFlag(NextStateOptions.UnsavedChanges);
+        }
+    }
+
     public MainWindow() : base(WindowType.Toplevel)
     {
+        Singleton = this;
         Build();
         RescaleAndReposition();
         BuildResourceTable();
@@ -50,7 +104,11 @@ public partial class MainWindow : Window
             {
                 ShowTabs = false
             };
-        var flagPageButtonHBox = new HBox(false, 0);
+        HBox buttonHBox = new HBox(false, 0), 
+        flagPageButtonHBox = new HBox(false, 0)
+            {
+                WidthRequest = Image.WidthRequest
+            };
         var flagPageVBox = new VBox(false, 0);
         var flagTables = new Table[2];
         for (var i = 0; i < flagTables.Length; i++)
@@ -58,27 +116,39 @@ public partial class MainWindow : Window
             flagTables[i] = new Table(2, 3, true);
             flagNotebook.AppendPage(flagTables[i], new Label());
         }
-        flagPageVBox.PackStart(flagPageButtonHBox, false, false, 0);
+        flagPageVBox.PackStart(buttonHBox, false, false, 0);
         flagPageVBox.PackStart(flagNotebook, true, true, 0);
         Button nextButton = new Button(),
-        prevButton = new Button();
+        prevButton = new Button(),
+        resetViewButton = new Button("Reset View");
         nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
             {
                 Xalign = .5f
             });
         prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None)
             {
-                Xalign = .5f
+                Xalign = .5f,
             });
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
+        resetViewButton.Clicked += (sender, e) =>
+            {
+                mCamera.Orientation = new OpenTK.Vector3((float)Math.PI, 0, 0);
+                mCamera.Position = new OpenTK.Vector3(0, 7f / 6, 5f / 3);
+            };
         flagNotebook.SwitchPage += (o, args) =>
             {
                 nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
                 prevButton.Sensitive = flagNotebook.CurrentPage > 0;
             };
-        flagPageButtonHBox.PackStart(prevButton, false, true, 4);
-        flagPageButtonHBox.PackStart(nextButton, false, true, 4);
+        Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
+        prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
+        nextButtonAlignment.Add(nextButton);
+        prevButtonAlignment.Add(prevButton);
+        flagPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
+        flagPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
+        flagPageButtonHBox.PackEnd(resetViewButton, false, true, 0);
+        buttonHBox.PackStart(flagPageButtonHBox, false, true, 0);
         flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Category", casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
         flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Type", casPart.CASPartResource, "Clothing"), 1, 2, 0, 2);
         flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Data Type", casPart.CASPartResource, "DataType"), 2, 3, 0, 2);
@@ -199,6 +269,7 @@ public partial class MainWindow : Window
                                         ResourcePropertyNotebook.Remove(child);
                                     }
                                     BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex);
+                                    NextState = NextStateOptions.UnsavedChanges;
                                     break;
                                 }
                             }
@@ -223,7 +294,7 @@ public partial class MainWindow : Window
                 {
                     Text = "LOD " + lodKvp.Key.ToString()
                 });
-            lodKvp.Value.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image, this));
+            lodKvp.Value.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image));
             if (lodKvp.Value == new List<List<GeometryResource>>(casPart.LODs.Values)[startLODPageIndex])
             {
                 ResourcePropertyNotebook.CurrentPage = startLODPageIndex;
@@ -430,6 +501,7 @@ public partial class MainWindow : Window
         CurrentPackage = null;
         ResourceUtils.MissingResourceKeys.Clear();
         RefreshWidgets();
+        NextState = NextStateOptions.NoUnsavedChanges;
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -447,6 +519,7 @@ public partial class MainWindow : Window
         CurrentPackage.DeleteResource(resourceIndexEntry);
         ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
         RefreshWidgets(false);
+        NextState = NextStateOptions.NoUnsavedChanges;
     }
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
@@ -463,6 +536,7 @@ public partial class MainWindow : Window
             {
                 ResourceUtils.ResolveResourceType(CurrentPackage, ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename));
                 RefreshWidgets(false);
+                NextState = NextStateOptions.UnsavedChanges;
             }
             catch (System.IO.InvalidDataException ex)
             {
@@ -494,6 +568,7 @@ public partial class MainWindow : Window
                 CurrentPackage = package;
                 ResourceUtils.MissingResourceKeys.Clear();
                 RefreshWidgets();
+                NextState = NextStateOptions.NoUnsavedChanges;
             }
             catch (System.IO.InvalidDataException ex)
             {
@@ -525,6 +600,7 @@ public partial class MainWindow : Window
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);
                 ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
                 RefreshWidgets(false);
+                NextState = NextStateOptions.UnsavedChanges;
             }
             catch (System.IO.InvalidDataException ex)
             {
@@ -574,6 +650,7 @@ public partial class MainWindow : Window
             CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
         }
         CurrentPackage.SavePackage();
+        NextState = NextStateOptions.NoUnsavedChanges;
     }
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)

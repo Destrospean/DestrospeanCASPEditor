@@ -24,42 +24,75 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
             ParentPackage = package;
-            ResourceIndexEntry = resourceIndexEntry;
             Presets = CASPartResource.Presets.ConvertAll(new System.Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            ResourceIndexEntry = resourceIndexEntry;
             LoadLODs(geometryResources, vpxyResources);
         }
 
-        public interface IComplate
+        public abstract class AComplate
         {
-            IPackage ParentPackage
+            protected readonly Dictionary<string, string> mPropertiesTyped;
+
+            protected readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
+
+            protected readonly XmlDocument mXmlDocument;
+
+            public abstract CASPart CASPart
             {
                 get;
             }
 
-            Dictionary<string, string> PropertiesTyped
+            public abstract IPackage ParentPackage
             {
                 get;
             }
 
-            List<string> PropertyNames
+            public virtual Dictionary<string, string> PropertiesTyped
             {
-                get;
+                get
+                {
+                    return mPropertiesTyped;
+                }
             }
-                
-            string GetValue(string propertyName);
 
-            void SetValue(string propertyName, string newValue);
+            public virtual List<string> PropertyNames
+            {
+                get
+                {
+                    return new List<string>(mPropertiesXmlNodes.Keys);
+                }
+            }
+
+            public AComplate()
+            {
+                mXmlDocument = new XmlDocument();
+                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
+                mPropertiesTyped = new Dictionary<string, string>();
+            }
+
+            public virtual string GetValue(string propertyName)
+            {
+                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
+            }
+
+            public virtual void SetValue(string propertyName, string newValue)
+            {
+                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
+                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
+            }
         }
 
-        public class Complate : IComplate
+        public class Complate : AComplate
         {
-            readonly Dictionary<string, string> mPropertiesTyped;
+            public override CASPart CASPart
+            {
+                get
+                {
+                    return Preset.CASPart;
+                }
+            }
 
-            readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
-
-            readonly XmlDocument mXmlDocument;
-
-            public IPackage ParentPackage
+            public override IPackage ParentPackage
             {
                 get
                 {
@@ -79,30 +112,12 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Preset Preset;
 
-            public Dictionary<string, string> PropertiesTyped
-            {
-                get
-                {
-                    return mPropertiesTyped;
-                }
-            }
-
-            public List<string> PropertyNames
-            {
-                get
-                {
-                    return new List<string>(mPropertiesXmlNodes.Keys);
-                }
-            }
-
-            public Complate(Preset preset, XmlNode complateXmlNode)
+            public Complate(Preset preset, XmlNode complateXmlNode) : base()
             {
                 Preset = preset;
                 var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, complateXmlNode);
-                mXmlDocument = new XmlDocument();
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
-                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in complateXmlNode.ChildNodes)
                 {
                     var childNode = (XmlNode)child;
@@ -115,7 +130,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         Patterns.Add(new Pattern(Preset, childNode));
                     }
                 }
-                mPropertiesTyped = new Dictionary<string, string>();
                 foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                 {
                     var childNode = (XmlNode)child;
@@ -132,29 +146,21 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
             }
-
-            public string GetValue(string propertyName)
-            {
-                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
-            }
-
-            public void SetValue(string propertyName, string newValue)
-            {
-                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
-            }
         }
 
-        public class Pattern : IComplate
+        public class Pattern : AComplate
         {
-            readonly Dictionary<string, string> mPropertiesTyped;
-
-            readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
-
-            readonly XmlDocument mXmlDocument;
-
             public readonly string Name;
 
-            public IPackage ParentPackage
+            public override CASPart CASPart
+            {
+                get
+                {
+                    return Preset.CASPart;
+                }
+            }
+
+            public override IPackage ParentPackage
             {
                 get
                 {
@@ -164,30 +170,12 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Preset Preset;
 
-            public Dictionary<string, string> PropertiesTyped
-            {
-                get
-                {
-                    return mPropertiesTyped;
-                }
-            }
-
-            public List<string> PropertyNames
-            {
-                get
-                {
-                    return new List<string>(mPropertiesXmlNodes.Keys);
-                }
-            }
-
-            public Pattern(Preset preset, XmlNode patternXmlNode)
+            public Pattern(Preset preset, XmlNode patternXmlNode) : base()
             {
                 Preset = preset;
                 Name = patternXmlNode.Attributes["variable"].Value;
                 var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, patternXmlNode);
-                mXmlDocument = new XmlDocument();
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
-                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
                     var childNode = (XmlNode)child;
@@ -196,7 +184,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
                     }
                 }
-                mPropertiesTyped = new Dictionary<string, string>();
                 foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                 {
                     var childNode = (XmlNode)child;
@@ -213,27 +200,25 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
             }
-
-            public string GetValue(string propertyName)
-            {
-                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
-            }
-
-            public void SetValue(string propertyName, string newValue)
-            {
-                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
-            }
         }
 
-        public class Preset : IComplate
+        public class Preset : AComplate
         {
+            readonly CASPart mCASPart;
+
             readonly Complate mComplate;
 
-            readonly XmlDocument mXmlDocument;
+            protected new readonly XmlDocument mXmlDocument;
 
-            public readonly CASPart CASPart;
+            public override CASPart CASPart
+            {
+                get
+                {
+                    return mCASPart;
+                }
+            }
 
-            public IPackage ParentPackage
+            public override IPackage ParentPackage
             {
                 get
                 {
@@ -257,7 +242,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Dictionary<string, string> PropertiesTyped
+            public override Dictionary<string, string> PropertiesTyped
             {
                 get
                 {
@@ -265,7 +250,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public List<string> PropertyNames
+            public override List<string> PropertyNames
             {
                 get
                 {
@@ -287,18 +272,18 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public Preset(CASPart casPart, TextReader xmlFile)
             {
-                CASPart = casPart;
+                mCASPart = casPart;
                 mXmlDocument = new XmlDocument();
                 mXmlDocument.LoadXml(xmlFile.ReadToEnd());
                 mComplate = new Complate(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
-            public string GetValue(string propertyName)
+            public override string GetValue(string propertyName)
             {
                 return mComplate.GetValue(propertyName);
             }
 
-            public void SetValue(string propertyName, string newValue)
+            public override void SetValue(string propertyName, string newValue)
             {
                 mComplate.SetValue(propertyName, newValue);
             }
