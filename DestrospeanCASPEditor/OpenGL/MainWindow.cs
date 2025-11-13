@@ -477,12 +477,16 @@ public partial class MainWindow : Window
                 }}
             }}", backportedFunctions)));
         mActiveShader = /*Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" :*/ "lit_advanced";
-        Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1));
-        pointLight0.QuadraticAttenuation = .05f;
+        Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
+            {
+                QuadraticAttenuation = .05f
+            },
+        pointLight1 = new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1))
+            {
+                Direction = new Vector3(0, 0, -1),
+                QuadraticAttenuation = .05f
+            };
         mLights.Add(pointLight0);
-        Light pointLight1 = new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1));
-        pointLight1.QuadraticAttenuation = .05f;
-        pointLight1.Direction = new Vector3(0, 0, -1);
         mLights.Add(pointLight1);
         mCamera.Position = new Vector3(0, 7f / 6, 5f / 3);
     }
@@ -596,10 +600,9 @@ public partial class MainWindow : Window
         TreeModel model;
         if (ResourceTreeView.Selection.GetSelected(out model, out iter))
         {
-            var resourceIndexEntry = (s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4);
             if ((string)model.GetValue(iter, 0) == "CASP")
             {
-                LoadGEOMs(CASParts[resourceIndexEntry]);
+                LoadGEOMs(CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)]);
             }
         }
     }
@@ -618,9 +621,9 @@ public partial class MainWindow : Window
             TextureIDs.Add(key, textureID);
         }
         GL.BindTexture(TextureTarget.Texture2D, textureID);
-        BitmapData data = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-        image.UnlockBits(data);
+        var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+        image.UnlockBits(bitmapData);
         GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
         return textureID;
     }
@@ -630,7 +633,7 @@ public partial class MainWindow : Window
         GLWidget = new GLWidget
             {
                 HeightRequest = Image.HeightRequest,
-                WidthRequest = Image.WidthRequest,
+                WidthRequest = Image.WidthRequest
             };
         GLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
         GLWidget.ButtonPressEvent += (o, args) => mMouseButtonHeld = (int)args.Event.Button;
