@@ -51,6 +51,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 Xalign = Platform.IsWindows ? 1 : .5f
                             });
                         ShowAll();
+                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
                     }
                     LastSelectedPage = CurrentPage;
                 };
@@ -184,6 +185,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     ShowAll();
                     LastSelectedPage = CurrentPage;
                     mDisableSwitchPage = false;
+                    MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
                 };
             var hBox = new HBox(false, 0);
             hBox.PackStart(new Label
