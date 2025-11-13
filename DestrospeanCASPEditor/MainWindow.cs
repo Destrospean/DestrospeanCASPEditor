@@ -60,19 +60,20 @@ public partial class MainWindow : Window
                 {
                     if ((string)model.GetValue(iter, 0) == "CASP")
                     {
-                        LoadGEOMs(CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)]);
+                        LoadGEOMs(CASParts[(IResourceIndexEntry)model.GetValue(iter, 4)]);
                     }
                 }
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
-                Title += mHasUnsavedChanges ? "" : " *";
+                Title += HasUnsavedChanges ? "" : " *";
+                mHasUnsavedChanges = true;
             }
             else if (value == NextStateOptions.NoUnsavedChanges)
             {
-                Title = Title.Substring(0, mHasUnsavedChanges && Title.EndsWith(" *") ? Title.Length - 2 : Title.Length);
+                Title = Title.Substring(0, HasUnsavedChanges && Title.EndsWith(" *") ? Title.Length - 2 : Title.Length);
+                mHasUnsavedChanges = false;
             }
-            mHasUnsavedChanges = value.HasFlag(NextStateOptions.UnsavedChanges);
         }
     }
 
@@ -171,10 +172,7 @@ public partial class MainWindow : Window
             ResourcePropertyNotebook.SwitchPage -= switchPageHandler;
         }
         ResourcePropertyNotebookSwitchPageHandlers.Clear();
-        ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
-            {
-                LoadGEOMs(casPart);
-            });
+        ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) => LoadGEOMs(casPart));
         ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
         foreach (var lodKvp in casPart.LODs)
         {
