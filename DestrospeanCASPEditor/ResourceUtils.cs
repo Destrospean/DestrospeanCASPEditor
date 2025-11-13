@@ -8,29 +8,29 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ResourceUtils
     {
-        static Dictionary<PackageTag, IPackage> mGameContentPackages;
+        static Dictionary<PackageTag, IPackage> sGameContentPackages;
 
-        static Dictionary<PackageTag, IPackage> mGameImageResourcePackages;
+        static Dictionary<PackageTag, IPackage> sGameImageResourcePackages;
 
-        static List<string> mMissingResourceKeys;
+        static List<string> sMissingResourceKeys;
 
         public static Dictionary<PackageTag, IPackage> GameContentPackages
         {
             get
             {
-                if (mGameContentPackages == null)
+                if (sGameContentPackages == null)
                 {
-                    mGameContentPackages = new Dictionary<PackageTag, IPackage>();
+                    sGameContentPackages = new Dictionary<PackageTag, IPackage>();
                     foreach (var game in GameFolders.Games)
                     {
                         var enumerator = game.GameContent.GetEnumerator();
                         while (enumerator.MoveNext())
                         {
-                            mGameContentPackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
+                            sGameContentPackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
                         }
                     }
                 }
-                return mGameContentPackages;
+                return sGameContentPackages;
             }
         }
 
@@ -38,19 +38,19 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             get
             {
-                if (mGameImageResourcePackages == null)
+                if (sGameImageResourcePackages == null)
                 {
-                    mGameImageResourcePackages = new Dictionary<PackageTag, IPackage>();
+                    sGameImageResourcePackages = new Dictionary<PackageTag, IPackage>();
                     foreach (var game in GameFolders.Games)
                     {
                         var enumerator = game.DDSImages.GetEnumerator();
                         while (enumerator.MoveNext())
                         {
-                            mGameImageResourcePackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
+                            sGameImageResourcePackages.Add(enumerator.Current, s3pi.Package.Package.OpenPackage(0, enumerator.Current.Path));
                         }
                     }
                 }
-                return mGameImageResourcePackages;
+                return sGameImageResourcePackages;
             }
         }
 
@@ -58,11 +58,11 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             get
             {
-                if (mMissingResourceKeys == null)
+                if (sMissingResourceKeys == null)
                 {
-                    mMissingResourceKeys = new List<string>();
+                    sMissingResourceKeys = new List<string>();
                 }
-                return mMissingResourceKeys;
+                return sMissingResourceKeys;
             }
         }
 
@@ -110,44 +110,22 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class ResourceKey : IResourceKey
         {
-            ulong mInstance;
-
-            uint mResourceGroup, mResourceType;
-
             public ulong Instance
             {
-                get
-                {
-                    return mInstance;
-                }
-                set
-                {
-                    mInstance = value;
-                }
+                get;
+                set;
             }
 
             public uint ResourceGroup
             {
-                get
-                {
-                    return mResourceGroup;
-                }
-                set
-                {
-                    mResourceGroup = value;
-                }
+                get;
+                set;
             }
 
             public uint ResourceType
             {
-                get
-                {
-                    return mResourceType;
-                }
-                set
-                {
-                    mResourceType = value;
-                }
+                get;
+                set;
             }
 
             public ResourceKey(uint type, uint group, ulong instance)

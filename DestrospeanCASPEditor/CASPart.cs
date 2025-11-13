@@ -29,60 +29,7 @@ namespace Destrospean.DestrospeanCASPEditor
             LoadLODs(geometryResources, vpxyResources);
         }
 
-        public abstract class AComplate
-        {
-            protected readonly Dictionary<string, string> mPropertiesTyped;
-
-            protected readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
-
-            protected readonly XmlDocument mXmlDocument;
-
-            public abstract CASPart CASPart
-            {
-                get;
-            }
-
-            public abstract IPackage ParentPackage
-            {
-                get;
-            }
-
-            public virtual Dictionary<string, string> PropertiesTyped
-            {
-                get
-                {
-                    return mPropertiesTyped;
-                }
-            }
-
-            public virtual List<string> PropertyNames
-            {
-                get
-                {
-                    return new List<string>(mPropertiesXmlNodes.Keys);
-                }
-            }
-
-            public AComplate()
-            {
-                mXmlDocument = new XmlDocument();
-                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
-                mPropertiesTyped = new Dictionary<string, string>();
-            }
-
-            public virtual string GetValue(string propertyName)
-            {
-                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
-            }
-
-            public virtual void SetValue(string propertyName, string newValue)
-            {
-                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
-                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
-            }
-        }
-
-        public class Complate : AComplate
+        class Complate : AComplate
         {
             public override CASPart CASPart
             {
@@ -145,6 +92,59 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                 }
+            }
+        }
+
+        public abstract class AComplate
+        {
+            protected readonly Dictionary<string, string> mPropertiesTyped;
+
+            protected readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
+
+            protected readonly XmlDocument mXmlDocument;
+
+            public abstract CASPart CASPart
+            {
+                get;
+            }
+
+            public abstract IPackage ParentPackage
+            {
+                get;
+            }
+
+            public virtual Dictionary<string, string> PropertiesTyped
+            {
+                get
+                {
+                    return mPropertiesTyped;
+                }
+            }
+
+            public virtual List<string> PropertyNames
+            {
+                get
+                {
+                    return new List<string>(mPropertiesXmlNodes.Keys);
+                }
+            }
+
+            public AComplate()
+            {
+                mXmlDocument = new XmlDocument();
+                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
+                mPropertiesTyped = new Dictionary<string, string>();
+            }
+
+            public virtual string GetValue(string propertyName)
+            {
+                return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
+            }
+
+            public virtual void SetValue(string propertyName, string newValue)
+            {
+                mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
+                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
             }
         }
 

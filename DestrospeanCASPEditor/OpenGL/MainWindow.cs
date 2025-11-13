@@ -50,129 +50,7 @@ public partial class MainWindow : Window
 
     public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
 
-    void LoadGEOMs(CASPart casPart)
-    {
-        mObjects.Clear();
-        foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
-        {
-            var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
-            List<Vector3> colors = new List<Vector3>(),
-            normals = new List<Vector3>(),
-            vertices = new List<Vector3>();
-            var faces = new List<Tuple<int, int, int>>();
-            var textureCoordinates = new List<Vector2>();
-            foreach (var face in geom.Faces)
-            {
-                faces.Add(new Tuple<int, int, int>(face.VertexDataIndex0, face.VertexDataIndex1, face.VertexDataIndex2));
-            }
-            foreach (var vertexDataElement in geom.VertexData)
-            {
-                foreach (var vertexElement in vertexDataElement.Vertex)
-                {
-                    var positionElement = vertexElement as GEOM.PositionElement;
-                    if (positionElement != null && positionElement as GEOM.TangentNormalElement == null)
-                    {
-                        if (positionElement as GEOM.NormalElement != null)
-                        {
-                            normals.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
-                            continue;
-                        }
-                        vertices.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
-                        colors.Add(new Vector3(1, 1, 1));
-                        continue;
-                    }
-                    var uvElement = vertexElement as GEOM.UVElement;
-                    if (uvElement != null)
-                    {
-                        textureCoordinates.Add(new Vector2(uvElement.U, 1 - uvElement.V));
-                    }
-                }
-            }
-            var key = "";
-            foreach (var geometryResourceKvp in GeometryResources)
-            {
-                if (geometryResourceKvp.Value == geometryResource)
-                {
-                    key = ResourceUtils.ReverseEvaluateResourceKey(geometryResourceKvp.Key);
-                    break;
-                }
-            }
-            Material material;
-            if (!Materials.TryGetValue(key, out material))
-            {
-                var materialColors = new Dictionary<FieldType, Vector3>();
-                var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
-                {
-                    var elementFloat3 = element as ElementFloat3;
-                    if (elementFloat3 != null)
-                    {
-                        materialColors[element.Field] = new Vector3(elementFloat3.Data0, elementFloat3.Data1, elementFloat3.Data2);
-                        continue;
-                    }
-                    var elementTextureRef = element as ElementTextureRef;
-                    if (elementTextureRef != null)
-                    {
-                        materialMaps[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
-                    }
-                }
-                Vector3 color;
-                string map;
-                material = new Material
-                    {
-#pragma warning disable 0618
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(1, 1, 1),
-#pragma warning restore 0618
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
-                        AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
-                        DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
-                        NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
-                        SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
-                    };
-                Materials.Add(key, material);
-            }
-            if (material.AmbientMap != "")
-            {
-                LoadTexture(material.AmbientMap);
-            }
-            if (material.SpecularMap != "")
-            {
-                LoadTexture(material.SpecularMap);
-            }
-            mObjects.Add(new Volume
-                {
-                    ColorData = colors.ToArray(),
-                    Faces = faces,
-                    Material = material,
-                    Normals = normals.ToArray(),
-                    TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = material.DiffuseMap == "" ? -1 : LoadTexture(material.DiffuseMap),
-                    Vertices = vertices.ToArray()
-                });
-        }
-    }
-
-    void ProcessInput()
-    {
-        var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
-        mLastMousePosition += delta;
-        switch (mMouseButtonHeld)
-        {
-            case 1:
-                mCamera.AddRotation(delta.X, delta.Y);
-                break;
-            case 2:
-                mCamera.Move(delta.X, 0, delta.Y);
-                break;
-            case 3:
-                mCamera.Move(delta.X, delta.Y, 0);
-                break;
-        }
-        mLastMousePosition = new Vector2(mMouseX, mMouseY);
-    }
-
-    public void InitProgram()
+    void InitProgram()
     {
         GL.GenBuffers(1, out mIBOElements);
         string backportedFunctions = @"
@@ -594,28 +472,110 @@ public partial class MainWindow : Window
         mCamera.Position = new Vector3(0, 7f / 6, 5f / 3);
     }
 
-    public int LoadTexture(string key)
+    void LoadGEOMs(CASPart casPart)
     {
-        Bitmap image;
-        if (!mGLInitialized || !ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
+        mObjects.Clear();
+        foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
-            return -1;
+            var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
+            List<Vector3> colors = new List<Vector3>(),
+            normals = new List<Vector3>(),
+            vertices = new List<Vector3>();
+            var faces = new List<Tuple<int, int, int>>();
+            var textureCoordinates = new List<Vector2>();
+            foreach (var face in geom.Faces)
+            {
+                faces.Add(new Tuple<int, int, int>(face.VertexDataIndex0, face.VertexDataIndex1, face.VertexDataIndex2));
+            }
+            foreach (var vertexDataElement in geom.VertexData)
+            {
+                foreach (var vertexElement in vertexDataElement.Vertex)
+                {
+                    var positionElement = vertexElement as GEOM.PositionElement;
+                    if (positionElement != null && positionElement as GEOM.TangentNormalElement == null)
+                    {
+                        if (positionElement as GEOM.NormalElement != null)
+                        {
+                            normals.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
+                            continue;
+                        }
+                        vertices.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
+                        colors.Add(new Vector3(1, 1, 1));
+                        continue;
+                    }
+                    var uvElement = vertexElement as GEOM.UVElement;
+                    if (uvElement != null)
+                    {
+                        textureCoordinates.Add(new Vector2(uvElement.U, 1 - uvElement.V));
+                    }
+                }
+            }
+            var key = "";
+            foreach (var geometryResourceKvp in GeometryResources)
+            {
+                if (geometryResourceKvp.Value == geometryResource)
+                {
+                    key = ResourceUtils.ReverseEvaluateResourceKey(geometryResourceKvp.Key);
+                    break;
+                }
+            }
+            Material material;
+            if (!Materials.TryGetValue(key, out material))
+            {
+                var materialColors = new Dictionary<FieldType, Vector3>();
+                var materialMaps = new Dictionary<FieldType, string>();
+                foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
+                {
+                    var elementFloat3 = element as ElementFloat3;
+                    if (elementFloat3 != null)
+                    {
+                        materialColors[element.Field] = new Vector3(elementFloat3.Data0, elementFloat3.Data1, elementFloat3.Data2);
+                        continue;
+                    }
+                    var elementTextureRef = element as ElementTextureRef;
+                    if (elementTextureRef != null)
+                    {
+                        materialMaps[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
+                    }
+                }
+                Vector3 color;
+                string map;
+                material = new Material
+                    {
+#pragma warning disable 0618
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(1, 1, 1),
+#pragma warning restore 0618
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
+                        AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
+                        DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
+                        NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
+                        SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
+                    };
+                Materials.Add(key, material);
+            }
+            if (material.AmbientMap != "")
+            {
+                LoadTexture(material.AmbientMap);
+            }
+            if (material.SpecularMap != "")
+            {
+                LoadTexture(material.SpecularMap);
+            }
+            mObjects.Add(new Volume
+                {
+                    ColorData = colors.ToArray(),
+                    Faces = faces,
+                    Material = material,
+                    Normals = normals.ToArray(),
+                    TextureCoordinates = textureCoordinates.ToArray(),
+                    TextureID = material.DiffuseMap == "" ? -1 : LoadTexture(material.DiffuseMap),
+                    Vertices = vertices.ToArray()
+                });
         }
-        int textureID;
-        if (!TextureIDs.TryGetValue(key, out textureID))
-        {
-            GL.GenTextures(1, out textureID);
-            TextureIDs.Add(key, textureID);
-        }
-        GL.BindTexture(TextureTarget.Texture2D, textureID);
-        var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
-        image.UnlockBits(bitmapData);
-        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-        return textureID;
     }
 
-    public void PrepareGLWidget()
+    void PrepareGLWidget()
     {
         GLWidget = new GLWidget
             {
@@ -655,6 +615,46 @@ public partial class MainWindow : Window
                 NextState = NextStateOptions.Rerender;
                 GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
             };
+    }
+
+    void ProcessInput()
+    {
+        var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
+        mLastMousePosition += delta;
+        switch (mMouseButtonHeld)
+        {
+            case 1:
+                mCamera.AddRotation(delta.X, delta.Y);
+                break;
+            case 2:
+                mCamera.Move(delta.X, 0, delta.Y);
+                break;
+            case 3:
+                mCamera.Move(delta.X, delta.Y, 0);
+                break;
+        }
+        mLastMousePosition = new Vector2(mMouseX, mMouseY);
+    }
+
+    public int LoadTexture(string key)
+    {
+        Bitmap image;
+        if (!mGLInitialized || !ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
+        {
+            return -1;
+        }
+        int textureID;
+        if (!TextureIDs.TryGetValue(key, out textureID))
+        {
+            GL.GenTextures(1, out textureID);
+            TextureIDs.Add(key, textureID);
+        }
+        GL.BindTexture(TextureTarget.Texture2D, textureID);
+        var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+        image.UnlockBits(bitmapData);
+        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+        return textureID;
     }
 
     protected bool OnIdleProcessMain()

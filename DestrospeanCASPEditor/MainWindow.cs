@@ -20,14 +20,6 @@ public enum NextStateOptions : byte
 
 public partial class MainWindow : Window
 {
-    bool mHasUnsavedChanges = false;
-
-    public static MainWindow Singleton
-    {
-        get;
-        private set;
-    }
-
     public IPackage CurrentPackage;
 
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
@@ -42,10 +34,8 @@ public partial class MainWindow : Window
 
     public bool HasUnsavedChanges
     {
-        get
-        {
-            return mHasUnsavedChanges;
-        }
+        get;
+        private set;
     }
 
     public NextStateOptions NextState
@@ -67,18 +57,25 @@ public partial class MainWindow : Window
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
                 Title += HasUnsavedChanges ? "" : " *";
-                mHasUnsavedChanges = true;
+                HasUnsavedChanges = true;
             }
             else if (value == NextStateOptions.NoUnsavedChanges)
             {
                 Title = Title.Substring(0, HasUnsavedChanges && Title.EndsWith(" *") ? Title.Length - 2 : Title.Length);
-                mHasUnsavedChanges = false;
+                HasUnsavedChanges = false;
             }
         }
     }
 
+    public static MainWindow Singleton
+    {
+        get;
+        private set;
+    }
+
     public MainWindow() : base(WindowType.Toplevel)
     {
+        HasUnsavedChanges = false;
         Singleton = this;
         Build();
         RescaleAndReposition();
@@ -99,7 +96,7 @@ public partial class MainWindow : Window
         GLWidget.Hide();
     }
 
-    public void AddCASPartWidgets(CASPart casPart)
+    void AddCASPartWidgets(CASPart casPart)
     {
         var flagNotebook = new Notebook
             {
@@ -165,7 +162,7 @@ public partial class MainWindow : Window
         BuildLODNotebook(casPart);
     }
 
-    public void BuildLODNotebook(CASPart casPart, int startLODPageIndex = 0, int startGEOMPageIndex = 0)
+    void BuildLODNotebook(CASPart casPart, int startLODPageIndex = 0, int startGEOMPageIndex = 0)
     {
         foreach (var switchPageHandler in ResourcePropertyNotebookSwitchPageHandlers)
         {
@@ -301,7 +298,7 @@ public partial class MainWindow : Window
         }
     }
 
-    public void BuildResourceTable()
+    void BuildResourceTable()
     {
         CellRendererText groupCell = new CellRendererText(),
         instanceCell = new CellRendererText(),
@@ -367,6 +364,29 @@ public partial class MainWindow : Window
                     }
                 }
             };
+    }
+
+    void RescaleAndReposition()
+    {
+        var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
+        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
+        WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
+        WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
+        SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
+        foreach (var widget in new Widget[]
+            {
+                Image,
+                MainTable,
+                ResourcePropertyNotebook,
+                ResourcePropertyTable,
+                this
+            })
+        {
+            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
+        }
+        Resize(DefaultWidth, DefaultHeight);
+        Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
+        AllowShrink = Platform.IsRunningUnderWine;
     }
 
     public void ClearTemporaryData()
@@ -468,29 +488,6 @@ public partial class MainWindow : Window
             AddCASPartWidgets(casPart);
         }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
-    }
-
-    public void RescaleAndReposition()
-    {
-        var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
-        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
-        WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
-        WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
-        SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
-        foreach (var widget in new Widget[]
-            {
-                Image,
-                MainTable,
-                ResourcePropertyNotebook,
-                ResourcePropertyTable,
-                this
-            })
-        {
-            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
-        }
-        Resize(DefaultWidth, DefaultHeight);
-        Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
-        AllowShrink = Platform.IsRunningUnderWine;
     }
 
     protected void OnCloseActionActivated(object sender, EventArgs e)
@@ -624,8 +621,8 @@ public partial class MainWindow : Window
                     ResourceTreeView.Selection.SelectIter(iter);
                     break;
                 case 3:
-                    var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
-                    Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                    //var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
+                    //Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
                     break;
             }
         }
