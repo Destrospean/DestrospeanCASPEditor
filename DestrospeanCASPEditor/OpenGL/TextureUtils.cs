@@ -373,7 +373,7 @@ namespace Destrospean.CmarNYCBorrowed
                         if (image != null)
                         {
                             int currentX,
-                            currentY = Math.DivRem(i / 4, multiplier.Width, out currentX),
+                            currentY = Math.DivRem(i >> 2, multiplier.Width, out currentX),
                             height,
                             width;
                             Math.DivRem(currentX, image.Width, out width);
