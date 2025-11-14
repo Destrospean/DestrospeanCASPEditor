@@ -219,6 +219,7 @@
     <Compile Include="OpenGL\ShaderProgram.cs" />
     <Compile Include="OpenGL\Volume.cs" />
     <Compile Include="OpenGL\MainWindow.cs" />
+    <Compile Include="OpenGL\TextureUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
