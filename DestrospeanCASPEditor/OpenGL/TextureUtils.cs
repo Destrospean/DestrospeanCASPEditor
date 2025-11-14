@@ -616,7 +616,8 @@ namespace Destrospean.CmarNYCBorrowed
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var ptr = bitmapData.Scan0;
             var byteCount = Math.Abs(bitmapData.Stride) * image.Height;
-            byte[] bgraValues = new byte[byteCount], argbValues = new byte[byteCount];
+            byte[] bgraValues = new byte[byteCount],
+            argbValues = new byte[byteCount];
             Marshal.Copy(ptr, bgraValues, 0, byteCount);
             image.UnlockBits(bitmapData);
             for (var i = 0; i < byteCount; i += 4)
