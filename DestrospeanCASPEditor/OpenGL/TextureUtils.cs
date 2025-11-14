@@ -320,7 +320,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public static Image DisplayableTexture(Bitmap multiplier, uint[] maskTexture, List<object> patterns, bool overlay)
+        public static Image DisplayableTexture(Bitmap multiplier, byte[] maskArray, List<object> patterns, bool overlay)
         {
             var rectangle = new Rectangle(0, 0, multiplier.Width, multiplier.Height);
             var bitmapData = multiplier.LockBits(rectangle, ImageLockMode.ReadWrite, multiplier.PixelFormat);
@@ -331,7 +331,7 @@ namespace Destrospean.CmarNYCBorrowed
             for (var i = 0; i < byteCount; i += 4)
             {
                 var gray = (multiplierArray[i] + multiplierArray[i + 1] + multiplierArray[i + 2]) / 3f / (byte.MaxValue >> (overlay ? 0 : 1));
-                byte[] mask = BitConverter.GetBytes(maskTexture[i >> 2]),
+                byte[] mask = BitConverter.GetBytes(maskArray[i >> 2]),
                 maskControl = new byte[]
                     {
                         mask[2],
