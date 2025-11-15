@@ -371,7 +371,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 propertyInfo = property.GetType().GetProperty(propertyPathComponents[i]);
             }
             var enumInstance = propertyInfo.GetValue(property, null);
-            bool disableToggled = false, isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
+            bool disableToggled = false,
+            isFlagType = enumInstance.GetType().IsDefined(typeof(FlagsAttribute), false);
             var frame = new Frame
                 {
                     Label = label
@@ -416,41 +417,44 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             return;
                         }
-                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChanges;
                         if (isFlagType)
                         {
                             switch (enumInstance.GetType().GetEnumUnderlyingType().Name)
                             {
                                 case "Byte":
                                     propertyInfo.SetValue(property, (byte)((byte)enumInstance ^ (byte)value), null);
-                                    return;
+                                    break;
                                 case "Char":
                                     propertyInfo.SetValue(property, (char)((char)enumInstance ^ (char)value), null);
-                                    return;
+                                    break;
                                 case "Int16":
                                     propertyInfo.SetValue(property, (short)((short)enumInstance ^ (short)value), null);
-                                    return;
+                                    break;
                                 case "Int32":
                                     propertyInfo.SetValue(property, (int)enumInstance ^ (int)value, null);
-                                    return;
+                                    break;
                                 case "Int64":
                                     propertyInfo.SetValue(property, (long)enumInstance ^ (long)value, null);
-                                    return;
+                                    break;
                                 case "SByte":
                                     propertyInfo.SetValue(property, (sbyte)((sbyte)enumInstance ^ (sbyte)value), null);
-                                    return;
+                                    break;
                                 case "UInt16":
                                     propertyInfo.SetValue(property, (ushort)((ushort)enumInstance ^ (ushort)value), null);
-                                    return;
+                                    break;
                                 case "UInt32":
                                     propertyInfo.SetValue(property, (uint)enumInstance ^ (uint)value, null);
-                                    return;
+                                    break;
                                 case "UInt64":
                                     propertyInfo.SetValue(property, (ulong)enumInstance ^ (ulong)value, null);
-                                    return;
+                                    break;
                             }
                         }
-                        propertyInfo.SetValue(property, value, null);
+                        else
+                        {
+                            propertyInfo.SetValue(property, value, null);
+                        }
+                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }
