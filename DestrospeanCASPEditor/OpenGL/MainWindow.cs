@@ -38,7 +38,7 @@ public partial class MainWindow : Window
 
     readonly List<Volume> mObjects = new List<Volume>();
 
-    readonly Dictionary<string, ShaderProgram> mShaders = new Dictionary<string, ShaderProgram>();
+    readonly Dictionary<string, Shader> mShaders = new Dictionary<string, Shader>();
 
     Vector2[] mTextureCoordinateData;
 
@@ -160,7 +160,7 @@ public partial class MainWindow : Window
                 v_norm = normMatrix * vNormal;
                 v_pos = (model * vec4(vPosition, 1.0)).xyz;
             }}", backportedFunctions);
-        mShaders.Add("default", new ShaderProgram(@"
+        mShaders.Add("default", new Shader(@"
             #version 100
 
             precision highp float;
@@ -185,7 +185,7 @@ public partial class MainWindow : Window
             {
                 gl_FragColor = color;
             }"));
-        mShaders.Add("textured", new ShaderProgram(@"
+        mShaders.Add("textured", new Shader(@"
             #version 100
 
             precision highp float;
@@ -217,7 +217,7 @@ public partial class MainWindow : Window
                 }}
                 gl_FragColor = texcolor;
             }"));
-        mShaders.Add("normal", new ShaderProgram(@"
+        mShaders.Add("normal", new Shader(@"
             #version 100
 
             precision highp float;
@@ -244,7 +244,7 @@ public partial class MainWindow : Window
                 vec3 n = normalize(v_norm);
                 gl_FragColor = vec4(0.5 + 0.5 * n, 1.0);
             }"));
-        mShaders.Add("lit", new ShaderProgram(litVertexShader, string.Format(@"
+        mShaders.Add("lit", new Shader(litVertexShader, string.Format(@"
             #version 100
 
             precision highp float;
@@ -285,7 +285,7 @@ public partial class MainWindow : Window
                 float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
-        mShaders.Add("lit_multiple", new ShaderProgram(litVertexShader, string.Format(@"
+        mShaders.Add("lit_multiple", new Shader(litVertexShader, string.Format(@"
             #version 100
 
             precision highp float;
@@ -356,7 +356,7 @@ public partial class MainWindow : Window
                     gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                 }}
             }}", backportedFunctions)));
-        mShaders.Add("lit_advanced", new ShaderProgram(litVertexShader, string.Format(@"
+        mShaders.Add("lit_advanced", new Shader(litVertexShader, string.Format(@"
             #version 100
 
             precision highp float;
@@ -515,7 +515,7 @@ public partial class MainWindow : Window
             {
                 if (geometryResourceKvp.Value == geometryResource)
                 {
-                    key = ResourceUtils.ReverseEvaluateResourceKey(geometryResourceKvp.Key);
+                    key = geometryResourceKvp.Key.ReverseEvaluateResourceKey();
                     break;
                 }
             }
@@ -535,7 +535,7 @@ public partial class MainWindow : Window
                     var elementTextureRef = element as ElementTextureRef;
                     if (elementTextureRef != null)
                     {
-                        materialMaps[element.Field] = ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]);
+                        materialMaps[element.Field] = element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey();
                     }
                 }
                 Vector3 color;
@@ -569,10 +569,10 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = LoadTexture("main", casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].DisplayableTexture),
+                    TextureID = LoadTexture(key, casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture),
                     Vertices = vertices.ToArray()
                 });
-            //Image.Pixbuf = ImageUtils.ConvertToPixbuf(new Bitmap(casPart.Presets[0].DisplayableMainTexture, new Size(Image.WidthRequest, Image.HeightRequest)));
+            //Image.Pixbuf = new Bitmap(casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture, new Size(Image.WidthRequest, Image.HeightRequest)).GetAsPixbuf();
             //GLWidget.Hide();
         }
     }

@@ -34,55 +34,13 @@ namespace Destrospean.DestrospeanCASPEditor
 
         class Complate : AComplate
         {
-            Bitmap mDisplayableTexture;
+            Bitmap mTexture;
 
             public override CASPart CASPart
             {
                 get
                 {
                     return Preset.CASPart;
-                }
-            }
-
-            public Bitmap DisplayableTexture
-            {
-                get
-                {
-                    if (mDisplayableTexture == null)
-                    {
-                        uint[] maskArray = null,
-                        overlayArray = null; 
-                        Bitmap multiplier = null;
-                        foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
-                        {
-                            var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
-                            switch (propertyXmlNodeKvp.Key.ToLower())
-                            {
-                                case "mask":
-                                    maskArray = TextureUtils.GetImageARGBArray(ParentPackage, value, null);
-                                    break;
-                                case "multiplier":
-                                    multiplier = TextureUtils.GetImage(ParentPackage, value, null);
-                                    break;
-                                case "overlay":
-                                    overlayArray = TextureUtils.GetImageARGBArray(ParentPackage, value, null);
-                                    break;
-                            }
-                        }
-                        if (multiplier != null)
-                        {
-                            mDisplayableTexture = TextureUtils.DisplayableTexture(multiplier, maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), false);
-                            if (overlayArray != null)
-                            {
-                                mDisplayableTexture = TextureUtils.DisplayableTexture(mDisplayableTexture, overlayArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), true);
-                            }
-                        }
-                    }
-                    return mDisplayableTexture;
-                }
-                set
-                {
-                    mDisplayableTexture = value;
                 }
             }
 
@@ -106,10 +64,52 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Preset Preset;
 
+            public Bitmap Texture
+            {
+                get
+                {
+                    if (mTexture == null)
+                    {
+                        uint[] maskArray = null,
+                        overlayArray = null; 
+                        Bitmap multiplier = null;
+                        foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
+                        {
+                            var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
+                            switch (propertyXmlNodeKvp.Key.ToLower())
+                            {
+                                case "mask":
+                                    maskArray = ParentPackage.GetTextureARGBArray(value);
+                                    break;
+                                case "multiplier":
+                                    multiplier = ParentPackage.GetTexture(value);
+                                    break;
+                                case "overlay":
+                                    overlayArray = ParentPackage.GetTextureARGBArray(value);
+                                    break;
+                            }
+                        }
+                        if (multiplier != null)
+                        {
+                            mTexture = multiplier.GetWithPatternsApplied(maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage)), false);
+                            if (overlayArray != null)
+                            {
+                                mTexture = mTexture.GetWithPatternsApplied(overlayArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage)), true);
+                            }
+                        }
+                    }
+                    return mTexture;
+                }
+                set
+                {
+                    mTexture = value;
+                }
+            }
+
             public Complate(Preset preset, XmlNode complateXmlNode) : base()
             {
                 Preset = preset;
-                var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, complateXmlNode);
+                var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
                 foreach (var child in complateXmlNode.ChildNodes)
@@ -201,40 +201,13 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class Pattern : AComplate
         {
-            object mDisplayablePattern;
+            object mPatternImage;
 
             public override CASPart CASPart
             {
                 get
                 {
                     return Preset.CASPart;
-                }
-            }
-
-            public object DisplayablePattern
-            {
-                get
-                {
-                    if (mDisplayablePattern == null)
-                    {
-                        switch (PatternInfo.Type)
-                        {
-                            case PatternType.Colored:
-                                mDisplayablePattern = TextureUtils.DisplayableRGBPattern(ParentPackage, PatternInfo);
-                                break;
-                            case PatternType.HSV:
-                                mDisplayablePattern = TextureUtils.DisplayableHSVPattern(ParentPackage, PatternInfo);
-                                break;
-                            case PatternType.Solid:
-                                mDisplayablePattern = PatternInfo.SolidColor;
-                                break;
-                        }
-                    }
-                    return mDisplayablePattern;
-                }
-                private set
-                {
-                    mDisplayablePattern = value;
                 }
             }
 
@@ -248,7 +221,34 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public TextureUtils.PatternInfo PatternInfo
+            public object PatternImage
+            {
+                get
+                {
+                    if (mPatternImage == null)
+                    {
+                        switch (PatternInfo.Type)
+                        {
+                            case PatternType.Colored:
+                                mPatternImage = ParentPackage.GetRGBPatternImage(PatternInfo);
+                                break;
+                            case PatternType.HSV:
+                                mPatternImage = ParentPackage.GetHSVPatternImage(PatternInfo);
+                                break;
+                            case PatternType.Solid:
+                                mPatternImage = PatternInfo.SolidColor;
+                                break;
+                        }
+                    }
+                    return mPatternImage;
+                }
+                private set
+                {
+                    mPatternImage = value;
+                }
+            }
+
+            public PatternInfo PatternInfo
             {
                 get;
                 private set;
@@ -258,13 +258,13 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public Pattern(Preset preset, XmlNode patternXmlNode) : base()
             {
-                PatternInfo = new TextureUtils.PatternInfo
+                PatternInfo = new PatternInfo
                     {
                         Name = patternXmlNode.Attributes["name"].Value
                     };
                 Name = patternXmlNode.Attributes["variable"].Value;
                 Preset = preset;
-                var evaluated = ResourceUtils.EvaluateResourceKey(ParentPackage, patternXmlNode);
+                var evaluated = ParentPackage.EvaluateResourceKey(patternXmlNode);
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
@@ -317,7 +317,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         rgbMask = value;
                     }
                 }
-                PatternInfo = new TextureUtils.PatternInfo
+                PatternInfo = new PatternInfo
                     {
                         Name = PatternInfo.Name,
                         RGBColors = colors.ToArray(),
@@ -326,9 +326,9 @@ namespace Destrospean.DestrospeanCASPEditor
                     };
                 if (complateConstructed)
                 {
-                    Preset.ClearDisplayableTexture();
+                    Preset.ClearTexture();
                 }
-                DisplayablePattern = null;
+                PatternImage = null;
             }
 
             public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
@@ -353,11 +353,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Bitmap DisplayableTexture
+            public Bitmap Texture
             {
                 get
                 {
-                    return mComplate.DisplayableTexture;
+                    return mComplate.Texture;
                 }
             }
 
@@ -421,9 +421,9 @@ namespace Destrospean.DestrospeanCASPEditor
                 mComplate = new Complate(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
-            public void ClearDisplayableTexture()
+            public void ClearTexture()
             {
-                mComplate.DisplayableTexture = null;
+                mComplate.Texture = null;
             } 
 
             public override string GetValue(string propertyName)
@@ -433,7 +433,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
             {
-                mComplate.SetValue(propertyName, newValue, beforeRerender ?? ClearDisplayableTexture);
+                mComplate.SetValue(propertyName, newValue, beforeRerender ?? ClearTexture);
             }
         }
 
@@ -453,7 +453,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public void LoadLODs(Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
         {
-            var vpxyResourceIndexEntry = ResourceUtils.GetResourceIndexEntry(ParentPackage, CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
+            var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
             GenericRCOLResource vpxyResource;
             if (!vpxyResources.TryGetValue(vpxyResourceIndexEntry, out vpxyResource))
             {
@@ -468,7 +468,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     LODs[entry00.EntryID] = new List<GeometryResource>();
                     foreach (var tgiIndex in entry00.TGIIndexes)
                     {
-                        var geometryResourceIndexEntry = ResourceUtils.GetResourceIndexEntry(ParentPackage, entry00.ParentTGIBlocks[tgiIndex]);
+                        var geometryResourceIndexEntry = ParentPackage.GetResourceIndexEntry(entry00.ParentTGIBlocks[tgiIndex]);
                         GeometryResource geometryResource;
                         if (!geometryResources.TryGetValue(geometryResourceIndexEntry, out geometryResource))
                         {

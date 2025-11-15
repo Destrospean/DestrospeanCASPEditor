@@ -3,7 +3,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
-    public class ShaderProgram
+    public class Shader
     {
         public int AttributeCount = 0,
         FShaderID = -1,
@@ -37,12 +37,12 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             public ActiveUniformType Type;
         }
 
-        public ShaderProgram()
+        public Shader()
         {
             ProgramID = GL.CreateProgram();
         }
 
-        public ShaderProgram(string vertexShader, string fragmentShader, bool fromFile = false)
+        public Shader(string vertexShader, string fragmentShader, bool fromFile = false)
         {
             ProgramID = GL.CreateProgram();
             if (fromFile)

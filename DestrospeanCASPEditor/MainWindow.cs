@@ -256,8 +256,8 @@ public partial class MainWindow : Window
                                 if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                 {
                                     IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key,
-                                    tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
-                                    ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
+                                    tempResourceIndexEntry = CurrentPackage.AddResource(fileChooserDialog.Filename, resourceIndexEntry, false);
+                                    CurrentPackage.ResolveResourceType(tempResourceIndexEntry);
                                     var resource = WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry);
                                     CurrentPackage.ReplaceResource(resourceIndexEntry, resource);
                                     CurrentPackage.DeleteResource(tempResourceIndexEntry);
@@ -293,7 +293,7 @@ public partial class MainWindow : Window
                 {
                     Text = "LOD " + lodKvp.Key.ToString()
                 });
-            lodKvp.Value.ForEach(x => WidgetUtils.AddPropertiesToNotebook(CurrentPackage, x, geomNotebook, Image));
+            lodKvp.Value.ForEach(x => geomNotebook.AddProperties(CurrentPackage, x, Image));
             if (lodKvp.Value == new List<List<GeometryResource>>(casPart.LODs.Values)[startLODPageIndex])
             {
                 ResourcePropertyNotebook.CurrentPage = startLODPageIndex;
@@ -399,11 +399,7 @@ public partial class MainWindow : Window
         CASParts.Clear();
         GeometryResources.Clear();
         Materials.Clear();
-        foreach (var textureId in TextureIDs.Values)
-        {
-            GL.DeleteTexture(textureId);
-        }
-        TextureIDs.Clear();
+        DeleteTextures();
         VPXYResources.Clear();
         ImageUtils.PreloadedGameImagePixbufs.Clear();
         ImageUtils.PreloadedGameImages.Clear();
@@ -453,13 +449,13 @@ public partial class MainWindow : Window
                     ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
                     break;
             }
-            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(resourceIndexEntry.ReverseEvaluateResourceKey());
             switch (tag)
             {
                 case "_IMG":
                     if (!ImageUtils.PreloadedImagePixbufs.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
                     {
-                        ImageUtils.PreloadImage(CurrentPackage, resourceIndexEntry, Image);
+                        CurrentPackage.PreloadImage(resourceIndexEntry, Image);
                         ImageUtils.PreloadedImagePixbufs[resourceIndexEntry].Add(ImageUtils.PreloadedImagePixbufs[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
                     }
                     break;
@@ -516,7 +512,7 @@ public partial class MainWindow : Window
         ResourceTreeView.Selection.GetSelected(out model, out iter);
         var resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4);
         CurrentPackage.DeleteResource(resourceIndexEntry);
-        ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+        ResourceUtils.MissingResourceKeys.Add(resourceIndexEntry.ReverseEvaluateResourceKey());
         RefreshWidgets(false);
         NextState = NextStateOptions.NoUnsavedChanges;
     }
@@ -533,7 +529,7 @@ public partial class MainWindow : Window
         {
             try
             {
-                ResourceUtils.ResolveResourceType(CurrentPackage, ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename));
+                CurrentPackage.ResolveResourceType(CurrentPackage.AddResource(fileChooserDialog.Filename));
                 RefreshWidgets(false);
                 NextState = NextStateOptions.UnsavedChanges;
             }
@@ -593,11 +589,11 @@ public partial class MainWindow : Window
                 TreeModel model;
                 ResourceTreeView.Selection.GetSelected(out model, out iter);
                 IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4),
-                tempResourceIndexEntry = ResourceUtils.AddResource(CurrentPackage, fileChooserDialog.Filename, resourceIndexEntry, false);
-                ResourceUtils.ResolveResourceType(CurrentPackage, tempResourceIndexEntry);
+                tempResourceIndexEntry = CurrentPackage.AddResource(fileChooserDialog.Filename, resourceIndexEntry, false);
+                CurrentPackage.ResolveResourceType(tempResourceIndexEntry);
                 CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);
-                ResourceUtils.MissingResourceKeys.Add(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                ResourceUtils.MissingResourceKeys.Add(resourceIndexEntry.ReverseEvaluateResourceKey());
                 RefreshWidgets(false);
                 NextState = NextStateOptions.UnsavedChanges;
             }
@@ -626,7 +622,7 @@ public partial class MainWindow : Window
                     break;
                 case 3:
                     //var resourceIndexEntry = (IResourceIndexEntry)ResourceListStore.GetValue(iter, 4);
-                    //Console.WriteLine(ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry));
+                    //Console.WriteLine(resourceIndexEntry.ReverseEvaluateResourceKey());
                     break;
             }
         }

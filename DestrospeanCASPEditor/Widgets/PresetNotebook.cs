@@ -57,7 +57,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 };
         }
 
-        void AddPropertiesToTable(CASPart.AComplate complate, Table table)
+        void AddPropertiesToTable(Table table, CASPart.AComplate complate)
         {
             var propertyNames = new List<string>(complate.PropertyNames);
             propertyNames.Sort();
@@ -128,7 +128,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "texture":
                         ComboBox comboBox;
-                        var entries = WidgetUtils.BuildImageResourceComboBoxEntries(complate.ParentPackage, value, out comboBox, Image);
+                        var entries = WidgetUtils.BuildImageResourceComboBoxEntries(out comboBox, complate.ParentPackage, value, Image);
                         comboBox.Changed += (sender, e) => complate.SetValue(name, entries[comboBox.Active].Item2);
                         valueWidget = comboBox;
                         break;
@@ -225,7 +225,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     {
                         Text = pattern == null ? "Configuration" : pattern.Name
                     });
-                AddPropertiesToTable(complate, table);
+                AddPropertiesToTable(table, complate);
             }
             ShowAll();
         }

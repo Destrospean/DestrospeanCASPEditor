@@ -36,7 +36,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void AddPropertiesToNotebook(IPackage package, GeometryResource geometryResource, Notebook notebook, Gtk.Image imageWidget, int pageIndexOffset = 0)
+        public static void AddProperties(this Notebook notebook, IPackage package, GeometryResource geometryResource, Gtk.Image imageWidget, int pageIndexOffset = 0)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
@@ -48,11 +48,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     Text = "GEOM " + (notebook.NPages + pageIndexOffset).ToString()
                 });
-            AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget);
+            table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
             notebook.ShowAll();
         }
 
-        public static void AddPropertiesToTable(IPackage package, GeometryResource geometryResource, Table table, ScrolledWindow scrolledWindow, Gtk.Image imageWidget)
+        public static void AddProperties(this Table table, IPackage package, GeometryResource geometryResource, ScrolledWindow scrolledWindow, Gtk.Image imageWidget)
         {
             var mainWindow = MainWindow.Singleton;
             var geometryResourceKey = "";
@@ -60,7 +60,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 if (geometryResourceKvp.Value == geometryResource)
                 {
-                    geometryResourceKey = ResourceUtils.ReverseEvaluateResourceKey(geometryResourceKvp.Key);
+                    geometryResourceKey = geometryResourceKvp.Key.ReverseEvaluateResourceKey();
                     break;
                 }
             }
@@ -216,14 +216,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     alignment.Xscale = 1;
                     ComboBox comboBox;
-                    var entries = BuildImageResourceComboBoxEntries(package, ResourceUtils.ReverseEvaluateResourceKey(element.ParentTGIBlocks[elementTextureRef.Index]), out comboBox, imageWidget);
+                    var entries = BuildImageResourceComboBoxEntries(out comboBox, package, element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey(), imageWidget);
                     comboBox.Changed += (sender, e) =>
                         {
                             var key = entries[comboBox.Active].Item2;
-                            var index = element.ParentTGIBlocks.FindIndex(x => ResourceUtils.ReverseEvaluateResourceKey(x) == key);
+                            var index = element.ParentTGIBlocks.FindIndex(x => x.ReverseEvaluateResourceKey() == key);
                             if (index == -1)
                             {
-                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, ResourceUtils.EvaluateImageResourceKey(package, key).Item2));
+                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, package.EvaluateImageResourceKey(key).Item2));
                                 index = element.ParentTGIBlocks.Count - 1;
                             }
                             elementTextureRef.Index = index;
@@ -260,7 +260,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             table.Remove(child);
                         }
-                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget);
+                        table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
                         mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
                     };
@@ -305,7 +305,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }));
                         element.Field = addGEOMPropertyDialog.Field;
                         geom.Mtnf.SData.Add(element);
-                        AddPropertiesToTable(package, geometryResource, table, scrolledWindow, imageWidget);
+                        table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
                         scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;
                         mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
@@ -316,9 +316,9 @@ namespace Destrospean.DestrospeanCASPEditor
             table.NRows++;
         }
 
-        public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(IPackage package, string currentValue, out ComboBox comboBox, Gtk.Image imageWidget)
+        public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(out ComboBox comboBox, IPackage package, string currentValue, Gtk.Image imageWidget)
         {
-            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImagePixbufs[x][1], ResourceUtils.ReverseEvaluateResourceKey(x))));
+            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImagePixbufs[x][1], x.ReverseEvaluateResourceKey())));
             var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
             var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
@@ -328,8 +328,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     try
                     {
-                        var evaluated = ResourceUtils.EvaluateImageResourceKey(package, currentValue);
-                        ImageUtils.PreloadGameImage(evaluated.Item1, evaluated.Item2, imageWidget);
+                        var evaluated = package.EvaluateImageResourceKey(currentValue);
+                        evaluated.Item1.PreloadGameImage(evaluated.Item2, imageWidget);
                         ImageUtils.PreloadedGameImagePixbufs[currentValue].Add(ImageUtils.PreloadedGameImagePixbufs[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                     }
                     catch

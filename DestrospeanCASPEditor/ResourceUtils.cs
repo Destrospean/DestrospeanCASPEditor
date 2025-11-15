@@ -171,7 +171,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(IPackage package, string key)
+        static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(this IPackage package, string key)
         {   
             var tgi = new ulong[3];
             var i = 0;
@@ -187,16 +187,16 @@ namespace Destrospean.DestrospeanCASPEditor
             return new Tuple<IPackage, IResourceIndexEntry>(package, results[0]);
         }
 
-        public static IResourceIndexEntry AddResource(IPackage package, string filename, IResourceKey resourceKey = null, bool rejectDups = true)
+        public static IResourceIndexEntry AddResource(this IPackage package, string filename, IResourceKey resourceKey = null, bool rejectDups = true)
         {
             return package.AddResource(resourceKey ?? new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), rejectDups);
         }
 
-        public static Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(IPackage package, string key)
+        public static Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(this IPackage package, string key)
         {   
             try
             {
-                return EvaluateResourceKeyInternal(package, key);
+                return package.EvaluateResourceKeyInternal(key);
             }
             catch (ResourceIndexEntryNotFoundException)
             {
@@ -204,7 +204,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     try
                     {
-                        return EvaluateResourceKeyInternal(gamePackage, key);
+                        return gamePackage.EvaluateResourceKeyInternal(key);
                     }
                     catch (ResourceIndexEntryNotFoundException)
                     {
@@ -214,7 +214,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKey(IPackage package, System.Xml.XmlNode xmlNode)
+        public static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKey(this IPackage package, System.Xml.XmlNode xmlNode)
         {   
             if (!((System.Xml.XmlElement)xmlNode).HasAttribute("reskey"))
             {
@@ -223,7 +223,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var key = xmlNode.Attributes["reskey"].Value;
             try
             {
-                return EvaluateResourceKeyInternal(package, key);
+                return package.EvaluateResourceKeyInternal(key);
             }
             catch (ResourceIndexEntryNotFoundException)
             {
@@ -231,7 +231,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     try
                     {
-                        return EvaluateResourceKeyInternal(gamePackage, key);
+                        return gamePackage.EvaluateResourceKeyInternal(key);
                     }
                     catch (ResourceIndexEntryNotFoundException)
                     {
@@ -241,7 +241,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static IResourceIndexEntry GetResourceIndexEntry(IPackage package, IResourceKey resourceKey)
+        public static IResourceIndexEntry GetResourceIndexEntry(this IPackage package, IResourceKey resourceKey)
         {
             return package.Find(x => x.ResourceType == resourceKey.ResourceType && x.ResourceGroup == resourceKey.ResourceGroup && x.Instance == resourceKey.Instance);
         }
@@ -258,12 +258,12 @@ namespace Destrospean.DestrospeanCASPEditor
             return 0;
         }
 
-        public static string GetResourceTypeTag(IResourceKey resourceKey)
+        public static string GetResourceTypeTag(this IResourceKey resourceKey)
         {
             return ExtList.Ext[resourceKey.ResourceType][0];
         }
 
-        public static void ResolveResourceType(IPackage package, IResourceIndexEntry resourceIndexEntry)
+        public static void ResolveResourceType(this IPackage package, IResourceIndexEntry resourceIndexEntry)
         {
             IResource castResource = null;
             var resource = s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
@@ -322,7 +322,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static string ReverseEvaluateResourceKey(IResourceKey resourceKey)
+        public static string ReverseEvaluateResourceKey(this IResourceKey resourceKey)
         {   
             var output = "key";
             foreach (var value in new Tuple<ulong, string>[]

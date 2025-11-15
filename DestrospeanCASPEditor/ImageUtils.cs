@@ -15,14 +15,9 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static readonly Dictionary<string, Bitmap> PreloadedImages = new Dictionary<string, Bitmap>();
 
-        public static Pixbuf ConvertToPixbuf(Bitmap image)
+        static System.Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
-            using (var stream = new System.IO.MemoryStream())
-            {
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                stream.Seek(0, System.IO.SeekOrigin.Begin);
-                return new Pixbuf(stream);
-            }
+            return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes), System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest));
         }
 
         public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
@@ -45,25 +40,33 @@ namespace Destrospean.DestrospeanCASPEditor
             return checkerboard;
         }
 
-        public static void PreloadGameImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        public static Pixbuf GetAsPixbuf(this Bitmap image)
         {
-            var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            var key = ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry);
-            PreloadedGameImages[key] = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes);
-            PreloadedGameImagePixbufs[key] = new List<Pixbuf>
+            using (var stream = new System.IO.MemoryStream())
+            {
+                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                stream.Seek(0, System.IO.SeekOrigin.Begin);
+                return new Pixbuf(stream);
+            }
+        }
+
+        public static void PreloadGameImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        {
+            var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
+            PreloadedGameImages[variables.Item1] = variables.Item2;
+            PreloadedGameImagePixbufs[variables.Item1] = new List<Pixbuf>
                 {
-                    ConvertToPixbuf(PreloadedGameImages[key]).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
+                    variables.Item2.GetAsPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                 };
         }
 
-        public static void PreloadImage(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        public static void PreloadImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
-            var shortestDimension = System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest);
-            var key = ResourceUtils.ReverseEvaluateResourceKey(resourceIndexEntry);
-            PreloadedImages[key] = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes);
+            var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
+            PreloadedImages[variables.Item1] = variables.Item2;
             PreloadedImagePixbufs[resourceIndexEntry] = new List<Pixbuf>
                 {
-                    ConvertToPixbuf(PreloadedImages[key]).ScaleSimple(shortestDimension, shortestDimension, InterpType.Bilinear)
+                    variables.Item2.GetAsPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                 };
         }
 

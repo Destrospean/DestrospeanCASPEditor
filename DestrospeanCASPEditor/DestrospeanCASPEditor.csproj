@@ -216,10 +216,10 @@
     <Compile Include="OpenGL\Camera.cs" />
     <Compile Include="OpenGL\Light.cs" />
     <Compile Include="OpenGL\Material.cs" />
-    <Compile Include="OpenGL\ShaderProgram.cs" />
     <Compile Include="OpenGL\Volume.cs" />
     <Compile Include="OpenGL\MainWindow.cs" />
-    <Compile Include="OpenGL\TextureUtils.cs" />
+    <Compile Include="TextureUtils.cs" />
+    <Compile Include="OpenGL\Shader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
