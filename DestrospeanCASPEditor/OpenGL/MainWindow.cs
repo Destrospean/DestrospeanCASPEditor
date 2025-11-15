@@ -569,9 +569,11 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = material.DiffuseMap == "" ? -1 : LoadTexture(material.DiffuseMap),
+                    TextureID = LoadTexture("main", casPart.Presets[0].DisplayableMainTexture),
                     Vertices = vertices.ToArray()
                 });
+            //Image.Pixbuf = ImageUtils.ConvertToPixbuf(new Bitmap(casPart.Presets[0].DisplayableMainTexture, new Size(Image.WidthRequest, Image.HeightRequest)));
+            //GLWidget.Hide();
         }
     }
 
@@ -636,10 +638,34 @@ public partial class MainWindow : Window
         mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
 
+    public void DeleteTexture(string key)
+    {
+        int textureID;
+        if (TextureIDs.TryGetValue(key, out textureID))
+        {
+            GL.DeleteTexture(textureID);
+            TextureIDs.Remove(key);
+        }
+    }
+
+    public void DeleteTextures()
+    {
+        foreach (var textureId in TextureIDs.Values)
+        {
+            GL.DeleteTexture(textureId);
+        }
+        TextureIDs.Clear();
+    }
+
     public int LoadTexture(string key)
     {
         Bitmap image;
-        if (!mGLInitialized || !ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
+        return ImageUtils.PreloadedGameImages.TryGetValue(key, out image) || ImageUtils.PreloadedImages.TryGetValue(key, out image) ? LoadTexture(key, image) : -1;
+    }
+
+    public int LoadTexture(string key, Bitmap image)
+    {
+        if (!mGLInitialized)
         {
             return -1;
         }

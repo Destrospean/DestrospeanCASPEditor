@@ -59,7 +59,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         void AddPropertiesToTable(CASPart.AComplate complate, Table table)
         {
-            var propertyNames = complate.PropertyNames;
+            var propertyNames = new List<string>(complate.PropertyNames);
             propertyNames.Sort();
             foreach (var name in propertyNames)
             {

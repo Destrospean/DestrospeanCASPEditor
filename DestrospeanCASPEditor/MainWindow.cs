@@ -20,6 +20,8 @@ public enum NextStateOptions : byte
 
 public partial class MainWindow : Window
 {
+    PresetNotebook mPresetNotebook;
+
     public IPackage CurrentPackage;
 
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
@@ -157,7 +159,8 @@ public partial class MainWindow : Window
         flagTables[0].ShowAll();
         flagTables[1].ShowAll();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
-        ResourcePropertyTable.Attach(PresetNotebook.CreateInstance(casPart, Image), 1, 2, 0, 1);
+        mPresetNotebook = PresetNotebook.CreateInstance(casPart, Image);
+        ResourcePropertyTable.Attach(mPresetNotebook, 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
         BuildLODNotebook(casPart);
     }

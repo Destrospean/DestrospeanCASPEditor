@@ -4,9 +4,18 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Destrospean.DestrospeanCASPEditor;
+using s3pi.Interfaces;
 
 namespace Destrospean.CmarNYCBorrowed
 {
+    public enum PatternType
+    {
+        None,
+        Colored,
+        HSV,
+        Solid
+    }
+
     public static class TextureUtils
     {
         public class HSVColor
@@ -248,7 +257,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             float[][] mRGBColors;
 
-            public string Background, PatternName, RGBMask;
+            public string Background, Name, RGBMask;
 
             public string[] Channels;
 
@@ -257,14 +266,6 @@ namespace Destrospean.CmarNYCBorrowed
             public float[][] HSV, HSVBase, HSVShift;
 
             public float[] HSVBaseBG, HSVBG, HSVShiftBG, SolidColor;
-
-            public enum PatternType
-            {
-                Solid,
-                Colored,
-                HSV,
-                None
-            }
 
             public float[][] RGBColors
             {
@@ -280,17 +281,21 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     return colors.ToArray();
                 }
+                set
+                {
+                    mRGBColors = value;
+                }
             }
 
             public PatternType Type
             {
                 get
                 {
-                    if (PatternName.Contains("solidColor") || PatternName.Contains("Flat Color"))
+                    if (Name.Contains("solidColor") || Name.Contains("Flat Color"))
                     {
                         return PatternType.Solid;
                     }
-                    else if (PatternName.Contains("None"))
+                    else if (Name.Contains("None"))
                     {
                         return PatternType.None;
                     }
@@ -304,23 +309,9 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
             }
-
-            public string PrintFloatArray(float[] values)
-            {
-                var text = "";
-                for (var i = 0; i < SolidColor.Length; i++)
-                {
-                    text += SolidColor[i].ToString();
-                    if (i < SolidColor.Length - 1)
-                    {
-                        text += ", ";
-                    }
-                }
-                return text;
-            }
         }
 
-        public static Image DisplayableTexture(Bitmap multiplier, byte[] maskArray, List<object> patterns, bool overlay)
+        public static Image DisplayableTexture(Bitmap multiplier, uint[] maskArray, List<object> patterns, bool overlay)
         {
             var rectangle = new Rectangle(0, 0, multiplier.Width, multiplier.Height);
             var bitmapData = multiplier.LockBits(rectangle, ImageLockMode.ReadWrite, multiplier.PixelFormat);
@@ -415,7 +406,7 @@ namespace Destrospean.CmarNYCBorrowed
             return multiplier;
         }
 
-        public static Bitmap DisplayableRGBPattern(PatternInfo pattern)
+        public static Bitmap DisplayableRGBPattern(IPackage package, PatternInfo pattern)
         {
             int height = 256,
             width = 256;
@@ -425,11 +416,11 @@ namespace Destrospean.CmarNYCBorrowed
             var bitmapData = texture.LockBits(rectangle, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             var ptr = bitmapData.Scan0 + (bitmapData.Stride > 0 ? 0 : bitmapData.Stride * (texture.Height - 1));
             var byteCount = Math.Abs(bitmapData.Stride) * texture.Height;
-            byte[] maskArray = GetImageARGBArray(pattern.RGBMask, width, height), 
-            textureArray = new byte[byteCount];
-            for (var i = 0; i < maskArray.Length; i++)
+            var maskArray = GetImageARGBArray(package, pattern.RGBMask, width, height);
+            var textureArray = new byte[byteCount];
+            for (var i = 0; i < maskArray.Length; i += 4)
             {
-                byte[] mask = BitConverter.GetBytes(maskArray[i]),
+                byte[] mask = BitConverter.GetBytes(maskArray[i >> 2]),
                 maskControl = new byte[]
                     {
                         mask[2],
@@ -444,7 +435,7 @@ namespace Destrospean.CmarNYCBorrowed
                         var blend = (float)maskControl[j] / byte.MaxValue;
                         for (var k = 0; k < 3; k++)
                         {
-                            var temp = j == 0 ? colors[j][2 - k] : blend * colors[j][2 - k] + (1 - blend) * textureArray[i * 4 + k] / byte.MaxValue;
+                            var temp = j == 0 ? colors[j][2 - k] : blend * colors[j][2 - k] + (1 - blend) * textureArray[i + k] / byte.MaxValue;
                             if (temp < 0)
                             {
                                 temp = 0;
@@ -453,24 +444,24 @@ namespace Destrospean.CmarNYCBorrowed
                             {
                                 temp = 1;
                             }
-                            textureArray[i * 4 + k] = (byte)(temp * byte.MaxValue);
+                            textureArray[i + k] = (byte)(temp * byte.MaxValue);
                         }
                     }
                 }
-                textureArray[i * 4 + 3] = byte.MaxValue;
+                textureArray[i + 3] = byte.MaxValue;
             }
             Marshal.Copy(textureArray, 0, ptr, byteCount);
             texture.UnlockBits(bitmapData);
             return texture;
         }
 
-        public static Bitmap DisplayableHSVPattern(PatternInfo pattern)
+        public static Bitmap DisplayableHSVPattern(IPackage package, PatternInfo pattern)
         {
             int height = 256,
             width = 256;
-            Bitmap background = GetImage(pattern.Background, width, height),
+            Bitmap background = GetImage(package, pattern.Background, width, height),
             patternImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            var rgb = GetImageARGBArray(pattern.RGBMask, width, height);
+            var rgb = GetImageARGBArray(package, pattern.RGBMask, width, height);
             var patternBack = new Bitmap[3];
             if (pattern.Channels != null)
             {
@@ -478,7 +469,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     if (pattern.Channels[i] != null)
                     {
-                        patternBack[i] = GetImage(pattern.Channels[i], width, height);
+                        patternBack[i] = GetImage(package, pattern.Channels[i], width, height);
                     }
                 }
             }
@@ -578,14 +569,14 @@ namespace Destrospean.CmarNYCBorrowed
             return patternImage;
         }
 
-        public static Bitmap GetImage(string key, int[] dimensions)
+        public static Bitmap GetImage(IPackage package, string key, int[] dimensions)
         {
             Bitmap image;
             if (!ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
             {
-                var evaluated = ResourceUtils.EvaluateImageResourceKey(MainWindow.Singleton.CurrentPackage, key);
+                var evaluated = ResourceUtils.EvaluateImageResourceKey(package, key);
                 image = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).AsBytes);
-                if (evaluated.Item1 == MainWindow.Singleton.CurrentPackage)
+                if (evaluated.Item1 == package)
                 {
                     ImageUtils.PreloadedImages.Add(key, image);
                 }
@@ -598,41 +589,38 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 image = new Bitmap(image, new Size(dimensions[0], dimensions[1]));
             }
-            return image;
+            return (Bitmap)image.Clone();
         }
 
-        public static Bitmap GetImage(string key, int width, int height)
+        public static Bitmap GetImage(IPackage package, string key, int width, int height)
         {
-            return GetImage(key, new int[]
+            return GetImage(package, key, new int[]
                 {
                     width,
                     height
                 });
         }
 
-        public static byte[] GetImageARGBArray(string key, int[] dimensions)
+        public static uint[] GetImageARGBArray(IPackage package, string key, int[] dimensions)
         {
-            var image = GetImage(key, dimensions);
+            var image = GetImage(package, key, dimensions);
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var ptr = bitmapData.Scan0;
             var byteCount = Math.Abs(bitmapData.Stride) * image.Height;
-            byte[] bgraValues = new byte[byteCount],
-            argbValues = new byte[byteCount];
+            byte[] bgraValues = new byte[byteCount];
+            uint[] argbValues = new uint[byteCount];
             Marshal.Copy(ptr, bgraValues, 0, byteCount);
             image.UnlockBits(bitmapData);
-            for (var i = 0; i < byteCount; i += 4)
+            for (int i = 0, j = 0; i < byteCount; i += 4, j++)
             {
-                argbValues[i] = bgraValues[i + 3];
-                argbValues[i + 1] = bgraValues[i + 2];
-                argbValues[i + 2] = bgraValues[i + 1];
-                argbValues[i + 3] = bgraValues[i];
+                argbValues[j] = ((uint)bgraValues[i + 3] << 24) + ((uint)bgraValues[i + 2] << 16) + ((uint)bgraValues[i + 1] << 8) + bgraValues[i];
             }
             return argbValues;
         }
 
-        public static byte[] GetImageARGBArray(string key, int width, int height)
+        public static uint[] GetImageARGBArray(IPackage package, string key, int width, int height)
         {
-            return GetImageARGBArray(key, new int[]
+            return GetImageARGBArray(package, key, new int[]
                 {
                     width,
                     height
