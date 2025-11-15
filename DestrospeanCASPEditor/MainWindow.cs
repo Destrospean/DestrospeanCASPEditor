@@ -160,6 +160,7 @@ public partial class MainWindow : Window
         flagTables[1].ShowAll();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
         mPresetNotebook = PresetNotebook.CreateInstance(casPart, Image);
+        mPresetNotebook.SwitchPage += (o, args) => LoadGEOMs(casPart);
         ResourcePropertyTable.Attach(mPresetNotebook, 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
         BuildLODNotebook(casPart);

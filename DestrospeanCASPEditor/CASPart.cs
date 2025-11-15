@@ -34,7 +34,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         class Complate : AComplate
         {
-            Dictionary<string, Bitmap> mDisplayableTextures;
+            Bitmap mDisplayableTexture;
 
             public override CASPart CASPart
             {
@@ -44,16 +44,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Dictionary<string, Bitmap> DisplayableTextures
+            public Bitmap DisplayableTexture
             {
                 get
                 {
-                    if (mDisplayableTextures == null)
+                    if (mDisplayableTexture == null)
                     {
-                        mDisplayableTextures = new Dictionary<string, Bitmap>();
-                        uint[] maskArray = null; 
-                        Bitmap multiplier = null,
-                        overlay = null;
+                        uint[] maskArray = null,
+                        overlayArray = null; 
+                        Bitmap multiplier = null;
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
                             var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
@@ -66,24 +65,24 @@ namespace Destrospean.DestrospeanCASPEditor
                                     multiplier = TextureUtils.GetImage(ParentPackage, value, null);
                                     break;
                                 case "overlay":
-                                    overlay = TextureUtils.GetImage(ParentPackage, value, null);
+                                    overlayArray = TextureUtils.GetImageARGBArray(ParentPackage, value, null);
                                     break;
                             }
                         }
                         if (multiplier != null)
                         {
-                            mDisplayableTextures.Add("main", (Bitmap)TextureUtils.DisplayableTexture(multiplier, maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), false));
-                        }
-                        if (overlay != null)
-                        {
-                            mDisplayableTextures.Add("overlay", (Bitmap)TextureUtils.DisplayableTexture(overlay, maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), true));
+                            mDisplayableTexture = TextureUtils.DisplayableTexture(multiplier, maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), false);
+                            if (overlayArray != null)
+                            {
+                                mDisplayableTexture = TextureUtils.DisplayableTexture(mDisplayableTexture, overlayArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.DisplayablePattern)), true);
+                            }
                         }
                     }
-                    return mDisplayableTextures;
+                    return mDisplayableTexture;
                 }
                 set
                 {
-                    mDisplayableTextures = value;
+                    mDisplayableTexture = value;
                 }
             }
 
@@ -327,7 +326,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     };
                 if (complateConstructed)
                 {
-                    Preset.ClearDisplayableTextures();
+                    Preset.ClearDisplayableTexture();
                 }
                 DisplayablePattern = null;
             }
@@ -354,37 +353,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Bitmap DisplayableMainTexture
+            public Bitmap DisplayableTexture
             {
                 get
                 {
-                    Bitmap texture;
-                    return DisplayableTextures.TryGetValue("main", out texture) ? texture : null;
-                }
-            }
-
-            public Bitmap DisplayableOverlayTexture
-            {
-                get
-                {
-                    Bitmap texture;
-                    return DisplayableTextures.TryGetValue("overlay", out texture) ? texture : null;
-                }
-            }
-
-            public Dictionary<string, Bitmap> DisplayableTextures
-            {
-                get
-                {
-                    return mComplate.DisplayableTextures;
-                }
-            }
-
-            public Bitmap[] DisplayableTexturesArray
-            {
-                get
-                {
-                    return new List<Bitmap>(mComplate.DisplayableTextures.Values).ToArray();
+                    return mComplate.DisplayableTexture;
                 }
             }
 
@@ -448,9 +421,9 @@ namespace Destrospean.DestrospeanCASPEditor
                 mComplate = new Complate(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
-            public void ClearDisplayableTextures()
+            public void ClearDisplayableTexture()
             {
-                mComplate.DisplayableTextures = null;
+                mComplate.DisplayableTexture = null;
             } 
 
             public override string GetValue(string propertyName)
@@ -460,7 +433,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
             {
-                mComplate.SetValue(propertyName, newValue, beforeRerender ?? ClearDisplayableTextures);
+                mComplate.SetValue(propertyName, newValue, beforeRerender ?? ClearDisplayableTexture);
             }
         }
 

@@ -569,7 +569,7 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = LoadTexture("main", casPart.Presets[0].DisplayableMainTexture),
+                    TextureID = LoadTexture("main", casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].DisplayableTexture),
                     Vertices = vertices.ToArray()
                 });
             //Image.Pixbuf = ImageUtils.ConvertToPixbuf(new Bitmap(casPart.Presets[0].DisplayableMainTexture, new Size(Image.WidthRequest, Image.HeightRequest)));

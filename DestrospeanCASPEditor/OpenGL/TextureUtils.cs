@@ -311,99 +311,108 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public static Image DisplayableTexture(Bitmap multiplier, uint[] maskArray, List<object> patterns, bool overlay)
+        public static Bitmap DisplayableTexture(Bitmap multiplier, uint[] maskArray, List<object> patterns, bool overlay)
         {
-            var rectangle = new Rectangle(0, 0, multiplier.Width, multiplier.Height);
-            var bitmapData = multiplier.LockBits(rectangle, ImageLockMode.ReadWrite, multiplier.PixelFormat);
-            var ptr = bitmapData.Scan0 + (bitmapData.Stride > 0 ? 0 : bitmapData.Stride * (multiplier.Height - 1));
-            var byteCount = Math.Abs(bitmapData.Stride) * multiplier.Height;
-            var multiplierArray = new byte[byteCount];
-            Marshal.Copy(ptr, multiplierArray, 0, byteCount);
-            for (var i = 0; i < byteCount; i += 4)
+            var multiplierCopy = (Bitmap)multiplier.Clone();
+            var rectangle = new Rectangle(0, 0, multiplierCopy.Width, multiplierCopy.Height);
+            var bitmapData = multiplierCopy.LockBits(rectangle, ImageLockMode.ReadWrite, multiplierCopy.PixelFormat);
+            try
             {
-                var gray = (multiplierArray[i] + multiplierArray[i + 1] + multiplierArray[i + 2]) / 3f / (byte.MaxValue >> (overlay ? 0 : 1));
-                byte[] mask = BitConverter.GetBytes(maskArray[i >> 2]),
-                maskControl = new byte[]
-                    {
-                        mask[2],
-                        mask[1],
-                        mask[0],
-                        mask[3]
-                    };
-                for (var j = 0; j < patterns.Count; j++)
+                var ptr = bitmapData.Scan0 + (bitmapData.Stride > 0 ? 0 : bitmapData.Stride * (multiplierCopy.Height - 1));
+                var byteCount = Math.Abs(bitmapData.Stride) * multiplierCopy.Height;
+                var multiplierArray = new byte[byteCount];
+                Marshal.Copy(ptr, multiplierArray, 0, byteCount);
+                for (var i = 0; i < byteCount; i += 4)
                 {
-                    var blend = (float)maskControl[j] / byte.MaxValue;
-                    if (patterns[j] != null && maskControl[j] > 0)
+                    var gray = (multiplierArray[i] + multiplierArray[i + 1] + multiplierArray[i + 2]) / 3f / (byte.MaxValue >> (overlay ? 0 : 1));
+                    byte[] mask = BitConverter.GetBytes(maskArray[i >> 2]),
+                    maskControl = new byte[]
+                        {
+                            mask[2],
+                            mask[1],
+                            mask[0],
+                            mask[3]
+                        };
+                    for (var j = 0; j < patterns.Count; j++)
                     {
-                        var rgba = patterns[j] as float[];
-                        if (rgba != null)
+                        var blend = (float)maskControl[j] / byte.MaxValue;
+                        if (patterns[j] != null && maskControl[j] > 0)
                         {
-                            for (var k = 0; k < 3; k++)
+                            var rgba = patterns[j] as float[];
+                            if (rgba != null)
                             {
-                                var temp = gray * rgba[2 - k];
-                                if (temp < 0)
+                                for (var k = 0; k < 3; k++)
                                 {
-                                    temp = 0;
+                                    var temp = gray * rgba[2 - k];
+                                    if (temp < 0)
+                                    {
+                                        temp = 0;
+                                    }
+                                    if (temp > 1)
+                                    {
+                                        temp = 1;
+                                    }
+                                    if (k == 0 || !overlay)
+                                    {
+                                        multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
+                                    }
+                                    else
+                                    {
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
+                                    }
                                 }
-                                if (temp > 1)
-                                {
-                                    temp = 1;
-                                }
-                                if (k == 0 || !overlay)
-                                {
-                                    multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
-                                }
-                                else
-                                {
-                                    multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
-                                }
+                                continue;
                             }
-                            continue;
-                        }
-                        var image = patterns[j] as Bitmap;
-                        if (image != null)
-                        {
-                            int currentX,
-                            currentY = Math.DivRem(i >> 2, multiplier.Width, out currentX),
-                            height,
-                            width;
-                            Math.DivRem(currentX, image.Width, out width);
-                            Math.DivRem(currentY, image.Height, out height);
-                            var color = image.GetPixel(width, height);
-                            rgba = new float[]
-                                {
-                                    (float)color.R / byte.MaxValue,
-                                    (float)color.G / byte.MaxValue,
-                                    (float)color.B / byte.MaxValue,
-                                    (float)color.A / byte.MaxValue
-                                };
-                            for (var k = 0; k < 3; k++)
+                            var image = patterns[j] as Bitmap;
+                            if (image != null)
                             {
-                                var temp = gray * rgba[2 - k];
-                                if (temp < 0)
+                                int currentX,
+                                currentY = Math.DivRem(i >> 2, multiplierCopy.Width, out currentX),
+                                height,
+                                width;
+                                Math.DivRem(currentX, image.Width, out width);
+                                Math.DivRem(currentY, image.Height, out height);
+                                var color = image.GetPixel(width, height);
+                                rgba = new float[]
+                                    {
+                                        (float)color.R / byte.MaxValue,
+                                        (float)color.G / byte.MaxValue,
+                                        (float)color.B / byte.MaxValue,
+                                        (float)color.A / byte.MaxValue
+                                    };
+                                for (var k = 0; k < 3; k++)
                                 {
-                                    temp = 0;
-                                }
-                                if (temp > 1)
-                                {
-                                    temp = 1;
-                                }
-                                if (k == 0 || !overlay)
-                                {
-                                    multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
-                                }
-                                else
-                                {
-                                    multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
+                                    var temp = gray * rgba[2 - k];
+                                    if (temp < 0)
+                                    {
+                                        temp = 0;
+                                    }
+                                    if (temp > 1)
+                                    {
+                                        temp = 1;
+                                    }
+                                    if (k == 0 || !overlay)
+                                    {
+                                        multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
+                                    }
+                                    else
+                                    {
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                Marshal.Copy(multiplierArray, 0, ptr, byteCount);
+                multiplierCopy.UnlockBits(bitmapData);
             }
-            Marshal.Copy(multiplierArray, 0, ptr, byteCount);
-            multiplier.UnlockBits(bitmapData);
-            return multiplier;
+            catch (IndexOutOfRangeException)
+            {
+                multiplierCopy.UnlockBits(bitmapData);
+                return multiplier;
+            }
+            return multiplierCopy;
         }
 
         public static Bitmap DisplayableRGBPattern(IPackage package, PatternInfo pattern)
@@ -607,8 +616,8 @@ namespace Destrospean.CmarNYCBorrowed
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var ptr = bitmapData.Scan0;
             var byteCount = Math.Abs(bitmapData.Stride) * image.Height;
-            byte[] bgraValues = new byte[byteCount];
-            uint[] argbValues = new uint[byteCount];
+            var bgraValues = new byte[byteCount];
+            var argbValues = new uint[byteCount];
             Marshal.Copy(ptr, bgraValues, 0, byteCount);
             image.UnlockBits(bitmapData);
             for (int i = 0, j = 0; i < byteCount; i += 4, j++)
