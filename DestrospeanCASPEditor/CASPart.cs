@@ -142,11 +142,19 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        class StringComparer : IComparer<string>
+        {
+            public int Compare(string a, string b)
+            {
+                return String.Compare(a, b);
+            }
+        }
+
         public abstract class AComplate
         {
-            protected readonly Dictionary<string, string> mPropertiesTyped;
+            protected readonly IDictionary<string, string> mPropertiesTyped;
 
-            protected readonly Dictionary<string, XmlNode> mPropertiesXmlNodes;
+            protected readonly IDictionary<string, XmlNode> mPropertiesXmlNodes;
 
             protected readonly XmlDocument mXmlDocument;
 
@@ -160,7 +168,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 get;
             }
 
-            public virtual Dictionary<string, string> PropertiesTyped
+            public virtual IDictionary<string, string> PropertiesTyped
             {
                 get
                 {
@@ -179,8 +187,8 @@ namespace Destrospean.DestrospeanCASPEditor
             public AComplate()
             {
                 mXmlDocument = new XmlDocument();
-                mPropertiesXmlNodes = new Dictionary<string, XmlNode>();
-                mPropertiesTyped = new Dictionary<string, string>();
+                mPropertiesXmlNodes = new SortedDictionary<string, XmlNode>(new StringComparer());
+                mPropertiesTyped = new SortedDictionary<string, string>(new StringComparer());
             }
 
             public virtual string GetValue(string propertyName)
@@ -294,13 +302,44 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public void RefreshPatternInfo(bool complateConstructed = true)
             {
-                var colors = new List<float[]>();
-                string rgbMask = null;
-                float[] solidColor = null;
+                string background = null,
+                rgbMask = null;
+                float baseHBg = -1,
+                baseSBg = -1,
+                baseVBg = -1,
+                hBg = -1,
+                sBg = -1,
+                vBg = -1;
+                List<float> baseH = new List<float>(),
+                baseS = new List<float>(),
+                baseV = new List<float>(),
+                h = new List<float>(),
+                s = new List<float>(),
+                v = new List<float>();
+                var channels = new List<string>();
+                var channelsEnabled = new List<bool>();
+                List<float[]> colors = new List<float[]>(),
+                hsv = new List<float[]>(),
+                hsvBase = new List<float[]>(),
+                hsvShift = new List<float[]>();
+                float[] hsvShiftBg = null,
+                solidColor = null;
                 foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                 {
-                    var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
-                    if (propertyXmlNodeKvp.Key.ToLower().Contains("color"))
+                    string key = propertyXmlNodeKvp.Key.ToLower(),
+                    value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
+                    if (key.StartsWith("channel"))
+                    {
+                        if (key.EndsWith("enabled"))
+                        {
+                            channelsEnabled.Add(bool.Parse(value));
+                        }
+                        else
+                        {
+                            channels.Add(value);
+                        }
+                    }
+                    else if (key.StartsWith("color"))
                     {
                         var color = new List<string>(value.Substring(0, value.LastIndexOf(',')).Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
                         if (PatternInfo.Name.Contains("solidColor") || PatternInfo.Name.Contains("Flat Color"))
@@ -312,13 +351,133 @@ namespace Destrospean.DestrospeanCASPEditor
                             colors.Add(color);
                         }
                     }
-                    else if (propertyXmlNodeKvp.Key.ToLower() == "rgbmask")
+                    else if (key.StartsWith("base h"))
                     {
-                        rgbMask = value;
+                        if (key.EndsWith("bg"))
+                        {
+                            baseHBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            baseH.Add(float.Parse(value));
+                        }
                     }
+                    else if (key.StartsWith("base s"))
+                    {
+                        if (key.EndsWith("bg"))
+                        {
+                            baseSBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            baseS.Add(float.Parse(value));
+                        }
+                    }
+                    else if (key.StartsWith("base v"))
+                    {
+                        if (key.EndsWith("bg"))
+                        {
+                            baseVBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            baseV.Add(float.Parse(value));
+                        }
+                    }
+                    else if (key.StartsWith("h "))
+                    {
+                        if (key.EndsWith("bg"))
+                        {
+                            hBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            h.Add(float.Parse(value));
+                        }
+                    }
+                    else if (key.StartsWith("hsvshift"))
+                    {
+                        var color = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
+                        if (key.EndsWith("bg"))
+                        {
+                            hsvShiftBg = color;
+                        }
+                        else
+                        {
+                            hsvShift.Add(color);
+                        }
+                    }
+                    else if (key.StartsWith("s "))
+                    {
+                        if (key.EndsWith("bg"))
+                        {
+                            sBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            s.Add(float.Parse(value));
+                        }
+                    }
+                    else if (key.StartsWith("v "))
+                    {
+                        if (key.EndsWith("bg"))
+                        {
+                            vBg = float.Parse(value);
+                        }
+                        else
+                        {
+                            v.Add(float.Parse(value));
+                        }
+                    }
+                    else switch (key)
+                    {
+                        case "background image":
+                            background = value;
+                            break;
+                        case "rgbmask":
+                            rgbMask = value;
+                            break;
+                    }
+                }
+                for (int i = 0; i < h.Count && h.Count == s.Count && h.Count == v.Count; i++)
+                {
+                    hsv.Add(new float[]
+                        {
+                            h[i],
+                            s[i],
+                            v[i]
+                        });
+                }
+                for (int i = 0; i < baseH.Count && baseH.Count == baseS.Count && baseH.Count == baseV.Count; i++)
+                {
+                    hsvBase.Add(new float[]
+                        {
+                            baseH[i],
+                            baseS[i],
+                            baseV[i]
+                        });
                 }
                 PatternInfo = new PatternInfo
                     {
+                        Background = background,
+                        Channels = channels.Count == 0 ? null : channels.ToArray(),
+                        ChannelEnabled = channelsEnabled.Count == 0 ? null : channelsEnabled.ToArray(),
+                        HSV = hsv.Count == 0 ? null : hsv.ToArray(),
+                        HSVBase = hsvBase.Count == 0 ? null : hsvBase.ToArray(),
+                        HSVBaseBG = baseHBg == -1 || baseSBg == -1 || baseVBg == -1 ? null : new float[]
+                            {
+                                baseHBg,
+                                baseSBg,
+                                baseVBg
+                            },
+                        HSVBG = hBg == -1 || sBg == -1 || vBg == -1 ? null : new float[]
+                            {
+                                hBg,
+                                sBg,
+                                vBg
+                            },
+                        HSVShift = hsvShift.Count == 0 ? null : hsvShift.ToArray(),
+                        HSVShiftBG = hsvShiftBg,
                         Name = PatternInfo.Name,
                         RGBColors = colors.ToArray(),
                         RGBMask = rgbMask,
@@ -385,7 +544,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public override Dictionary<string, string> PropertiesTyped
+            public override IDictionary<string, string> PropertiesTyped
             {
                 get
                 {

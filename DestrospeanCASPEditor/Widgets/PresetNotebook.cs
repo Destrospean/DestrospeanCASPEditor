@@ -59,9 +59,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         void AddPropertiesToTable(Table table, CASPart.AComplate complate)
         {
-            var propertyNames = new List<string>(complate.PropertyNames);
-            propertyNames.Sort();
-            foreach (var name in propertyNames)
+            foreach (var name in complate.PropertyNames)
             {
                 string type;
                 if (!complate.PropertiesTyped.TryGetValue(name, out type))
@@ -114,7 +112,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "float":
                         alignment.Xscale = 0;
-                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), 0, 1, .0001, 10, 0), 0, 4);
+                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), -1, 1, .0001, 10, 0), 0, 4);
                         spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
                         valueWidget = spinButton;
                         break;
@@ -137,8 +135,8 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         var coordinates = new List<string>(value.Split(',')).ConvertAll(new System.Converter<string, float>(float.Parse));
                         var spinButtons = new List<SpinButton>
                             {
-                                new SpinButton(new Adjustment(coordinates[0], 0, 1, .0001, 10, 0), 0, 4),
-                                new SpinButton(new Adjustment(coordinates[1], 0, 1, .0001, 10, 0), 0, 4)
+                                new SpinButton(new Adjustment(coordinates[0], -1, 1, .0001, 10, 0), 0, 4),
+                                new SpinButton(new Adjustment(coordinates[1], -1, 1, .0001, 10, 0), 0, 4)
                             };
                         spinButtons.ForEach(x =>
                             {
