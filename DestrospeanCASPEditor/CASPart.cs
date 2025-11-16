@@ -300,29 +300,29 @@ namespace Destrospean.DestrospeanCASPEditor
                 RefreshPatternInfo(false);
             }
 
-            public void RefreshPatternInfo(bool complateConstructed = true)
+            public void RefreshPatternInfo(bool clearPresetTexture = true)
             {
                 string background = null,
                 rgbMask = null;
-                float baseHBg = -1,
-                baseSBg = -1,
-                baseVBg = -1,
-                hBg = -1,
-                sBg = -1,
-                vBg = -1;
-                List<float> baseH = new List<float>(),
-                baseS = new List<float>(),
-                baseV = new List<float>(),
-                h = new List<float>(),
-                s = new List<float>(),
-                v = new List<float>();
+                float baseHueBackground = float.MinValue,
+                baseSaturationBackground = float.MinValue,
+                baseValueBackground = float.MinValue,
+                hueBackground = float.MinValue,
+                saturationBackground = float.MinValue,
+                valueBackground = float.MinValue;
+                List<float> baseHues = new List<float>(),
+                baseSaturations = new List<float>(),
+                baseValues = new List<float>(),
+                hues = new List<float>(),
+                saturations = new List<float>(),
+                values = new List<float>();
                 var channels = new List<string>();
                 var channelsEnabled = new List<bool>();
-                List<float[]> colors = new List<float[]>(),
-                hsv = new List<float[]>(),
-                hsvBase = new List<float[]>(),
-                hsvShift = new List<float[]>();
-                float[] hsvShiftBg = null,
+                List<float[]> baseHSVColors = new List<float[]>(),
+                hsvColors = new List<float[]>(),
+                hsvShift = new List<float[]>(),
+                rgbColors = new List<float[]>();
+                float[] hsvShiftBackground = null,
                 solidColor = null;
                 foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                 {
@@ -348,51 +348,51 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         else
                         {
-                            colors.Add(color);
+                            rgbColors.Add(color);
                         }
                     }
                     else if (key.StartsWith("base h"))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseHBg = float.Parse(value);
+                            baseHueBackground = float.Parse(value);
                         }
                         else
                         {
-                            baseH.Add(float.Parse(value));
+                            baseHues.Add(float.Parse(value));
                         }
                     }
                     else if (key.StartsWith("base s"))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseSBg = float.Parse(value);
+                            baseSaturationBackground = float.Parse(value);
                         }
                         else
                         {
-                            baseS.Add(float.Parse(value));
+                            baseSaturations.Add(float.Parse(value));
                         }
                     }
                     else if (key.StartsWith("base v"))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseVBg = float.Parse(value);
+                            baseValueBackground = float.Parse(value);
                         }
                         else
                         {
-                            baseV.Add(float.Parse(value));
+                            baseValues.Add(float.Parse(value));
                         }
                     }
                     else if (key.StartsWith("h "))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            hBg = float.Parse(value);
+                            hueBackground = float.Parse(value);
                         }
                         else
                         {
-                            h.Add(float.Parse(value));
+                            hues.Add(float.Parse(value));
                         }
                     }
                     else if (key.StartsWith("hsvshift"))
@@ -400,7 +400,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         var color = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
                         if (key.EndsWith("bg"))
                         {
-                            hsvShiftBg = color;
+                            hsvShiftBackground = color;
                         }
                         else
                         {
@@ -411,50 +411,53 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (key.EndsWith("bg"))
                         {
-                            sBg = float.Parse(value);
+                            saturationBackground = float.Parse(value);
                         }
                         else
                         {
-                            s.Add(float.Parse(value));
+                            saturations.Add(float.Parse(value));
                         }
                     }
                     else if (key.StartsWith("v "))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            vBg = float.Parse(value);
+                            valueBackground = float.Parse(value);
                         }
                         else
                         {
-                            v.Add(float.Parse(value));
+                            values.Add(float.Parse(value));
                         }
                     }
-                    else switch (key)
+                    else
                     {
-                        case "background image":
-                            background = value;
-                            break;
-                        case "rgbmask":
-                            rgbMask = value;
-                            break;
+                        switch (key)
+                        {
+                            case "background image":
+                                background = value;
+                                break;
+                            case "rgbmask":
+                                rgbMask = value;
+                                break;
+                        }
                     }
                 }
-                for (int i = 0; i < h.Count && h.Count == s.Count && h.Count == v.Count; i++)
+                for (int i = 0; i < baseHues.Count && baseHues.Count == baseSaturations.Count && baseHues.Count == baseValues.Count; i++)
                 {
-                    hsv.Add(new float[]
+                    baseHSVColors.Add(new float[]
                         {
-                            h[i],
-                            s[i],
-                            v[i]
+                            baseHues[i],
+                            baseSaturations[i],
+                            baseValues[i]
                         });
                 }
-                for (int i = 0; i < baseH.Count && baseH.Count == baseS.Count && baseH.Count == baseV.Count; i++)
+                for (int i = 0; i < hues.Count && hues.Count == saturations.Count && hues.Count == values.Count; i++)
                 {
-                    hsvBase.Add(new float[]
+                    hsvColors.Add(new float[]
                         {
-                            baseH[i],
-                            baseS[i],
-                            baseV[i]
+                            hues[i],
+                            saturations[i],
+                            values[i]
                         });
                 }
                 PatternInfo = new PatternInfo
@@ -462,28 +465,28 @@ namespace Destrospean.DestrospeanCASPEditor
                         Background = background,
                         Channels = channels.Count == 0 ? null : channels.ToArray(),
                         ChannelEnabled = channelsEnabled.Count == 0 ? null : channelsEnabled.ToArray(),
-                        HSV = hsv.Count == 0 ? null : hsv.ToArray(),
-                        HSVBase = hsvBase.Count == 0 ? null : hsvBase.ToArray(),
-                        HSVBaseBG = baseHBg == -1 || baseSBg == -1 || baseVBg == -1 ? null : new float[]
+                        HSV = hsvColors.Count == 0 ? null : hsvColors.ToArray(),
+                        HSVBase = baseHSVColors.Count == 0 ? null : baseHSVColors.ToArray(),
+                        HSVBaseBG = baseHueBackground == float.MinValue || baseSaturationBackground == float.MinValue || baseValueBackground == float.MinValue ? null : new float[]
                             {
-                                baseHBg,
-                                baseSBg,
-                                baseVBg
+                                baseHueBackground,
+                                baseSaturationBackground,
+                                baseValueBackground
                             },
-                        HSVBG = hBg == -1 || sBg == -1 || vBg == -1 ? null : new float[]
+                        HSVBG = hueBackground == float.MinValue || saturationBackground == float.MinValue || valueBackground == float.MinValue ? null : new float[]
                             {
-                                hBg,
-                                sBg,
-                                vBg
+                                hueBackground,
+                                saturationBackground,
+                                valueBackground
                             },
                         HSVShift = hsvShift.Count == 0 ? null : hsvShift.ToArray(),
-                        HSVShiftBG = hsvShiftBg,
+                        HSVShiftBG = hsvShiftBackground,
                         Name = PatternInfo.Name,
-                        RGBColors = colors.ToArray(),
+                        RGBColors = rgbColors.ToArray(),
                         RGBMask = rgbMask,
                         SolidColor = solidColor
                     };
-                if (complateConstructed)
+                if (clearPresetTexture)
                 {
                     Preset.ClearTexture();
                 }
