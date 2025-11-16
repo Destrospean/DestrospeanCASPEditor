@@ -110,7 +110,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 Preset = preset;
                 var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
-                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
                 Patterns = new List<Pattern>();
                 foreach (var child in complateXmlNode.ChildNodes)
                 {
@@ -273,7 +273,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 Name = patternXmlNode.Attributes["variable"].Value;
                 Preset = preset;
                 var evaluated = ParentPackage.EvaluateResourceKey(patternXmlNode);
-                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
                 foreach (var child in patternXmlNode.ChildNodes)
                 {
                     var childNode = (XmlNode)child;
@@ -512,14 +512,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public Bitmap Texture
-            {
-                get
-                {
-                    return mComplate.Texture;
-                }
-            }
-
             public override IPackage ParentPackage
             {
                 get
@@ -557,6 +549,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 get
                 {
                     return mComplate.PropertyNames;
+                }
+            }
+
+            public Bitmap Texture
+            {
+                get
+                {
+                    return mComplate.Texture;
                 }
             }
 

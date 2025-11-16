@@ -483,8 +483,8 @@ namespace Destrospean.CmarNYCBorrowed
             if (!ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
             {
                 var evaluated = package.EvaluateImageResourceKey(key);
-                image = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Item1, evaluated.Item2).AsBytes);
-                if (evaluated.Item1 == package)
+                image = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).AsBytes);
+                if (evaluated.Package == package)
                 {
                     ImageUtils.PreloadedImages.Add(key, image);
                 }

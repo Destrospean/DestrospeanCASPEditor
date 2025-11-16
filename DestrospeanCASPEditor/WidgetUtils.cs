@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gdk;
 using Gtk;
 using meshExpImp.ModelBlocks;
@@ -215,15 +216,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 if (elementTextureRef != null)
                 {
                     alignment.Xscale = 1;
-                    ComboBox comboBox;
-                    var entries = BuildImageResourceComboBoxEntries(out comboBox, package, element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey(), imageWidget);
+                    var comboBox = ImageResourceComboBox.CreateInstance(package, element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey(), imageWidget);
                     comboBox.Changed += (sender, e) =>
                         {
-                            var key = entries[comboBox.Active].Item2;
+                            var key = comboBox[comboBox.Active].Label;
                             var index = element.ParentTGIBlocks.FindIndex(x => x.ReverseEvaluateResourceKey() == key);
                             if (index == -1)
                             {
-                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, package.EvaluateImageResourceKey(key).Item2));
+                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, package.EvaluateImageResourceKey(key).ResourceIndexEntry));
                                 index = element.ParentTGIBlocks.Count - 1;
                             }
                             elementTextureRef.Index = index;
@@ -314,51 +314,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 };
             table.Attach(addPropertyButton, 0, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
-        }
-
-        public static List<Tuple<Pixbuf, string>> BuildImageResourceComboBoxEntries(out ComboBox comboBox, IPackage package, string currentValue, Gtk.Image imageWidget)
-        {
-            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new Converter<IResourceIndexEntry, Tuple<Pixbuf, string>>(x => new Tuple<Pixbuf, string>(ImageUtils.PreloadedImagePixbufs[x][1], x.ReverseEvaluateResourceKey())));
-            var listStore = new ListStore(typeof(Pixbuf), typeof(string));
-            entries.ForEach(x => listStore.AppendValues(x.Item1, x.Item2));
-            var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
-            if (!entries.Exists(x => x.Item2 == currentValue))
-            {
-                if (!ImageUtils.PreloadedGameImagePixbufs.ContainsKey(currentValue) && !missing)
-                {
-                    try
-                    {
-                        var evaluated = package.EvaluateImageResourceKey(currentValue);
-                        evaluated.Item1.PreloadGameImage(evaluated.Item2, imageWidget);
-                        ImageUtils.PreloadedGameImagePixbufs[currentValue].Add(ImageUtils.PreloadedGameImagePixbufs[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
-                    }
-                    catch
-                    {
-                        ResourceUtils.MissingResourceKeys.Add(currentValue);
-                        missing = true;
-                    }
-                }
-                entries.Add(new Tuple<Pixbuf, string>(missing ? null : ImageUtils.PreloadedGameImagePixbufs[currentValue][1], currentValue));
-                listStore.AppendValues(entries[entries.Count - 1].Item1, entries[entries.Count - 1].Item2);
-            }
-            comboBox = new ComboBox
-                {
-                    Active = entries.FindIndex(x => x.Item2 == currentValue),
-                    Model = listStore
-                };
-            var pixbufRenderer = new CellRendererPixbuf
-                {
-                    Xpad = 4
-                };
-            var textRenderer = new CellRendererText
-                {
-                    Xpad = 4
-                };
-            comboBox.PackStart(pixbufRenderer, false);
-            comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
-            comboBox.PackStart(textRenderer, false);
-            comboBox.AddAttribute(textRenderer, "text", 1);
-            return entries;
         }
 
         public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, object propertyHolder, params string[] propertyPathComponents)
@@ -463,7 +418,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static void RescaleAndReposition(this Gtk.Window self, Gtk.Window parent)
         {
-            self.SetSizeRequest(self.WidthRequest == -1 ? -1 : (int)(self.WidthRequest * WidgetUtils.Scale), self.HeightRequest == -1 ? -1 : (int)(self.HeightRequest * WidgetUtils.Scale));
+            self.SetSizeRequest(self.WidthRequest == -1 ? -1 : (int)(self.WidthRequest * Scale), self.HeightRequest == -1 ? -1 : (int)(self.HeightRequest * Scale));
             int parentHeight, parentWidth, parentX, parentY;
             parent.GetPosition(out parentX, out parentY);
             parent.GetSize(out parentWidth, out parentHeight);

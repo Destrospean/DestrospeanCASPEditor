@@ -209,7 +209,6 @@
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
-    <Compile Include="ApplicationSpecificSettings.cs" />
     <Compile Include="Dialogs\AddGEOMPropertyDialog.cs" />
     <Compile Include="Dialogs\GameFoldersDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
@@ -220,6 +219,8 @@
     <Compile Include="OpenGL\MainWindow.cs" />
     <Compile Include="TextureUtils.cs" />
     <Compile Include="OpenGL\Shader.cs" />
+    <Compile Include="Widgets\ImageResourceComboBox.cs" />
+    <Compile Include="ApplicationSpecificSettings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

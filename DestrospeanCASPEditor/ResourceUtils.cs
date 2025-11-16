@@ -87,6 +87,19 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public struct EvaluatedResourceKey
+        {
+            public readonly IPackage Package;
+
+            public readonly IResourceIndexEntry ResourceIndexEntry;
+
+            public EvaluatedResourceKey(IPackage package, IResourceIndexEntry resourceIndexEntry)
+            {
+                Package = package;
+                ResourceIndexEntry = resourceIndexEntry;
+            }
+        }
+
         public class ResourceIndexEntryNotFoundException : Exception
         {
             public ResourceIndexEntryNotFoundException()
@@ -130,9 +143,9 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public ResourceKey(uint type, uint group, ulong instance)
             {
-                ResourceType = type;
-                ResourceGroup = group;
                 Instance = instance;
+                ResourceGroup = group;
+                ResourceType = type;
             }
 
             public int CompareTo(IResourceKey other)
@@ -171,7 +184,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKeyInternal(this IPackage package, string key)
+        static EvaluatedResourceKey EvaluateResourceKeyInternal(this IPackage package, string key)
         {   
             var tgi = new ulong[3];
             var i = 0;
@@ -184,7 +197,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 throw new ResourceIndexEntryNotFoundException();
             }
-            return new Tuple<IPackage, IResourceIndexEntry>(package, results[0]);
+            return new EvaluatedResourceKey(package, results[0]);
         }
 
         public static IResourceIndexEntry AddResource(this IPackage package, string filename, IResourceKey resourceKey = null, bool rejectDups = true)
@@ -192,7 +205,7 @@ namespace Destrospean.DestrospeanCASPEditor
             return package.AddResource(resourceKey ?? new ResourceKey(0, 0, System.Security.Cryptography.FNV64.GetHash(Guid.NewGuid().ToString())), System.IO.File.OpenRead(filename), rejectDups);
         }
 
-        public static Tuple<IPackage, IResourceIndexEntry> EvaluateImageResourceKey(this IPackage package, string key)
+        public static EvaluatedResourceKey EvaluateImageResourceKey(this IPackage package, string key)
         {   
             try
             {
@@ -214,7 +227,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Tuple<IPackage, IResourceIndexEntry> EvaluateResourceKey(this IPackage package, System.Xml.XmlNode xmlNode)
+        public static EvaluatedResourceKey EvaluateResourceKey(this IPackage package, System.Xml.XmlNode xmlNode)
         {   
             if (!((System.Xml.XmlElement)xmlNode).HasAttribute("reskey"))
             {
