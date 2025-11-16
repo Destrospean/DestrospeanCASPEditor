@@ -557,7 +557,7 @@ namespace Destrospean.CmarNYCBorrowed
                             mask[0],
                             mask[3]
                         };
-                    for (var j = 0; j < patternImages.Count; j++)
+                    for (var j = 0; j < patternImages.Count - 1; j++)
                     {
                         var blend = (float)maskControl[j] / byte.MaxValue;
                         if (patternImages[j] != null && maskControl[j] > 0)
@@ -631,8 +631,12 @@ namespace Destrospean.CmarNYCBorrowed
                 Marshal.Copy(multiplierArray, 0, ptr, byteCount);
                 multiplierCopy.UnlockBits(bitmapData);
             }
-            catch (IndexOutOfRangeException)
+            catch (IndexOutOfRangeException ex)
             {
+                if (!overlay)
+                {
+                    Console.WriteLine(ex);
+                }
                 multiplierCopy.UnlockBits(bitmapData);
                 return multiplier;
             }
