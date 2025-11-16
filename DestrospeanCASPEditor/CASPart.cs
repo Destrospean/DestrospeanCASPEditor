@@ -79,13 +79,13 @@ namespace Destrospean.DestrospeanCASPEditor
                             switch (propertyXmlNodeKvp.Key.ToLower())
                             {
                                 case "mask":
-                                    maskArray = ParentPackage.GetTextureARGBArray(value);
+                                    maskArray = ParentPackage.GetTextureARGBArray(value, 1024, 1024);
                                     break;
                                 case "multiplier":
-                                    multiplier = ParentPackage.GetTexture(value);
+                                    multiplier = ParentPackage.GetTexture(value, 1024, 1024);
                                     break;
                                 case "overlay":
-                                    overlayArray = ParentPackage.GetTextureARGBArray(value);
+                                    overlayArray = ParentPackage.GetTextureARGBArray(value, 1024, 1024);
                                     break;
                             }
                         }

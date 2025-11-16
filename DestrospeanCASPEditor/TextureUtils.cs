@@ -526,7 +526,7 @@ namespace Destrospean.CmarNYCBorrowed
             return argbValues;
         }
 
-        public static uint[] GetTextureARGBArray(IPackage package, string key, int width, int height)
+        public static uint[] GetTextureARGBArray(this IPackage package, string key, int width, int height)
         {
             return GetTextureARGBArray(package, key, new int[]
                 {
@@ -633,10 +633,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             catch (IndexOutOfRangeException ex)
             {
-                if (!overlay)
-                {
-                    Console.WriteLine(ex);
-                }
+                Console.WriteLine(ex);
                 multiplierCopy.UnlockBits(bitmapData);
                 return multiplier;
             }
