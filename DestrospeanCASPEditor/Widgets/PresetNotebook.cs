@@ -71,7 +71,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     {
                         HeightRequest = WidgetUtils.DefaultTableCellHeight
                     };
-                var value = complate.GetValue(name);
+                var value = complate[name];
                 switch (type)
                 {
                     case "bool":
@@ -80,7 +80,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 Active = bool.Parse(value),
                                 UseUnderline = false
                             };
-                        checkButton.Toggled += (sender, e) => complate.SetValue(name, checkButton.Active.ToString());
+                        checkButton.Toggled += (sender, e) => complate[name] = checkButton.Active.ToString();
                         valueWidget = checkButton;
                         break;
                     case "color":
@@ -106,14 +106,14 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                         colorButton.Color.Blue,
                                         colorButton.Alpha
                                     };
-                                complate.SetValue(name, string.Join(",", rgba.ConvertAll(new System.Converter<ushort, float>(x => (float)x / ushort.MaxValue))));
+                                complate[name] = string.Join(",", rgba.ConvertAll(new System.Converter<ushort, float>(x => (float)x / ushort.MaxValue)));
                             };
                         valueWidget = colorButton;
                         break;
                     case "float":
                         alignment.Xscale = 0;
                         var spinButton = new SpinButton(new Adjustment(float.Parse(value), -1, 1, .0001, 10, 0), 0, 4);
-                        spinButton.ValueChanged += (sender, e) => complate.SetValue(name, spinButton.Value.ToString("F4"));
+                        spinButton.ValueChanged += (sender, e) => complate[name] = spinButton.Value.ToString("F4");
                         valueWidget = spinButton;
                         break;
                     case "pattern":
@@ -121,12 +121,12 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             {
                                 Text = value
                             };
-                        entry.Changed += (sender, e) => complate.SetValue(name, entry.Text);
+                        entry.Changed += (sender, e) => complate[name] = entry.Text;
                         valueWidget = entry;
                         break;
                     case "texture":
                         var comboBox = ImageResourceComboBox.CreateInstance(complate.ParentPackage, value, Image);
-                        comboBox.Changed += (sender, e) => complate.SetValue(name, comboBox[comboBox.Active].Label);
+                        comboBox.Changed += (sender, e) => complate[name] = comboBox[comboBox.Active].Label;
                         valueWidget = comboBox;
                         break;
                     case "vec2":
@@ -139,7 +139,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             };
                         spinButtons.ForEach(x =>
                             {
-                                x.ValueChanged += (sender, e) => complate.SetValue(name, spinButtons[0].Value.ToString("F4") + "," + spinButtons[1].Value.ToString("F4"));
+                                x.ValueChanged += (sender, e) => complate[name] = spinButtons[0].Value.ToString("F4") + "," + spinButtons[1].Value.ToString("F4");
                                 hBox.PackStart(x, false, false, 0);
                             });
                         valueWidget = hBox;

@@ -184,6 +184,18 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
+            public string this[string propertyName]
+            {
+                get
+                {
+                    return GetValue(propertyName);
+                }
+                set
+                {
+                    SetValue(propertyName, value);
+                }
+            }
+
             public AComplate()
             {
                 mXmlDocument = new XmlDocument();
