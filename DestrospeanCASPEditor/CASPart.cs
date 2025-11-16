@@ -183,7 +183,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                         }
                         var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage));
-                        if (maskArray != null && patternImages.Count > 0)
+                        if (maskArray != null)
                         {
                             if (multiplier != null)
                             {

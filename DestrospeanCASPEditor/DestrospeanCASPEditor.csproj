@@ -217,15 +217,18 @@
     <Compile Include="OpenGL\Material.cs" />
     <Compile Include="OpenGL\Volume.cs" />
     <Compile Include="OpenGL\MainWindow.cs" />
-    <Compile Include="TextureUtils.cs" />
     <Compile Include="OpenGL\Shader.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
+    <Compile Include="CmarNYCBorrowed\HSVColor.cs" />
+    <Compile Include="CmarNYCBorrowed\PatternInfo.cs" />
+    <Compile Include="CmarNYCBorrowed\TextureUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Widgets\" />
     <Folder Include="Dialogs\" />
     <Folder Include="OpenGL\" />
+    <Folder Include="CmarNYCBorrowed\" />
   </ItemGroup>
 </Project>
