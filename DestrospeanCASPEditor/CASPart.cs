@@ -146,7 +146,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             public int Compare(string a, string b)
             {
-                return String.Compare(a, b);
+                return string.Compare(a, b);
             }
         }
 

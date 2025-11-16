@@ -24,6 +24,8 @@ public partial class MainWindow : Window
 
     bool mGLInitialized = false;
 
+    GLWidget mGLWidget;
+
     int mIBOElements, mMouseButtonHeld;
 
     int[] mIndexData;
@@ -43,8 +45,6 @@ public partial class MainWindow : Window
     Vector2[] mTextureCoordinateData;
 
     Matrix4 mViewMatrix = Matrix4.Identity;
-
-    public GLWidget GLWidget;
 
     public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
 
@@ -579,15 +579,15 @@ public partial class MainWindow : Window
 
     void PrepareGLWidget()
     {
-        GLWidget = new GLWidget
+        mGLWidget = new GLWidget
             {
                 HeightRequest = Image.HeightRequest,
                 WidthRequest = Image.WidthRequest
             };
-        GLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
-        GLWidget.ButtonPressEvent += (o, args) => mMouseButtonHeld = (int)args.Event.Button;
-        GLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonHeld = -1;
-        GLWidget.MotionNotifyEvent += (o, args) =>
+        mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
+        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonHeld = (int)args.Event.Button;
+        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonHeld = -1;
+        mGLWidget.MotionNotifyEvent += (o, args) =>
             {
                 if (args.Event.Device.Source == Gdk.InputSource.Mouse)
                 {
@@ -610,7 +610,7 @@ public partial class MainWindow : Window
                     mTime = (float)currentTime;
                 }
             };
-        GLWidget.Initialized += (sender, e) => 
+        mGLWidget.Initialized += (sender, e) => 
             {
                 InitProgram();
                 mGLInitialized = true;
@@ -696,7 +696,7 @@ public partial class MainWindow : Window
 
     protected void OnRenderFrame()
     {
-        GL.Viewport(0, 0, (int)(GLWidget.WidthRequest * WidgetUtils.WineScaleDenominator), (int)(GLWidget.HeightRequest * WidgetUtils.WineScaleDenominator));
+        GL.Viewport(0, 0, (int)(mGLWidget.WidthRequest * WidgetUtils.WineScaleDenominator), (int)(mGLWidget.HeightRequest * WidgetUtils.WineScaleDenominator));
         GL.ClearColor(System.Drawing.Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.Enable(EnableCap.DepthTest);
@@ -864,7 +864,7 @@ public partial class MainWindow : Window
         foreach (var volume in mObjects)
         {
             volume.CalculateModelMatrix();
-            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, (float)GLWidget.WidthRequest / GLWidget.HeightRequest, 1, 40);
+            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
             volume.ModelViewProjectionMatrix = volume.ModelMatrix * volume.ViewProjectionMatrix;
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);

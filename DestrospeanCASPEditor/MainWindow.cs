@@ -93,9 +93,9 @@ public partial class MainWindow : Window
                 Yalign = 0
             }, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         PrepareGLWidget();
-        MainTable.Attach(GLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        MainTable.Attach(mGLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         MainTable.ShowAll();
-        GLWidget.Hide();
+        mGLWidget.Hide();
     }
 
     void AddCASPartWidgets(CASPart casPart)
@@ -341,7 +341,7 @@ public partial class MainWindow : Window
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
                 mObjects.Clear();
-                GLWidget.Hide();
+                mGLWidget.Hide();
                 Image.Clear();
                 foreach (var child in ResourcePropertyTable.Children)
                 {
@@ -362,7 +362,7 @@ public partial class MainWindow : Window
                             Image.Pixbuf = ImageUtils.PreloadedImagePixbufs[resourceIndexEntry][0];
                             break;
                         case "CASP":
-                            GLWidget.Show();
+                            mGLWidget.Show();
                             AddCASPartWidgets(CASParts[resourceIndexEntry]);
                             break;
                     }
