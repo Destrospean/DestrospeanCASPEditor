@@ -8,6 +8,8 @@ using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
+using CASPartResource;
+using System.Drawing.Imaging;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -70,31 +72,142 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     if (mTexture == null)
                     {
-                        uint[] maskArray = null,
-                        overlayArray = null; 
-                        Bitmap multiplier = null;
+                        uint[] controlMapArray = null,
+                        maskArray = null;
+                        Bitmap diffuseMap = null,
+                        multiplier = null,
+                        overlay = null;
+                        float[] diffuseColor = null,
+                        highlightColor = null,
+                        rootColor = null,
+                        tipColor = null;
+                        int height = 1024,
+                        width = 1024;
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
                             var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
                             switch (propertyXmlNodeKvp.Key.ToLower())
                             {
+                                case "control map":
+                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                    break;
+                                case "diffuse color":
+                                    diffuseColor = GetColor(value);
+                                    break;
+                                case "diffuse map":
+                                    diffuseMap = ParentPackage.GetTexture(value, width, height);
+                                    break;
+                                case "highlight color":
+                                    highlightColor = GetColor(value);
+                                    break;
                                 case "mask":
-                                    maskArray = ParentPackage.GetTextureARGBArray(value, 1024, 1024);
+                                    maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
                                     break;
                                 case "multiplier":
-                                    multiplier = ParentPackage.GetTexture(value, 1024, 1024);
+                                    multiplier = ParentPackage.GetTexture(value, width, height);
                                     break;
                                 case "overlay":
-                                    overlayArray = ParentPackage.GetTextureARGBArray(value, 1024, 1024);
+                                    overlay = ParentPackage.GetTexture(value, width, height);
+                                    break;
+                                case "root color":
+                                    rootColor = GetColor(value);
+                                    break;
+                                case "tip color":
+                                    tipColor = GetColor(value);
                                     break;
                             }
                         }
-                        if (multiplier != null)
+                        if (diffuseMap != null)
                         {
-                            mTexture = multiplier.GetWithPatternsApplied(maskArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage)), false);
-                            if (overlayArray != null)
+                            if (CASPart.CASPartResource.Clothing == ClothingType.Hair)
                             {
-                                mTexture = mTexture.GetWithPatternsApplied(overlayArray, Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage)), true);
+                                float[][] hairMatrix =
+                                    {
+                                        new float[]
+                                        {
+                                            diffuseColor[0],
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            diffuseColor[1],
+                                            0,
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            diffuseColor[2],
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        }
+                                    };
+                                using (Graphics graphics = Graphics.FromImage(diffuseMap))
+                                {
+                                    var convert = new ColorMatrix(hairMatrix);
+                                    var attributes = new ImageAttributes();
+                                    attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                    graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
+                                }
+                                if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
+                                {
+                                    diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
+                                        {
+                                            rootColor,
+                                            highlightColor,
+                                            tipColor
+                                        }, false);
+                                }
+                            }
+                        }
+                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage));
+                        if (maskArray != null && patternImages.Count > 0)
+                        {
+                            if (multiplier != null)
+                            {
+                                multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
+                            }
+                            if (overlay != null)
+                            {
+                                overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
+                            }
+                        }
+                        mTexture = new Bitmap(width, height);
+                        using (Graphics graphics = Graphics.FromImage(mTexture))
+                        {
+                            if (diffuseMap != null)
+                            {
+                                graphics.DrawImage(diffuseMap, 0, 0);
+                            }
+                            if (multiplier != null)
+                            {
+                                graphics.DrawImage(multiplier, 0, 0);
+                            }
+                            if (overlay != null)
+                            {
+                                graphics.DrawImage(overlay, 0, 0);
                             }
                         }
                     }
@@ -139,14 +252,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                 }
-            }
-        }
-
-        class StringComparer : IComparer<string>
-        {
-            public int Compare(string a, string b)
-            {
-                return string.Compare(a, b);
             }
         }
 
@@ -196,11 +301,24 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
+            protected class StringComparer : IComparer<string>
+            {
+                public int Compare(string a, string b)
+                {
+                    return string.Compare(a, b);
+                }
+            }
+
             public AComplate()
             {
                 mXmlDocument = new XmlDocument();
                 mPropertiesXmlNodes = new SortedDictionary<string, XmlNode>(new StringComparer());
                 mPropertiesTyped = new SortedDictionary<string, string>(new StringComparer());
+            }
+
+            public static float[] GetColor(string fromString)
+            {
+                return new List<string>(fromString.Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
             }
 
             public virtual string GetValue(string propertyName)
@@ -353,7 +471,13 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     else if (key.StartsWith("color"))
                     {
-                        var color = new List<string>(value.Substring(0, value.LastIndexOf(',')).Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
+                        var color = GetColor(value);
+                        color = new float[]
+                            {
+                                color[0],
+                                color[1],
+                                color[2]
+                            };
                         if (PatternInfo.Name.Contains("solidColor") || PatternInfo.Name.Contains("Flat Color"))
                         {
                             solidColor = color;
@@ -409,14 +533,13 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     else if (key.StartsWith("hsvshift"))
                     {
-                        var color = new List<string>(value.Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
                         if (key.EndsWith("bg"))
                         {
-                            hsvShiftBackground = color;
+                            hsvShiftBackground = GetColor(value);
                         }
                         else
                         {
-                            hsvShift.Add(color);
+                            hsvShift.Add(GetColor(value));
                         }
                     }
                     else if (key.StartsWith("s "))
