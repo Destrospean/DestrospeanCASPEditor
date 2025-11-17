@@ -536,7 +536,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
             protected class PresetInternal : Complate
             {
-                Bitmap mTexture;
+                protected Bitmap mTexture;
 
                 public string AmbientMap
                 {
