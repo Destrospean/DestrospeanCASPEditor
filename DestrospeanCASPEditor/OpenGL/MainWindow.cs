@@ -745,12 +745,9 @@ public partial class MainWindow : Window
                     CASPart.Preset currentPreset = null;
                     TreeIter iter;
                     TreeModel model;
-                    if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                    if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
                     {
-                        if ((string)model.GetValue(iter, 0) == "CASP")
-                        {
-                            currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
-                        }
+                        currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
                     }
                     if (currentPreset != null && TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
                     {

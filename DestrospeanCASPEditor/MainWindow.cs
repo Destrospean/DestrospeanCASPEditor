@@ -48,12 +48,9 @@ public partial class MainWindow : Window
             {
                 TreeIter iter;
                 TreeModel model;
-                if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
                 {
-                    if ((string)model.GetValue(iter, 0) == "CASP")
-                    {
-                        LoadGEOMs(CASParts[(IResourceIndexEntry)model.GetValue(iter, 4)]);
-                    }
+                    LoadGEOMs(CASParts[(IResourceIndexEntry)model.GetValue(iter, 4)]);
                 }
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
