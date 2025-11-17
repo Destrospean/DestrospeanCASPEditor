@@ -574,7 +574,7 @@ public partial class MainWindow : Window
                     Vertices = vertices.ToArray()
                 });
             //Image.Pixbuf = new Bitmap(casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture, new Size(Image.WidthRequest, Image.HeightRequest)).GetAsPixbuf();
-            //GLWidget.Hide();
+            //mGLWidget.Hide();
         }
     }
 
