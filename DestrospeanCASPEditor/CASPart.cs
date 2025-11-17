@@ -448,9 +448,9 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public class Preset : Complate
         {
-            readonly CASPart mCASPart;
+            protected readonly CASPart mCASPart;
 
-            readonly PresetInternal mInternal;
+            protected readonly PresetInternal mInternal;
 
             protected new readonly XmlDocument mXmlDocument;
 
