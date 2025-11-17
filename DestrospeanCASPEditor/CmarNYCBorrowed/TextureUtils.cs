@@ -13,9 +13,9 @@ namespace Destrospean.CmarNYCBorrowed
         {
             int height = 256,
             width = 256;
-            Bitmap background = GetTexture(package, pattern.Background, width, height),
+            Bitmap background = package.GetTexture(pattern.Background, width, height),
             patternImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-            var rgb = GetTextureARGBArray(package, pattern.RGBMask, width, height);
+            var rgb = package.GetTextureARGBArray(pattern.RGBMask, width, height);
             var patternBack = new Bitmap[3];
             if (pattern.Channels != null)
             {
@@ -23,7 +23,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     if (pattern.Channels[i] != null)
                     {
-                        patternBack[i] = GetTexture(package, pattern.Channels[i], width, height);
+                        patternBack[i] = package.GetTexture(pattern.Channels[i], width, height);
                     }
                 }
             }
@@ -128,7 +128,7 @@ namespace Destrospean.CmarNYCBorrowed
             var rectangle = new Rectangle(0, 0, width, height);
             var bitmapData = texture.LockBits(rectangle, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             var byteCount = Math.Abs(bitmapData.Stride) * texture.Height;
-            var maskArray = GetTextureARGBArray(package, pattern.RGBMask, width, height);
+            var maskArray = package.GetTextureARGBArray(pattern.RGBMask, width, height);
             var textureArray = new byte[byteCount];
             for (var i = 0; i < maskArray.Length; i += 4)
             {
@@ -194,7 +194,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public static uint[] GetTextureARGBArray(this IPackage package, string key, int[] dimensions = null)
         {
-            var image = GetTexture(package, key, dimensions);
+            var image = package.GetTexture(key, dimensions);
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var byteCount = Math.Abs(bitmapData.Stride) * image.Height;
             var bgraValues = new byte[byteCount];
