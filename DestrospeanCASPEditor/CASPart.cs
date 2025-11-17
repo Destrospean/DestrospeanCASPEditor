@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
-using CASPartResource;
 using Destrospean.CmarNYCBorrowed;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
@@ -123,6 +122,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         tipColor = null;
                         int height = 1024,
                         width = 1024;
+                        string partType = null;
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
                             var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
@@ -155,6 +155,9 @@ namespace Destrospean.DestrospeanCASPEditor
                                 case "overlay":
                                     overlay = ParentPackage.GetTexture(value, width, height);
                                     break;
+                                case "parttype":
+                                    partType = value;
+                                    break;
                                 case "root color":
                                     rootColor = GetColor(value);
                                     break;
@@ -165,7 +168,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         if (diffuseMap != null)
                         {
-                            if (CASPart.CASPartResource.Clothing == ClothingType.Hair)
+                            if (partType.ToLower() == "hair")
                             {
                                 float[][] hairMatrix =
                                     {
