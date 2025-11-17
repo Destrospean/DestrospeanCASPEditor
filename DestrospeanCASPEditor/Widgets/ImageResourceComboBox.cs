@@ -39,7 +39,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         public static ImageResourceComboBox CreateInstance(s3pi.Interfaces.IPackage package, string currentValue, Gtk.Image imageWidget)
         {
-            var entries = package.FindAll(x => x.ResourceType == 0xB2D882).ConvertAll(new System.Converter<s3pi.Interfaces.IResourceIndexEntry, ImageResourceComboBoxEntry>(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x.ReverseEvaluateResourceKey())));
+            var entries = package.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("_IMG")).ConvertAll(new System.Converter<s3pi.Interfaces.IResourceIndexEntry, ImageResourceComboBoxEntry>(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x.ReverseEvaluateResourceKey())));
             var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Image, x.Label));
             var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);

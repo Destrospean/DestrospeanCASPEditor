@@ -457,7 +457,7 @@ public partial class MainWindow : Window
                     gl_FragColor = gl_FragColor + lightcolor * attenuation;
                 }}
             }}", backportedFunctions)));
-        mActiveShader = /*Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" :*/ "lit_advanced";
+        mActiveShader = Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
         Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
             {
                 QuadraticAttenuation = .05f
@@ -545,22 +545,23 @@ public partial class MainWindow : Window
 #pragma warning disable 0618
                         AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(1, 1, 1),
 #pragma warning restore 0618
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
                         AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
                         DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
                         NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
                         SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
                     };
                 Materials.Add(key, material);
             }
-            if (material.AmbientMap != "")
+            var currentPreset = casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
+            if (currentPreset.AmbientMap != null)
             {
-                LoadTexture(material.AmbientMap);
+                LoadTexture(currentPreset.AmbientMap);
             }
-            if (material.SpecularMap != "")
+            if (currentPreset.SpecularMap != null)
             {
-                LoadTexture(material.SpecularMap);
+                LoadTexture(currentPreset.SpecularMap);
             }
             mObjects.Add(new Volume
                 {
@@ -569,10 +570,10 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = LoadTexture(key, casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture),
+                    TextureID = LoadTexture(key, currentPreset.Texture),
                     Vertices = vertices.ToArray()
                 });
-            //Image.Pixbuf = new Bitmap(casPart.Presets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture, new Size(Image.WidthRequest, Image.HeightRequest)).GetAsPixbuf();
+            //Image.Pixbuf = new Bitmap(casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture, new Size(Image.WidthRequest, Image.HeightRequest)).GetAsPixbuf();
             //GLWidget.Hide();
         }
     }
@@ -741,7 +742,17 @@ public partial class MainWindow : Window
                 {
                     GL.ActiveTexture(TextureUnit.Texture1);
                     int textureId;
-                    if (TextureIDs.TryGetValue(volume.Material.SpecularMap, out textureId))
+                    CASPart.Preset currentPreset = null;
+                    TreeIter iter;
+                    TreeModel model;
+                    if (ResourceTreeView.Selection.GetSelected(out model, out iter))
+                    {
+                        if ((string)model.GetValue(iter, 0) == "CASP")
+                        {
+                            currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
+                        }
+                    }
+                    if (currentPreset != null && TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
                     {
                         GL.BindTexture(TextureTarget.Texture2D, textureId);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);

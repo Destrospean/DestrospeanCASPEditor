@@ -1,21 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
+using CASPartResource;
 using Destrospean.CmarNYCBorrowed;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using CASPartResource;
-using System.Drawing.Imaging;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
     public class CASPart
     {
+        public List<Preset> AllPresets
+        {
+            get
+            {
+                var allPresets = new List<Preset>(Presets);
+                if (DefaultPreset != null)
+                {
+                    allPresets.Insert(0, DefaultPreset);
+                }
+                return allPresets;
+            }
+        }
+            
         public readonly CASPartResource.CASPartResource CASPartResource;
+
+        public readonly Preset DefaultPreset;
+
+        public readonly IResourceIndexEntry DefaultPresetResourceIndexEntry;
 
         public readonly Dictionary<int, List<GeometryResource>> LODs = new Dictionary<int, List<GeometryResource>>();
 
@@ -29,6 +46,17 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
             ParentPackage = package;
+            var defaultPresetResourceIndexEntries = ParentPackage.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("_XML") && x.ResourceGroup == resourceIndexEntry.ResourceGroup && x.Instance == resourceIndexEntry.Instance);
+            if (defaultPresetResourceIndexEntries.Count == 0)
+            {
+                DefaultPresetResourceIndexEntry = null;
+                DefaultPreset = null;
+            }
+            else
+            {
+                DefaultPresetResourceIndexEntry = defaultPresetResourceIndexEntries[0];
+                DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, DefaultPresetResourceIndexEntry).Stream));
+            }
             Presets = CASPartResource.Presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
             ResourceIndexEntry = resourceIndexEntry;
             LoadLODs(geometryResources, vpxyResources);
@@ -37,6 +65,12 @@ namespace Destrospean.DestrospeanCASPEditor
         class Complate : AComplate
         {
             Bitmap mTexture;
+
+            public string AmbientMap
+            {
+                get;
+                private set;
+            }
 
             public override CASPart CASPart
             {
@@ -66,6 +100,12 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Preset Preset;
 
+            public string SpecularMap
+            {
+                get;
+                private set;
+            }
+
             public Bitmap Texture
             {
                 get
@@ -88,6 +128,12 @@ namespace Destrospean.DestrospeanCASPEditor
                             var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
                             switch (propertyXmlNodeKvp.Key.ToLower())
                             {
+                                case "clothing ambient":
+                                    AmbientMap = value;
+                                    break;
+                                case "clothing specular":
+                                    SpecularMap = value;
+                                    break;
                                 case "control map":
                                     controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
                                     break;
@@ -182,7 +228,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                             }
                         }
-                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => x.PatternImage));
+                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
                         if (maskArray != null)
                         {
                             if (multiplier != null)
@@ -642,6 +688,14 @@ namespace Destrospean.DestrospeanCASPEditor
 
             protected new readonly XmlDocument mXmlDocument;
 
+            public string AmbientMap
+            {
+                get
+                {
+                    return mComplate.AmbientMap;
+                }
+            }
+
             public override CASPart CASPart
             {
                 get
@@ -687,6 +741,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 get
                 {
                     return mComplate.PropertyNames;
+                }
+            }
+
+            public string SpecularMap
+            {
+                get
+                {
+                    return mComplate.SpecularMap;
                 }
             }
 
@@ -783,6 +845,20 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public void SaveDefaultPreset()
+        {   
+            if (DefaultPreset == null || DefaultPresetResourceIndexEntry == null)
+            {
+                return;
+            }
+            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(AllPresets[0].XmlFile.ReadToEnd())))
+            {
+                var tempResourceIndexEntry = ParentPackage.AddResource(DefaultPresetResourceIndexEntry, stream, false);
+                ParentPackage.ReplaceResource(DefaultPresetResourceIndexEntry, WrapperDealer.GetResource(0, ParentPackage, tempResourceIndexEntry));
+                ParentPackage.DeleteResource(tempResourceIndexEntry);
+            }
+        }
+
         public void SavePreset(int index)
         {
             CASPartResource.Presets[index].XmlFile = Presets[index].XmlFile;
@@ -790,6 +866,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public void SavePresets()
         {
+            SaveDefaultPreset();
             AdjustPresetCount();
             for (var i = 0; i < CASPartResource.Presets.Count; i++)
             {

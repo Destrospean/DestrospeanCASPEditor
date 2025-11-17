@@ -8,20 +8,20 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         DiffuseColor = new Vector3(),
         SpecularColor = new Vector3();
 
-        public float Opacity = 1,
-        SpecularExponent = 1;
-
         public string AmbientMap = "",
         DiffuseMap = "",
         NormalMap = "",
         OpacityMap = "",
         SpecularMap = "";
 
+        public float Opacity = 1,
+        SpecularExponent = 1;
+
         public Material()
         {
         }
 
-        public Material(Vector3 ambient, Vector3 diffuse, Vector3 specular, float specularExponent = 1, float opacity = 1)
+        public Material(string geometryResource, Vector3 ambient, Vector3 diffuse, Vector3 specular, float specularExponent = 1, float opacity = 1)
         {
             AmbientColor = ambient;
             DiffuseColor = diffuse;
