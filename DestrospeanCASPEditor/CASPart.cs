@@ -368,9 +368,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (aCopy[i] != bCopy[i] && aCopy.Substring(0, i) == bCopy.Substring(0, i))
                         {
-                            int parsed;
-                            bool aCharIsNum = int.TryParse(aCopy[i].ToString(), out parsed),
-                            bCharIsNum = int.TryParse(bCopy[i].ToString(), out parsed);
+                            bool aCharIsNum = '0' <= aCopy[i] && aCopy[i] <= '9',
+                            bCharIsNum = '0' <= bCopy[i] && bCopy[i] <= '9';
                             if (aCharIsNum && !bCharIsNum)
                             {
                                 return 1;
