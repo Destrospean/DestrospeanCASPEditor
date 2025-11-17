@@ -148,14 +148,7 @@ namespace Destrospean.CmarNYCBorrowed
                         for (var k = 0; k < 3; k++)
                         {
                             var temp = j == 0 ? colors[j][2 - k] : blend * colors[j][2 - k] + (1 - blend) * textureArray[i + k] / byte.MaxValue;
-                            if (temp < 0)
-                            {
-                                temp = 0;
-                            }
-                            if (temp > 1)
-                            {
-                                temp = 1;
-                            }
+                            temp = temp < 0 ? 0 : temp > 1 ? 1 : temp;
                             textureArray[i + k] = (byte)(temp * byte.MaxValue);
                         }
                     }
@@ -192,7 +185,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public static Bitmap GetTexture(this IPackage package, string key, int width, int height)
         {
-            return GetTexture(package, key, new int[]
+            return package.GetTexture(key, new int[]
                 {
                     width,
                     height
@@ -217,7 +210,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public static uint[] GetTextureARGBArray(this IPackage package, string key, int width, int height)
         {
-            return GetTextureARGBArray(package, key, new int[]
+            return package.GetTextureARGBArray(key, new int[]
                 {
                     width,
                     height
@@ -257,14 +250,7 @@ namespace Destrospean.CmarNYCBorrowed
                                 for (var k = 0; k < 3; k++)
                                 {
                                     var temp = gray * rgba[2 - k];
-                                    if (temp < 0)
-                                    {
-                                        temp = 0;
-                                    }
-                                    if (temp > 1)
-                                    {
-                                        temp = 1;
-                                    }
+                                    temp = temp < 0 ? 0 : temp > 1 ? 1 : temp;
                                     if (k == 0 || !overlay)
                                     {
                                         multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
@@ -296,14 +282,7 @@ namespace Destrospean.CmarNYCBorrowed
                                 for (var k = 0; k < 3; k++)
                                 {
                                     var temp = gray * rgba[2 - k];
-                                    if (temp < 0)
-                                    {
-                                        temp = 0;
-                                    }
-                                    if (temp > 1)
-                                    {
-                                        temp = 1;
-                                    }
+                                    temp = temp < 0 ? 0 : temp > 1 ? 1 : temp;
                                     if (k == 0 || !overlay)
                                     {
                                         multiplierArray[i + k] = (byte)(temp * byte.MaxValue);
