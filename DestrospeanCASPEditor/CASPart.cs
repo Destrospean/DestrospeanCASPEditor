@@ -350,10 +350,37 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            protected class StringComparer : IComparer<string>
+            protected class PropertyNameComparer : IComparer<string>
             {
                 public int Compare(string a, string b)
                 {
+                    string aCopy = a,
+                    bCopy = b;
+                    while (aCopy.Length < bCopy.Length)
+                    {
+                        aCopy += " ";
+                    }
+                    while (aCopy.Length > bCopy.Length)
+                    {
+                        bCopy += " ";
+                    }
+                    for (var i = 0; i < aCopy.Length; i++)
+                    {
+                        if (aCopy[i] != bCopy[i] && aCopy.Substring(0, i) == bCopy.Substring(0, i))
+                        {
+                            int parsed;
+                            bool aCharIsNum = int.TryParse(aCopy[i].ToString(), out parsed),
+                            bCharIsNum = int.TryParse(bCopy[i].ToString(), out parsed);
+                            if (aCharIsNum && !bCharIsNum)
+                            {
+                                return 1;
+                            }
+                            if (!aCharIsNum && bCharIsNum)
+                            {
+                                return -1;
+                            }
+                        }
+                    }
                     return string.Compare(a, b);
                 }
             }
@@ -361,8 +388,8 @@ namespace Destrospean.DestrospeanCASPEditor
             public AComplate()
             {
                 mXmlDocument = new XmlDocument();
-                mPropertiesXmlNodes = new SortedDictionary<string, XmlNode>(new StringComparer());
-                mPropertiesTyped = new SortedDictionary<string, string>(new StringComparer());
+                mPropertiesXmlNodes = new SortedDictionary<string, XmlNode>(new PropertyNameComparer());
+                mPropertiesTyped = new SortedDictionary<string, string>(new PropertyNameComparer());
             }
 
             public static float[] GetColor(string fromString)
