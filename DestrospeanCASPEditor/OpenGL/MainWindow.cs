@@ -738,18 +738,18 @@ public partial class MainWindow : Window
             }
             if (mShaders[mActiveShader].GetUniform("map_specular") != -1)
             {
-                if (volume.Material.SpecularMap != "")
+                TreeIter iter;
+                TreeModel model;
+                CASPart.Preset currentPreset = null;
+                if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
+                {
+                    currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
+                }
+                if (currentPreset != null && currentPreset.SpecularMap != null)
                 {
                     GL.ActiveTexture(TextureUnit.Texture1);
                     int textureId;
-                    CASPart.Preset currentPreset = null;
-                    TreeIter iter;
-                    TreeModel model;
-                    if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
-                    {
-                        currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
-                    }
-                    if (currentPreset != null && TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
+                    if (TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
                     {
                         GL.BindTexture(TextureTarget.Texture2D, textureId);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
