@@ -113,11 +113,11 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
 
     public class Volume : AVolume
     {
-        Vector3[] mColorData, mVertices;
+        protected Vector3[] mColorData, mVertices;
 
-        Vector2[] mTextureCoordinates;
+        protected Vector2[] mTextureCoordinates;
 
-        List<Tuple<int, int, int>> mFaces = new List<Tuple<int, int, int>>();
+        protected List<Tuple<int, int, int>> mFaces = new List<Tuple<int, int, int>>();
 
         public override Vector3[] ColorData
         {

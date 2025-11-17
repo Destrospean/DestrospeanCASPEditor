@@ -6,9 +6,9 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 {
     public class PresetNotebook : Notebook
     {
-        bool mDisableSwitchPage = false;
+        protected bool mDisableSwitchPage = false;
 
-        readonly bool mIsSubNotebook;
+        protected readonly bool mIsSubNotebook;
 
         public CASPart CASPart
         {
@@ -28,7 +28,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             private set;
         }
 
-        PresetNotebook(CASPart casPart, Gtk.Image imageWidget, bool isSubNotebook = false) : base()
+        protected PresetNotebook(CASPart casPart, Gtk.Image imageWidget, bool isSubNotebook = false) : base()
         {
             CASPart = casPart;
             Image = imageWidget;
@@ -57,7 +57,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 };
         }
 
-        void AddPropertiesToTable(Table table, CASPart.Complate complate)
+        protected void AddPropertiesToTable(Table table, CASPart.Complate complate)
         {
             foreach (var propertyName in complate.PropertyNames)
             {
@@ -157,7 +157,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
         }
 
-        HBox GetPageLabelHBox(int pageIndexOffset = 0, bool isDefault = false)
+        protected HBox GetPageLabelHBox(int pageIndexOffset = 0, bool isDefault = false)
         {
             var pageIndex = NPages + pageIndexOffset;
             var deleteButton = new Button

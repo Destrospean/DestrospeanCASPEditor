@@ -5,7 +5,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 {
     public class ImageResourceComboBox : ComboBox
     {
-        System.Collections.Generic.List<ImageResourceComboBoxEntry> mEntries;
+        protected readonly System.Collections.Generic.List<ImageResourceComboBoxEntry> mEntries;
 
         public ImageResourceComboBoxEntry this[int index]
         {
@@ -32,7 +32,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
         }
 
-        ImageResourceComboBox(System.Collections.Generic.List<ImageResourceComboBoxEntry> entries) : base()
+        protected ImageResourceComboBox(System.Collections.Generic.List<ImageResourceComboBoxEntry> entries) : base()
         {
             mEntries = entries;
         }

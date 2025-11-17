@@ -59,7 +59,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             GenBuffers();
         }
 
-        void LoadShader(string code, ShaderType type, out int address)
+        protected void LoadShader(string code, ShaderType type, out int address)
         {
             address = GL.CreateShader(type);
             GL.ShaderSource(address, code);
