@@ -57,7 +57,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 };
         }
 
-        void AddPropertiesToTable(Table table, CASPart.AComplate complate)
+        void AddPropertiesToTable(Table table, CASPart.Complate complate)
         {
             foreach (var propertyName in complate.PropertyNames)
             {
@@ -208,7 +208,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             {
                 AppendPage(subNotebook, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count, isDefault));
             }
-            var complates = new List<CASPart.AComplate>
+            var complates = new List<CASPart.Complate>
                 {
                     preset
                 };

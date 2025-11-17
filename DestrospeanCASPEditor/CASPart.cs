@@ -41,270 +41,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public readonly IResourceIndexEntry ResourceIndexEntry;
 
-        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
-        {
-            CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
-            ParentPackage = package;
-            var defaultPresetResourceIndexEntries = ParentPackage.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("_XML") && x.ResourceGroup == resourceIndexEntry.ResourceGroup && x.Instance == resourceIndexEntry.Instance);
-            if (defaultPresetResourceIndexEntries.Count == 0)
-            {
-                DefaultPresetResourceIndexEntry = null;
-                DefaultPreset = null;
-            }
-            else
-            {
-                DefaultPresetResourceIndexEntry = defaultPresetResourceIndexEntries[0];
-                DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, DefaultPresetResourceIndexEntry).Stream));
-            }
-            Presets = CASPartResource.Presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
-            ResourceIndexEntry = resourceIndexEntry;
-            LoadLODs(geometryResources, vpxyResources);
-        }
-
-        class Complate : AComplate
-        {
-            Bitmap mTexture;
-
-            public string AmbientMap
-            {
-                get;
-                private set;
-            }
-
-            public override CASPart CASPart
-            {
-                get
-                {
-                    return Preset.CASPart;
-                }
-            }
-
-            public override IPackage ParentPackage
-            {
-                get
-                {
-                    return Preset.ParentPackage;
-                }
-            }
-
-            public string[] PatternNames
-            {
-                get
-                {
-                    return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.Name)).ToArray();
-                }
-            }
-
-            public readonly List<Pattern> Patterns;
-
-            public readonly Preset Preset;
-
-            public string SpecularMap
-            {
-                get;
-                private set;
-            }
-
-            public Bitmap Texture
-            {
-                get
-                {
-                    if (mTexture == null)
-                    {
-                        uint[] controlMapArray = null,
-                        maskArray = null;
-                        Bitmap diffuseMap = null,
-                        multiplier = null,
-                        overlay = null;
-                        float[] diffuseColor = null,
-                        highlightColor = null,
-                        rootColor = null,
-                        tipColor = null;
-                        int height = 1024,
-                        width = 1024;
-                        string partType = null;
-                        foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
-                        {
-                            var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
-                            switch (propertyXmlNodeKvp.Key.ToLower())
-                            {
-                                case "clothing ambient":
-                                    AmbientMap = value;
-                                    break;
-                                case "clothing specular":
-                                    SpecularMap = value;
-                                    break;
-                                case "control map":
-                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                    break;
-                                case "diffuse color":
-                                    diffuseColor = GetColor(value);
-                                    break;
-                                case "diffuse map":
-                                    diffuseMap = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "highlight color":
-                                    highlightColor = GetColor(value);
-                                    break;
-                                case "mask":
-                                    maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                    break;
-                                case "multiplier":
-                                    multiplier = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "overlay":
-                                    overlay = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "parttype":
-                                    partType = value;
-                                    break;
-                                case "root color":
-                                    rootColor = GetColor(value);
-                                    break;
-                                case "tip color":
-                                    tipColor = GetColor(value);
-                                    break;
-                            }
-                        }
-                        if (diffuseMap != null)
-                        {
-                            if (partType.ToLower() == "hair")
-                            {
-                                float[][] hairMatrix =
-                                    {
-                                        new float[]
-                                        {
-                                            diffuseColor[0],
-                                            0,
-                                            0,
-                                            0,
-                                            0
-                                        },
-                                        new float[]
-                                        {
-                                            0,
-                                            diffuseColor[1],
-                                            0,
-                                            0,
-                                            0
-                                        },
-                                        new float[]
-                                        {
-                                            0,
-                                            0,
-                                            diffuseColor[2],
-                                            0,
-                                            0
-                                        },
-                                        new float[]
-                                        {
-                                            0,
-                                            0,
-                                            0,
-                                            1,
-                                            0
-                                        },
-                                        new float[]
-                                        {
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            1
-                                        }
-                                    };
-                                using (Graphics graphics = Graphics.FromImage(diffuseMap))
-                                {
-                                    var convert = new ColorMatrix(hairMatrix);
-                                    var attributes = new ImageAttributes();
-                                    attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                                    graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
-                                }
-                                if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
-                                {
-                                    diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
-                                        {
-                                            rootColor,
-                                            highlightColor,
-                                            tipColor
-                                        }, false);
-                                }
-                            }
-                        }
-                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
-                        if (maskArray != null)
-                        {
-                            if (multiplier != null)
-                            {
-                                multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
-                            }
-                            if (overlay != null)
-                            {
-                                overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
-                            }
-                        }
-                        mTexture = new Bitmap(width, height);
-                        using (Graphics graphics = Graphics.FromImage(mTexture))
-                        {
-                            if (diffuseMap != null)
-                            {
-                                graphics.DrawImage(diffuseMap, 0, 0);
-                            }
-                            if (multiplier != null)
-                            {
-                                graphics.DrawImage(multiplier, 0, 0);
-                            }
-                            if (overlay != null)
-                            {
-                                graphics.DrawImage(overlay, 0, 0);
-                            }
-                        }
-                    }
-                    return mTexture;
-                }
-                set
-                {
-                    mTexture = value;
-                }
-            }
-
-            public Complate(Preset preset, XmlNode complateXmlNode) : base()
-            {
-                Preset = preset;
-                var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
-                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
-                Patterns = new List<Pattern>();
-                foreach (var child in complateXmlNode.ChildNodes)
-                {
-                    var childNode = (XmlNode)child;
-                    if (childNode.Name == "value")
-                    {
-                        mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
-                    }
-                    if (childNode.Name == "pattern")
-                    {
-                        Patterns.Add(new Pattern(Preset, childNode));
-                    }
-                }
-                foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
-                {
-                    var childNode = (XmlNode)child;
-                    if (childNode.Name == "variables")
-                    {
-                        foreach (var grandchild in childNode.ChildNodes)
-                        {
-                            var grandchildNode = (XmlNode)grandchild;
-                            if (grandchildNode.Name == "param")
-                            {
-                                PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public abstract class AComplate
+        public abstract class Complate
         {
             protected readonly IDictionary<string, string> mPropertiesTyped;
 
@@ -384,7 +121,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public AComplate()
+            public Complate()
             {
                 mXmlDocument = new XmlDocument();
                 mPropertiesXmlNodes = new SortedDictionary<string, XmlNode>(new PropertyNameComparer());
@@ -412,9 +149,9 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public class Pattern : AComplate
+        public class Pattern : Complate
         {
-            object mPatternImage;
+            protected object mPatternImage;
 
             public override CASPart CASPart
             {
@@ -471,11 +208,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public Pattern(Preset preset, XmlNode patternXmlNode) : base()
             {
+                Name = patternXmlNode.Attributes["variable"].Value;
                 PatternInfo = new PatternInfo
                     {
                         Name = patternXmlNode.Attributes["name"].Value
                     };
-                Name = patternXmlNode.Attributes["variable"].Value;
                 Preset = preset;
                 var evaluated = ParentPackage.EvaluateResourceKey(patternXmlNode);
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
@@ -709,11 +446,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public class Preset : AComplate
+        public class Preset : Complate
         {
             readonly CASPart mCASPart;
 
-            readonly Complate mComplate;
+            readonly PresetInternal mInternal;
 
             protected new readonly XmlDocument mXmlDocument;
 
@@ -721,7 +458,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.AmbientMap;
+                    return mInternal.AmbientMap;
                 }
             }
 
@@ -745,7 +482,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.PatternNames;
+                    return mInternal.PatternNames;
                 }
             }
 
@@ -753,7 +490,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.Patterns;
+                    return mInternal.Patterns;
                 }
             }
 
@@ -761,7 +498,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.PropertiesTyped;
+                    return mInternal.PropertiesTyped;
                 }
             }
 
@@ -769,7 +506,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.PropertyNames;
+                    return mInternal.PropertyNames;
                 }
             }
 
@@ -777,7 +514,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.SpecularMap;
+                    return mInternal.SpecularMap;
                 }
             }
 
@@ -785,7 +522,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return mComplate.Texture;
+                    return mInternal.Texture;
                 }
             }
 
@@ -794,6 +531,249 @@ namespace Destrospean.DestrospeanCASPEditor
                 get
                 {
                     return new StringReader(mXmlDocument.InnerXml);
+                }
+            }
+
+            protected class PresetInternal : Complate
+            {
+                Bitmap mTexture;
+
+                public string AmbientMap
+                {
+                    get;
+                    private set;
+                }
+
+                public override CASPart CASPart
+                {
+                    get
+                    {
+                        return Preset.CASPart;
+                    }
+                }
+
+                public override IPackage ParentPackage
+                {
+                    get
+                    {
+                        return Preset.ParentPackage;
+                    }
+                }
+
+                public string[] PatternNames
+                {
+                    get
+                    {
+                        return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.Name)).ToArray();
+                    }
+                }
+
+                public readonly List<Pattern> Patterns;
+
+                public readonly Preset Preset;
+
+                public string SpecularMap
+                {
+                    get;
+                    private set;
+                }
+
+                public Bitmap Texture
+                {
+                    get
+                    {
+                        if (mTexture == null)
+                        {
+                            uint[] controlMapArray = null,
+                            maskArray = null;
+                            Bitmap diffuseMap = null,
+                            multiplier = null,
+                            overlay = null;
+                            float[] diffuseColor = null,
+                            highlightColor = null,
+                            rootColor = null,
+                            tipColor = null;
+                            int height = 1024,
+                            width = 1024;
+                            string partType = null;
+                            foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
+                            {
+                                var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
+                                switch (propertyXmlNodeKvp.Key.ToLower())
+                                {
+                                    case "clothing ambient":
+                                        AmbientMap = value;
+                                        break;
+                                    case "clothing specular":
+                                        SpecularMap = value;
+                                        break;
+                                    case "control map":
+                                        controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        break;
+                                    case "diffuse color":
+                                        diffuseColor = GetColor(value);
+                                        break;
+                                    case "diffuse map":
+                                        diffuseMap = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "highlight color":
+                                        highlightColor = GetColor(value);
+                                        break;
+                                    case "mask":
+                                        maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        break;
+                                    case "multiplier":
+                                        multiplier = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "overlay":
+                                        overlay = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "parttype":
+                                        partType = value;
+                                        break;
+                                    case "root color":
+                                        rootColor = GetColor(value);
+                                        break;
+                                    case "tip color":
+                                        tipColor = GetColor(value);
+                                        break;
+                                }
+                            }
+                            if (diffuseMap != null)
+                            {
+                                if (partType.ToLower() == "hair")
+                                {
+                                    float[][] hairMatrix =
+                                        {
+                                            new float[]
+                                            {
+                                                diffuseColor[0],
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            },
+                                            new float[]
+                                            {
+                                                0,
+                                                diffuseColor[1],
+                                                0,
+                                                0,
+                                                0
+                                            },
+                                            new float[]
+                                            {
+                                                0,
+                                                0,
+                                                diffuseColor[2],
+                                                0,
+                                                0
+                                            },
+                                            new float[]
+                                            {
+                                                0,
+                                                0,
+                                                0,
+                                                1,
+                                                0
+                                            },
+                                            new float[]
+                                            {
+                                                0,
+                                                0,
+                                                0,
+                                                0,
+                                                1
+                                            }
+                                        };
+                                    using (Graphics graphics = Graphics.FromImage(diffuseMap))
+                                    {
+                                        var convert = new ColorMatrix(hairMatrix);
+                                        var attributes = new ImageAttributes();
+                                        attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                        graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
+                                    }
+                                    if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
+                                    {
+                                        diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
+                                            {
+                                                rootColor,
+                                                highlightColor,
+                                                tipColor
+                                            }, false);
+                                    }
+                                }
+                            }
+                            var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
+                            if (maskArray != null)
+                            {
+                                if (multiplier != null)
+                                {
+                                    multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
+                                }
+                                if (overlay != null)
+                                {
+                                    overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
+                                }
+                            }
+                            mTexture = new Bitmap(width, height);
+                            using (Graphics graphics = Graphics.FromImage(mTexture))
+                            {
+                                if (diffuseMap != null)
+                                {
+                                    graphics.DrawImage(diffuseMap, 0, 0);
+                                }
+                                if (multiplier != null)
+                                {
+                                    graphics.DrawImage(multiplier, 0, 0);
+                                }
+                                if (overlay != null)
+                                {
+                                    graphics.DrawImage(overlay, 0, 0);
+                                }
+                            }
+                        }
+                        return mTexture;
+                    }
+                    set
+                    {
+                        mTexture = value;
+                    }
+                }
+
+                public PresetInternal(Preset preset, XmlNode complateXmlNode) : base()
+                {
+                    Preset = preset;
+                    var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
+                    mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+                    Patterns = new List<Pattern>();
+                    foreach (var child in complateXmlNode.ChildNodes)
+                    {
+                        var childNode = (XmlNode)child;
+                        if (childNode.Name == "value")
+                        {
+                            mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
+                        }
+                        if (childNode.Name == "pattern")
+                        {
+                            Patterns.Add(new Pattern(Preset, childNode));
+                        }
+                    }
+                    foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+                    {
+                        var childNode = (XmlNode)child;
+                        if (childNode.Name == "variables")
+                        {
+                            foreach (var grandchild in childNode.ChildNodes)
+                            {
+                                var grandchildNode = (XmlNode)grandchild;
+                                if (grandchildNode.Name == "param")
+                                {
+                                    PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -806,23 +786,43 @@ namespace Destrospean.DestrospeanCASPEditor
                 mCASPart = casPart;
                 mXmlDocument = new XmlDocument();
                 mXmlDocument.LoadXml(xmlFile.ReadToEnd());
-                mComplate = new Complate(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
+                mInternal = new PresetInternal(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
             public void ClearTexture()
             {
-                mComplate.Texture = null;
+                mInternal.Texture = null;
             } 
 
             public override string GetValue(string propertyName)
             {
-                return mComplate.GetValue(propertyName);
+                return mInternal.GetValue(propertyName);
             }
 
             public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
             {
-                mComplate.SetValue(propertyName, newValue, beforeRerender ?? ClearTexture);
+                mInternal.SetValue(propertyName, newValue, beforeRerender ?? ClearTexture);
             }
+        }
+
+        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
+        {
+            CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
+            ParentPackage = package;
+            var defaultPresetResourceIndexEntries = ParentPackage.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("_XML") && x.ResourceGroup == resourceIndexEntry.ResourceGroup && x.Instance == resourceIndexEntry.Instance);
+            if (defaultPresetResourceIndexEntries.Count == 0)
+            {
+                DefaultPresetResourceIndexEntry = null;
+                DefaultPreset = null;
+            }
+            else
+            {
+                DefaultPresetResourceIndexEntry = defaultPresetResourceIndexEntries[0];
+                DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, DefaultPresetResourceIndexEntry).Stream));
+            }
+            Presets = CASPartResource.Presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            ResourceIndexEntry = resourceIndexEntry;
+            LoadLODs(geometryResources, vpxyResources);
         }
 
         public void AdjustPresetCount()
