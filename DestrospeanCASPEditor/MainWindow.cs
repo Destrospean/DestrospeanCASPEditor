@@ -14,8 +14,8 @@ public enum NextStateOptions : byte
 {
     NoUnsavedChanges,
     UnsavedChanges,
-    Rerender,
-    UnsavedChangesToRerender
+    UpdateModels,
+    UnsavedChangesAndUpdateModels
 }
 
 public partial class MainWindow : Window
@@ -44,7 +44,7 @@ public partial class MainWindow : Window
     {
         set
         {
-            if (value.HasFlag(NextStateOptions.Rerender))
+            if (value.HasFlag(NextStateOptions.UpdateModels))
             {
                 TreeIter iter;
                 TreeModel model;

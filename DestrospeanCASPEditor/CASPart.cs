@@ -138,14 +138,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
             }
 
-            public virtual void SetValue(string propertyName, string newValue, Action beforeRerender = null)
+            public virtual void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
             {
                 mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
-                if (beforeRerender != null)
+                if (beforeMarkUnsaved != null)
                 {
-                    beforeRerender();
+                    beforeMarkUnsaved();
                 }
-                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
+                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChanges;
             }
         }
 
@@ -242,7 +242,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 RefreshPatternInfo(false);
             }
 
-            public void RefreshPatternInfo(bool clearPresetTexture = true)
+            public void RefreshPatternInfo(bool regeneratePresetTexture = true)
             {
                 string background = null,
                 rgbMask = null;
@@ -433,16 +433,16 @@ namespace Destrospean.DestrospeanCASPEditor
                         RGBMask = rgbMask,
                         SolidColor = solidColor
                     };
-                if (clearPresetTexture)
+                if (regeneratePresetTexture)
                 {
-                    Preset.ClearTexture();
+                    Preset.RegenerateTexture();
                 }
                 PatternImage = null;
             }
 
-            public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
+            public override void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
             {
-                base.SetValue(propertyName, newValue, beforeRerender ?? (() => RefreshPatternInfo()));
+                base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
             }
         }
 
@@ -552,6 +552,162 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
 
+                public Bitmap NewTexture
+                {
+                    get
+                    {
+                        uint[] controlMapArray = null,
+                        maskArray = null;
+                        Bitmap diffuseMap = null,
+                        multiplier = null,
+                        overlay = null;
+                        float[] diffuseColor = null,
+                        highlightColor = null,
+                        rootColor = null,
+                        tipColor = null;
+                        int height = 1024,
+                        width = 1024;
+                        string partType = null;
+                        foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
+                        {
+                            var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
+                            switch (propertyXmlNodeKvp.Key.ToLower())
+                            {
+                                case "clothing ambient":
+                                    AmbientMap = value;
+                                    break;
+                                case "clothing specular":
+                                    SpecularMap = value;
+                                    break;
+                                case "control map":
+                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                    break;
+                                case "diffuse color":
+                                    diffuseColor = GetColor(value);
+                                    break;
+                                case "diffuse map":
+                                    diffuseMap = ParentPackage.GetTexture(value, width, height);
+                                    break;
+                                case "highlight color":
+                                    highlightColor = GetColor(value);
+                                    break;
+                                case "mask":
+                                    maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                    break;
+                                case "multiplier":
+                                    multiplier = ParentPackage.GetTexture(value, width, height);
+                                    break;
+                                case "overlay":
+                                    overlay = ParentPackage.GetTexture(value, width, height);
+                                    break;
+                                case "parttype":
+                                    partType = value;
+                                    break;
+                                case "root color":
+                                    rootColor = GetColor(value);
+                                    break;
+                                case "tip color":
+                                    tipColor = GetColor(value);
+                                    break;
+                            }
+                        }
+                        if (diffuseMap != null)
+                        {
+                            if (partType.ToLower() == "hair")
+                            {
+                                float[][] hairMatrix =
+                                    {
+                                        new float[]
+                                        {
+                                            diffuseColor[0],
+                                            0,
+                                            0,
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            diffuseColor[1],
+                                            0,
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            diffuseColor[2],
+                                            0,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            0,
+                                            1,
+                                            0
+                                        },
+                                        new float[]
+                                        {
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            1
+                                        }
+                                    };
+                                using (Graphics graphics = Graphics.FromImage(diffuseMap))
+                                {
+                                    var convert = new ColorMatrix(hairMatrix);
+                                    var attributes = new ImageAttributes();
+                                    attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                    graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
+                                }
+                                if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
+                                {
+                                    diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
+                                        {
+                                            rootColor,
+                                            highlightColor,
+                                            tipColor
+                                        }, false);
+                                }
+                            }
+                        }
+                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
+                        if (maskArray != null)
+                        {
+                            if (multiplier != null)
+                            {
+                                multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
+                            }
+                            if (overlay != null)
+                            {
+                                overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
+                            }
+                        }
+                        var texture = new Bitmap(width, height);
+                        using (Graphics graphics = Graphics.FromImage(texture))
+                        {
+                            if (diffuseMap != null)
+                            {
+                                graphics.DrawImage(diffuseMap, 0, 0);
+                            }
+                            if (multiplier != null)
+                            {
+                                graphics.DrawImage(multiplier, 0, 0);
+                            }
+                            if (overlay != null)
+                            {
+                                graphics.DrawImage(overlay, 0, 0);
+                            }
+                        }
+                        return texture;
+                    }
+                }
+
                 public override IPackage ParentPackage
                 {
                     get
@@ -584,154 +740,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (mTexture == null)
                         {
-                            uint[] controlMapArray = null,
-                            maskArray = null;
-                            Bitmap diffuseMap = null,
-                            multiplier = null,
-                            overlay = null;
-                            float[] diffuseColor = null,
-                            highlightColor = null,
-                            rootColor = null,
-                            tipColor = null;
-                            int height = 1024,
-                            width = 1024;
-                            string partType = null;
-                            foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
-                            {
-                                var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
-                                switch (propertyXmlNodeKvp.Key.ToLower())
-                                {
-                                    case "clothing ambient":
-                                        AmbientMap = value;
-                                        break;
-                                    case "clothing specular":
-                                        SpecularMap = value;
-                                        break;
-                                    case "control map":
-                                        controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                        break;
-                                    case "diffuse color":
-                                        diffuseColor = GetColor(value);
-                                        break;
-                                    case "diffuse map":
-                                        diffuseMap = ParentPackage.GetTexture(value, width, height);
-                                        break;
-                                    case "highlight color":
-                                        highlightColor = GetColor(value);
-                                        break;
-                                    case "mask":
-                                        maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                        break;
-                                    case "multiplier":
-                                        multiplier = ParentPackage.GetTexture(value, width, height);
-                                        break;
-                                    case "overlay":
-                                        overlay = ParentPackage.GetTexture(value, width, height);
-                                        break;
-                                    case "parttype":
-                                        partType = value;
-                                        break;
-                                    case "root color":
-                                        rootColor = GetColor(value);
-                                        break;
-                                    case "tip color":
-                                        tipColor = GetColor(value);
-                                        break;
-                                }
-                            }
-                            if (diffuseMap != null)
-                            {
-                                if (partType.ToLower() == "hair")
-                                {
-                                    float[][] hairMatrix =
-                                        {
-                                            new float[]
-                                            {
-                                                diffuseColor[0],
-                                                0,
-                                                0,
-                                                0,
-                                                0
-                                            },
-                                            new float[]
-                                            {
-                                                0,
-                                                diffuseColor[1],
-                                                0,
-                                                0,
-                                                0
-                                            },
-                                            new float[]
-                                            {
-                                                0,
-                                                0,
-                                                diffuseColor[2],
-                                                0,
-                                                0
-                                            },
-                                            new float[]
-                                            {
-                                                0,
-                                                0,
-                                                0,
-                                                1,
-                                                0
-                                            },
-                                            new float[]
-                                            {
-                                                0,
-                                                0,
-                                                0,
-                                                0,
-                                                1
-                                            }
-                                        };
-                                    using (Graphics graphics = Graphics.FromImage(diffuseMap))
-                                    {
-                                        var convert = new ColorMatrix(hairMatrix);
-                                        var attributes = new ImageAttributes();
-                                        attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                                        graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
-                                    }
-                                    if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
-                                    {
-                                        diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
-                                            {
-                                                rootColor,
-                                                highlightColor,
-                                                tipColor
-                                            }, false);
-                                    }
-                                }
-                            }
-                            var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
-                            if (maskArray != null)
-                            {
-                                if (multiplier != null)
-                                {
-                                    multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
-                                }
-                                if (overlay != null)
-                                {
-                                    overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
-                                }
-                            }
-                            mTexture = new Bitmap(width, height);
-                            using (Graphics graphics = Graphics.FromImage(mTexture))
-                            {
-                                if (diffuseMap != null)
-                                {
-                                    graphics.DrawImage(diffuseMap, 0, 0);
-                                }
-                                if (multiplier != null)
-                                {
-                                    graphics.DrawImage(multiplier, 0, 0);
-                                }
-                                if (overlay != null)
-                                {
-                                    graphics.DrawImage(overlay, 0, 0);
-                                }
-                            }
+                            mTexture = NewTexture;
                         }
                         return mTexture;
                     }
@@ -789,19 +798,23 @@ namespace Destrospean.DestrospeanCASPEditor
                 mInternal = new PresetInternal(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
-            public void ClearTexture()
-            {
-                mInternal.Texture = null;
-            } 
-
             public override string GetValue(string propertyName)
             {
                 return mInternal.GetValue(propertyName);
             }
 
-            public override void SetValue(string propertyName, string newValue, Action beforeRerender = null)
+            public void RegenerateTexture()
             {
-                mInternal.SetValue(propertyName, newValue, beforeRerender ?? ClearTexture);
+                new System.Threading.Thread(() =>
+                    {
+                        mInternal.Texture = mInternal.NewTexture;
+                        MainWindow.Singleton.ModelsNeedUpdated = true;
+                    }).Start();
+            }
+
+            public override void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
+            {
+                mInternal.SetValue(propertyName, newValue, beforeMarkUnsaved ?? RegenerateTexture);
             }
         }
 

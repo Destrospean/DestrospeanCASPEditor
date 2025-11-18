@@ -159,7 +159,7 @@ public partial class MainWindow
 		w5.YOptions = ((global::Gtk.AttachOptions)(4));
 		// Container child MainTable.Gtk.Table+TableChild
 		this.ResourcePropertyNotebook = new global::Gtk.Notebook ();
-		this.ResourcePropertyNotebook.WidthRequest = 448;
+		this.ResourcePropertyNotebook.WidthRequest = 480;
 		this.ResourcePropertyNotebook.CanFocus = true;
 		this.ResourcePropertyNotebook.Name = "ResourcePropertyNotebook";
 		this.ResourcePropertyNotebook.CurrentPage = 0;

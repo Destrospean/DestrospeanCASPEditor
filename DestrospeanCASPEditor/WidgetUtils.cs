@@ -82,7 +82,7 @@ namespace Destrospean.DestrospeanCASPEditor
             shaderComboBox.Changed += (sender, e) =>
                 {
                     geom.Shader = (ShaderType)Enum.Parse(typeof(ShaderType), shaderComboBox.ActiveText);
-                    mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             table.Attach(new Label
                 {
@@ -106,7 +106,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     spinButton.ValueChanged += (sender, e) =>
                         {
                             elementFloat.Data = (float)spinButton.Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = spinButton;
                     goto AttachLabelAndValueWidget;
@@ -123,12 +123,12 @@ namespace Destrospean.DestrospeanCASPEditor
                     spinButtons[0].ValueChanged += (sender, e) =>
                         {
                             elementFloat2.Data0 = (float)spinButtons[0].Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     spinButtons[1].ValueChanged += (sender, e) =>
                         {
                             elementFloat2.Data1 = (float)spinButtons[1].Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     foreach (var spinButton in spinButtons)
                     {
@@ -170,7 +170,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                     material.SpecularColor = color;
                                     break;
                             };
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = colorButton;
                     goto AttachLabelAndValueWidget;
@@ -195,7 +195,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             elementFloat4.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
                             elementFloat4.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
                             elementFloat4.Data3 = (float)colorButton.Alpha / ushort.MaxValue;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = colorButton;
                     goto AttachLabelAndValueWidget;
@@ -207,7 +207,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     spinButton.ValueChanged += (sender, e) =>
                         {
                             elementInt.Data = spinButton.ValueAsInt;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = spinButton;
                     goto AttachLabelAndValueWidget;
@@ -243,7 +243,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                     material.SpecularMap = key;
                                     break;
                             };
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = comboBox;
                 }
@@ -262,7 +262,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
-                        mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                        mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
                 var labelHBox = new HBox(false, 6);
                 labelHBox.PackStart(new Label
@@ -308,7 +308,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
                         scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;
-                        mainWindow.NextState = NextStateOptions.UnsavedChangesToRerender;
+                        mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     }
                     addGEOMPropertyDialog.Destroy();
                 };
@@ -409,7 +409,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             propertyInfo.SetValue(property, value, null);
                         }
-                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesToRerender;
+                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }

@@ -46,6 +46,8 @@ public partial class MainWindow : Window
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
+    public bool ModelsNeedUpdated = false;
+
     public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
 
     public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
@@ -615,7 +617,7 @@ public partial class MainWindow : Window
             {
                 InitProgram();
                 mGLInitialized = true;
-                NextState = NextStateOptions.Rerender;
+                NextState = NextStateOptions.UpdateModels;
                 GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
             };
     }
@@ -686,6 +688,11 @@ public partial class MainWindow : Window
 
     protected bool OnIdleProcessMain()
     {
+        if (ModelsNeedUpdated)
+        {
+            ModelsNeedUpdated = false;
+            NextState = NextStateOptions.UpdateModels;
+        }
         if (mGLInitialized)
         {
             OnUpdateFrame();
