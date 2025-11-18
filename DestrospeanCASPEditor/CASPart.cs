@@ -807,6 +807,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 new System.Threading.Thread(() =>
                     {
+                        System.Threading.Thread.Sleep(1);
                         mInternal.Texture = mInternal.NewTexture;
                         MainWindow.Singleton.ModelsNeedUpdated = true;
                     }).Start();
