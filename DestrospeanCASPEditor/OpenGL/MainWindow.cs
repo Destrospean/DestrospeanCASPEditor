@@ -336,7 +336,7 @@ public partial class MainWindow : Window
                 for (int i = 0; i < 5; i++)
                 {{
                     // Skip lights with no effect
-                    if (lights[i].color == vec3(0,0,0))
+                    if (lights[i].color == vec3(0, 0, 0))
                     {{
                         continue;
                     }}
@@ -824,7 +824,7 @@ public partial class MainWindow : Window
                     GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation"), mLights[i].QuadraticAttenuation);
                 }
             }
-            GL.DrawElementsInstanced(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, new IntPtr(indexAt * sizeof(uint)), 1);
+            GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
             indexAt += volume.IndexCount;
         }
         mShaders[mActiveShader].DisableVertexAttribArrays();
