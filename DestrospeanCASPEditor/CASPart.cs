@@ -658,7 +658,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                             1
                                         }
                                     };
-                                using (Graphics graphics = Graphics.FromImage(diffuseMap))
+                                using (var graphics = Graphics.FromImage(diffuseMap))
                                 {
                                     var convert = new ColorMatrix(hairMatrix);
                                     var attributes = new ImageAttributes();
@@ -689,7 +689,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                         }
                         var texture = new Bitmap(width, height);
-                        using (Graphics graphics = Graphics.FromImage(texture))
+                        using (var graphics = Graphics.FromImage(texture))
                         {
                             if (diffuseMap != null)
                             {
