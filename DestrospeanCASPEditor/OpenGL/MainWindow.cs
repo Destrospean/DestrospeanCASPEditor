@@ -137,9 +137,7 @@ public partial class MainWindow : Window
                 return result;
             }",
         litVertexShader = string.Format(@"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             attribute vec3 vPosition;
             attribute vec3 vNormal;
@@ -163,9 +161,7 @@ public partial class MainWindow : Window
                 v_pos = (model * vec4(vPosition, 1.0)).xyz;
             }}", backportedFunctions);
         mShaders.Add("default", new Shader(@"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             attribute vec3 vPosition;
             attribute vec3 vColor;
@@ -188,9 +184,7 @@ public partial class MainWindow : Window
                 gl_FragColor = color;
             }"));
         mShaders.Add("textured", new Shader(@"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             attribute vec3 vPosition;
             attribute vec2 texcoord;
@@ -220,9 +214,7 @@ public partial class MainWindow : Window
                 gl_FragColor = texcolor;
             }"));
         mShaders.Add("normal", new Shader(@"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             attribute vec3 vPosition;
             attribute vec3 vNormal;
@@ -235,9 +227,7 @@ public partial class MainWindow : Window
                 v_norm = normalize(mat3(modelview[0].xyz, modelview[1].xyz, modelview[2].xyz) * vNormal);
                 v_norm = vNormal;
             }", @"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             varying vec3 v_norm;
  
@@ -247,9 +237,7 @@ public partial class MainWindow : Window
                 gl_FragColor = vec4(0.5 + 0.5 * n, 1.0);
             }"));
         mShaders.Add("lit", new Shader(litVertexShader, string.Format(@"
-            #version 100
-
-            precision highp float;
+            #version 110
 
             varying vec3 v_norm;
             varying vec3 v_pos;
@@ -271,28 +259,21 @@ public partial class MainWindow : Window
             {{
                 vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
                 vec3 n = normalize(v_norm);
-                // Colors
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord.xy);
+                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
                 vec4 light_ambient = light_ambientIntensity * vec4(light_color, 0.0);
                 vec4 light_diffuse = light_diffuseIntensity * vec4(light_color, 0.0);
-                // Ambient lighting
                 gl_FragColor = texcolor * light_ambient * vec4(material_ambient, 0.0);
-                // Diffuse lighting
                 vec3 lightvec = normalize(light_position - v_pos);
                 float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
                 gl_FragColor = gl_FragColor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
-                // Specular lighting
                 vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
                 vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
                 float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
         mShaders.Add("lit_multiple", new Shader(litVertexShader, string.Format(@"
-            #version 100
+            #version 110
 
-            precision highp float;
-
-            // Holds information about a light
             struct Light
             {{
                 vec3 position;
@@ -310,17 +291,14 @@ public partial class MainWindow : Window
             varying vec3 v_norm;
             varying vec3 v_pos;
             varying vec2 f_texcoord;
-            // Texture information
             uniform sampler2D maintexture;
             uniform bool hasSpecularMap;
             uniform sampler2D map_specular;
             uniform mat4 view;
-            // Material information
             uniform vec3 material_ambient;
             uniform vec3 material_diffuse;
             uniform vec3 material_specular;
             uniform float material_specExponent;
-            // Array of lights used in the shader
             uniform Light lights[5];
 
             {0}
@@ -328,42 +306,30 @@ public partial class MainWindow : Window
             void main()
             {{
                 gl_FragColor = vec4(0, 0, 0, 1);
-                // Texture information
                 vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord.xy);
+                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
                 vec3 n = normalize(v_norm);
-                // Loop through lights, adding the lighting from each one
                 for (int i = 0; i < 5; i++)
                 {{
-                    // Skip lights with no effect
                     if (lights[i].color == vec3(0, 0, 0))
                     {{
                         continue;
                     }}
                     vec3 lightvec = normalize(lights[i].position - v_pos);
-                    // Colors
                     vec4 light_ambient = lights[i].ambientIntensity * vec4(lights[i].color, 0.0);
                     vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
-                    // Ambient lighting
                     gl_FragColor = gl_FragColor + texcolor * light_ambient * vec4(material_ambient, 0.0);
-                    // Diffuse lighting
                     float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                    // Spotlight, limit light to specific angle
                     gl_FragColor = gl_FragColor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
-                    // Specular lighting
                     vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
                     vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
                     float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
-                    // Spotlight, specular reflections are also limited by angle
                     gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                 }}
             }}", backportedFunctions)));
         mShaders.Add("lit_advanced", new Shader(litVertexShader, string.Format(@"
-            #version 100
+            #version 110
 
-            precision highp float;
-
-            // Holds information about a light
             struct Light
             {{
                 vec3 position;
@@ -380,97 +346,79 @@ public partial class MainWindow : Window
             varying vec3 v_norm;
             varying vec3 v_pos;
             varying vec2 f_texcoord;
-            // Texture information
             uniform sampler2D maintexture;
             uniform bool hasSpecularMap;
             uniform sampler2D map_specular;
             uniform mat4 view;
-            // Material information
             uniform vec3 material_ambient;
             uniform vec3 material_diffuse;
             uniform vec3 material_specular;
             uniform float material_specExponent;
-            // Array of lights used in the shader
             uniform Light lights[5];
 
             {0}
 
             void main()
             {{
-                // Texture information
                 vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord.xy);
+                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
                 if (texcolor.a < 0.1)
                 {{
                     discard;
                 }}
                 gl_FragColor = vec4(0, 0, 0, 1);
                 vec3 n = normalize(v_norm);
-                // Loop through lights, adding the lighting from each one
                 for (int i = 0; i < 5; i++)
                 {{
-                    // Skip lights with no effect
                     if (lights[i].color == vec3(0, 0, 0))
                     {{
                         continue;
                     }}
                     vec3 lightvec = normalize(lights[i].position - v_pos);
                     vec4 lightcolor = vec4(0, 0, 0, 1);
-                    // Check spotlight angle
                     bool inCone = false;
                     if (lights[i].type == 1 && degrees(acos(dot(lightvec, lights[i].direction))) < lights[i].coneAngle)
                     {{
                         inCone = true;
                     }}
-                    // Directional lighting
                     if (lights[i].type == 2)
                     {{
                         lightvec = lights[i].direction;
                     }}
-                    // Colors
                     vec4 light_ambient = lights[i].ambientIntensity * vec4(lights[i].color, 0.0);
                     vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
-                    // Ambient lighting
                     lightcolor = lightcolor + texcolor * light_ambient * vec4(material_ambient, 0.0);
-                    // Diffuse lighting
                     float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                    // Spotlight, limit light to specific angle
                     if (lights[i].type != 1 || inCone)
                     {{
                         lightcolor = lightcolor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
                     }}
-                    // Specular lighting
                     vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
                     vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
                     float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
-                    // Specular map
                     if (hasSpecularMap)
                     {{
-                        material_specularreflection = material_specularreflection * texture2D(map_specular, flipped_texcoord.xy).r;
+                        material_specularreflection = material_specularreflection * texture2D(map_specular, flipped_texcoord).r;
                     }}
-                    // Spotlight, specular reflections are also limited by angle
                     if (lights[i].type != 1 || inCone)
                     {{
                         lightcolor = lightcolor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                     }}
-                    // Attenuation
                     float distancefactor = distance(lights[i].position, v_pos);
                     float attenuation = 1.0 / (1.0 + (distancefactor * lights[i].linearAttenuation) + (distancefactor * distancefactor * lights[i].quadraticAttenuation));
                     gl_FragColor = gl_FragColor + lightcolor * attenuation;
                 }}
             }}", backportedFunctions)));
         mActiveShader = Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
-        Light pointLight0 = new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
+        mLights.Add(new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
             {
                 QuadraticAttenuation = .05f
-            },
-        pointLight1 = new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1))
+            });
+        mLights.Add(new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1))
             {
                 Direction = new Vector3(0, 0, -1),
                 QuadraticAttenuation = .05f
-            };
-        mLights.Add(pointLight0);
-        mLights.Add(pointLight1);
+            });
         mCamera.Position = new Vector3(0, 7f / 6, 5f / 3);
     }
 
@@ -575,8 +523,6 @@ public partial class MainWindow : Window
                     TextureID = LoadTexture(key, currentPreset.Texture),
                     Vertices = vertices.ToArray()
                 });
-            //Image.Pixbuf = new Bitmap(casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage].Texture, new Size(Image.WidthRequest, Image.HeightRequest)).GetAsPixbuf();
-            //mGLWidget.Hide();
         }
     }
 
