@@ -137,7 +137,9 @@ public partial class MainWindow : Window
                 return result;
             }",
         litVertexShader = string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             attribute vec3 vPosition;
             attribute vec3 vNormal;
@@ -161,7 +163,9 @@ public partial class MainWindow : Window
                 v_pos = (model * vec4(vPosition, 1.0)).xyz;
             }}", backportedFunctions);
         mShaders.Add("default", new Shader(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             attribute vec3 vPosition;
             attribute vec3 vColor;
@@ -184,7 +188,9 @@ public partial class MainWindow : Window
                 gl_FragColor = color;
             }"));
         mShaders.Add("textured", new Shader(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             attribute vec3 vPosition;
             attribute vec2 texcoord;
@@ -214,7 +220,9 @@ public partial class MainWindow : Window
                 gl_FragColor = texcolor;
             }"));
         mShaders.Add("normal", new Shader(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             attribute vec3 vPosition;
             attribute vec3 vNormal;
@@ -227,7 +235,9 @@ public partial class MainWindow : Window
                 v_norm = normalize(mat3(modelview[0].xyz, modelview[1].xyz, modelview[2].xyz) * vNormal);
                 v_norm = vNormal;
             }", @"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             varying vec3 v_norm;
  
@@ -237,7 +247,9 @@ public partial class MainWindow : Window
                 gl_FragColor = vec4(0.5 + 0.5 * n, 1.0);
             }"));
         mShaders.Add("lit", new Shader(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             varying vec3 v_norm;
             varying vec3 v_pos;
@@ -272,7 +284,9 @@ public partial class MainWindow : Window
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
         mShaders.Add("lit_multiple", new Shader(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             struct Light
             {{
@@ -328,7 +342,9 @@ public partial class MainWindow : Window
                 }}
             }}", backportedFunctions)));
         mShaders.Add("lit_advanced", new Shader(litVertexShader, string.Format(@"
-            #version 110
+            #version 100
+
+            precision highp float;
 
             struct Light
             {{
