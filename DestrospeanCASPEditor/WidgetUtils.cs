@@ -91,8 +91,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
-            var elements = new List<ShaderData>(geom.Mtnf.SData);
-            foreach (var element in elements)
+            foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
             {
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 0, 0)

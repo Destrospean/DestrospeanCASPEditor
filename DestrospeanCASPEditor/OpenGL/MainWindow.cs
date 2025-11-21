@@ -426,7 +426,7 @@ public partial class MainWindow : Window
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
+                foreach (var element in geom.Mtnf.SData)
                 {
                     var elementFloat3 = element as ElementFloat3;
                     if (elementFloat3 != null)
