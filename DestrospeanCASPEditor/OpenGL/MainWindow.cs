@@ -273,10 +273,10 @@ public partial class MainWindow : Window
                 {{
                     discard;
                 }}
+                vec3 lightvec = normalize(light_position - v_pos);
                 vec4 light_ambient = light_ambientIntensity * vec4(light_color, 0.0);
                 vec4 light_diffuse = light_diffuseIntensity * vec4(light_color, 0.0);
                 gl_FragColor = texcolor * light_ambient * vec4(material_ambient, 0.0);
-                vec3 lightvec = normalize(light_position - v_pos);
                 float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
                 gl_FragColor = gl_FragColor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
                 vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
