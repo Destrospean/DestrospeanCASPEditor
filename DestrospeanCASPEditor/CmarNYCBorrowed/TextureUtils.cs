@@ -17,14 +17,11 @@ namespace Destrospean.CmarNYCBorrowed
             patternImage = new Bitmap(width, height, PixelFormat.Format32bppArgb);
             var rgb = package.GetTextureARGBArray(pattern.RGBMask, width, height);
             var patternBack = new Bitmap[3];
-            if (pattern.Channels != null)
+            for (var i = 0; i < 3 && pattern.Channels != null; i++)
             {
-                for (var i = 0; i < 3; i++)
+                if (pattern.Channels[i] != null)
                 {
-                    if (pattern.Channels[i] != null)
-                    {
-                        patternBack[i] = package.GetTexture(pattern.Channels[i], width, height);
-                    }
+                    patternBack[i] = package.GetTexture(pattern.Channels[i], width, height);
                 }
             }
             BitmapData bitmapData0 = patternImage.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, patternImage.PixelFormat),
