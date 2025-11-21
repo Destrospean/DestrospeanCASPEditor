@@ -257,7 +257,7 @@ namespace Destrospean.CmarNYCBorrowed
                                     }
                                     else
                                     {
-                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * (multiplierArray[i + k] >> 8)) * byte.MaxValue);
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] * kInverseByteMax) * byte.MaxValue);
                                     }
                                 }
                                 continue;
@@ -289,7 +289,7 @@ namespace Destrospean.CmarNYCBorrowed
                                     }
                                     else
                                     {
-                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * (multiplierArray[i + k] >> 8)) * byte.MaxValue);
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] * kInverseByteMax) * byte.MaxValue);
                                     }
                                 }
                             }
