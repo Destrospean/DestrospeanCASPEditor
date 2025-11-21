@@ -9,6 +9,9 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public static class TextureUtils
     {
+        const float kInverseByteMax = 1f / byte.MaxValue,
+        kOneThirdInverseByteMax = kInverseByteMax / 3;
+
         public static Bitmap GetHSVPatternImage(this IPackage package, PatternInfo pattern)
         {
             int height = 256,
@@ -68,7 +71,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     var tempHSV = new HSVColor(greenArray[i + 2], greenArray[i + 1], greenArray[i]);
                     var tempColor = (tempHSV + greenChannel).AsRGB;
-                    var weight = (float)maskArray[1] / byte.MaxValue;
+                    var weight = maskArray[1] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {
                         color[j] = (byte)(tempColor[j] * weight + color[j] * (1 - weight));
@@ -78,7 +81,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     var tempHSV = new HSVColor(blueArray[i + 2], blueArray[i + 1], blueArray[i]);
                     var tempColor = (tempHSV + blueChannel).AsRGB;
-                    var weight = (float)maskArray[0] / byte.MaxValue;
+                    var weight = maskArray[0] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {
                         color[j] = (byte)(tempColor[j] * weight + color[j] * (1 - weight));
@@ -88,7 +91,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     var tempHSV = new HSVColor(alphaArray[i + 2], alphaArray[i + 1], alphaArray[i]);
                     var tempColor = (tempHSV + alphaChannel).AsRGB;
-                    var weight = (float)maskArray[3] / byte.MaxValue;
+                    var weight = maskArray[3] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {
                         color[j] = (byte)(tempColor[j] * weight + color[j] * (1 - weight));
@@ -141,10 +144,10 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     if (colors[j] != null && maskControl[j] > 0)
                     {
-                        var blend = (float)maskControl[j] / byte.MaxValue;
+                        var blend = maskControl[j] * kInverseByteMax;
                         for (var k = 0; k < 3; k++)
                         {
-                            var temp = j == 0 ? colors[j][2 - k] : blend * colors[j][2 - k] + (1 - blend) * textureArray[i + k] / byte.MaxValue;
+                            var temp = j == 0 ? colors[j][2 - k] : blend * colors[j][2 - k] + (1 - blend) * textureArray[i + k] * kInverseByteMax;
                             temp = temp < 0 ? 0 : temp > 1 ? 1 : temp;
                             textureArray[i + k] = (byte)(temp * byte.MaxValue);
                         }
@@ -227,7 +230,7 @@ namespace Destrospean.CmarNYCBorrowed
                 Marshal.Copy(ptr, multiplierArray, 0, byteCount);
                 for (var i = 0; i < byteCount; i += 4)
                 {
-                    var gray = (multiplierArray[i] + multiplierArray[i + 1] + multiplierArray[i + 2]) / 3f / (byte.MaxValue >> (overlay ? 0 : 1));
+                    var gray = (multiplierArray[i] + multiplierArray[i + 1] + multiplierArray[i + 2]) * kOneThirdInverseByteMax * (overlay ? 1 : 2);
                     byte[] mask = BitConverter.GetBytes(maskArray[i >> 2]),
                     maskControl =
                         {
@@ -238,7 +241,7 @@ namespace Destrospean.CmarNYCBorrowed
                         };
                     for (var j = 0; j < patternImages.Count - 1; j++)
                     {
-                        var blend = (float)maskControl[j] / byte.MaxValue;
+                        var blend = maskControl[j] * kInverseByteMax;
                         if (patternImages[j] != null && maskControl[j] > 0)
                         {
                             var rgba = patternImages[j] as float[];
@@ -254,7 +257,7 @@ namespace Destrospean.CmarNYCBorrowed
                                     }
                                     else
                                     {
-                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * (multiplierArray[i + k] >> 8)) * byte.MaxValue);
                                     }
                                 }
                                 continue;
@@ -271,10 +274,10 @@ namespace Destrospean.CmarNYCBorrowed
                                 var color = image.GetPixel(width, height);
                                 rgba = new float[]
                                     {
-                                        (float)color.R / byte.MaxValue,
-                                        (float)color.G / byte.MaxValue,
-                                        (float)color.B / byte.MaxValue,
-                                        (float)color.A / byte.MaxValue
+                                        color.R * kInverseByteMax,
+                                        color.G * kInverseByteMax,
+                                        color.B * kInverseByteMax,
+                                        color.A * kInverseByteMax
                                     };
                                 for (var k = 0; k < 3; k++)
                                 {
@@ -286,7 +289,7 @@ namespace Destrospean.CmarNYCBorrowed
                                     }
                                     else
                                     {
-                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * multiplierArray[i + k] / byte.MaxValue) * byte.MaxValue);
+                                        multiplierArray[i + k] = (byte)((blend * temp + (1 - blend) * (multiplierArray[i + k] >> 8)) * byte.MaxValue);
                                     }
                                 }
                             }
