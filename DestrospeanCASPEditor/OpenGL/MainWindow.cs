@@ -396,7 +396,7 @@ public partial class MainWindow : Window
                     var positionElement = vertexElement as GEOM.PositionElement;
                     if (positionElement != null && positionElement as GEOM.TangentNormalElement == null)
                     {
-                        if (positionElement as GEOM.NormalElement != null)
+                        if (positionElement is GEOM.NormalElement)
                         {
                             normals.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
                             continue;
