@@ -361,7 +361,7 @@ public partial class MainWindow : Window
                     gl_FragColor = gl_FragColor + lightcolor * 1.0 / (1.0 + distancefactor * lights[i].linearAttenuation + distancefactor * distancefactor * lights[i].quadraticAttenuation);
                 }}
             }}", backportedFunctions)));
-        mActiveShader = Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
+        mActiveShader = Platform.IsWindows && Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
         mLights.Add(new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
             {
                 QuadraticAttenuation = .05f
@@ -577,7 +577,7 @@ public partial class MainWindow : Window
             TextureIDs.Add(key, textureID);
         }
         GL.BindTexture(TextureTarget.Texture2D, textureID);
-        var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
         image.UnlockBits(bitmapData);
         GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
@@ -603,7 +603,7 @@ public partial class MainWindow : Window
     protected void OnRenderFrame()
     {
         GL.Viewport(0, 0, (int)(mGLWidget.WidthRequest * WidgetUtils.WineScaleDenominator), (int)(mGLWidget.HeightRequest * WidgetUtils.WineScaleDenominator));
-        GL.ClearColor(System.Drawing.Color.CornflowerBlue);
+        GL.ClearColor(Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.Enable(EnableCap.DepthTest);
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
