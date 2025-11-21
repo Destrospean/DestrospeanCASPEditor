@@ -100,6 +100,12 @@ namespace Destrospean.DestrospeanCASPEditor
                     DataTypeComboBox.Active = 0;
                 };
             categories.AddRange(patternsByCategory.Keys);
+            categories.Sort();
+            if (categories.Contains("Old"))
+            {
+                categories.Remove("Old");
+                categories.Add("Old");
+            }
             categories.ForEach(x => categoryListStore.AppendValues(x));
             FieldComboBox.Model = categoryListStore;
             FieldComboBox.PackStart(categoryCell, true);
