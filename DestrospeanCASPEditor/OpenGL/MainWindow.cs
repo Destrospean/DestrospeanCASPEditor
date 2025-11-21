@@ -283,67 +283,6 @@ public partial class MainWindow : Window
                 float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
-        mShaders.Add("lit_multiple", new Shader(litVertexShader, string.Format(@"
-            #version 100
-
-            precision highp float;
-
-            struct Light
-            {{
-                vec3 position;
-                vec3 color;
-                float ambientIntensity;
-                float diffuseIntensity;
-                int type;
-                vec3 direction;
-                float coneAngle;
-                float attenuationConstant;
-                float attenuationLinear;
-                float attenuationQuadratic;
-                float radius;
-            }};
-            varying vec3 v_norm;
-            varying vec3 v_pos;
-            varying vec2 f_texcoord;
-            uniform sampler2D maintexture;
-            uniform bool hasSpecularMap;
-            uniform sampler2D map_specular;
-            uniform mat4 view;
-            uniform vec3 material_ambient;
-            uniform vec3 material_diffuse;
-            uniform vec3 material_specular;
-            uniform float material_specExponent;
-            uniform Light lights[5];
-
-            {0}
-
-            void main()
-            {{
-                vec3 n = normalize(v_norm);
-                vec4 texcolor = texture2D(maintexture, f_texcoord);
-                if (texcolor.a < 0.1)
-                {{
-                    discard;
-                }}
-                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-                for (int i = 0; i < 5; i++)
-                {{
-                    if (lights[i].color == vec3(0.0, 0.0, 0.0))
-                    {{
-                        continue;
-                    }}
-                    vec3 lightvec = normalize(lights[i].position - v_pos);
-                    vec4 light_ambient = lights[i].ambientIntensity * vec4(lights[i].color, 0.0);
-                    vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
-                    gl_FragColor = gl_FragColor + texcolor * light_ambient * vec4(material_ambient, 0.0);
-                    float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                    gl_FragColor = gl_FragColor + light_diffuse * texcolor * vec4(material_diffuse, 0.0) * lambertmaterial_diffuse;
-                    vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
-                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)) - v_pos); 
-                    float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
-                    gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
-                }}
-            }}", backportedFunctions)));
         mShaders.Add("lit_advanced", new Shader(litVertexShader, string.Format(@"
             #version 100
 
@@ -394,12 +333,7 @@ public partial class MainWindow : Window
                     }}
                     vec3 lightvec = normalize(lights[i].position - v_pos);
                     vec4 lightcolor = vec4(0.0, 0.0, 0.0, 1.0);
-                    bool inCone = false;
-                    if (lights[i].type == 1 && degrees(acos(dot(lightvec, lights[i].direction))) < lights[i].coneAngle)
-                    {{
-                        inCone = true;
-                    }}
-                    if (lights[i].type == 2)
+                    if (lights[i].type == 0)
                     {{
                         lightvec = lights[i].direction;
                     }}
@@ -407,7 +341,8 @@ public partial class MainWindow : Window
                     vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
                     lightcolor = lightcolor + texcolor * light_ambient * vec4(material_ambient, 0.0);
                     float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                    if (lights[i].type != 1 || inCone)
+                    bool inConeOrNotSpotlight = lights[i].type != 2 || degrees(acos(dot(lightvec, lights[i].direction))) < lights[i].coneAngle;
+                    if (inConeOrNotSpotlight)
                     {{
                         lightcolor = lightcolor + light_diffuse * texcolor * vec4(material_diffuse, 0.0) * lambertmaterial_diffuse;
                     }}
@@ -418,13 +353,12 @@ public partial class MainWindow : Window
                     {{
                         material_specularreflection = material_specularreflection * texture2D(map_specular, f_texcoord).r;
                     }}
-                    if (lights[i].type != 1 || inCone)
+                    if (inConeOrNotSpotlight)
                     {{
                         lightcolor = lightcolor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                     }}
                     float distancefactor = distance(lights[i].position, v_pos);
-                    float attenuation = 1.0 / (1.0 + distancefactor * lights[i].linearAttenuation + distancefactor * distancefactor * lights[i].quadraticAttenuation);
-                    gl_FragColor = gl_FragColor + lightcolor * attenuation;
+                    gl_FragColor = gl_FragColor + lightcolor * 1.0 / (1.0 + distancefactor * lights[i].linearAttenuation + distancefactor * distancefactor * lights[i].quadraticAttenuation);
                 }}
             }}", backportedFunctions)));
         mActiveShader = Platform.IsWindows && System.Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
