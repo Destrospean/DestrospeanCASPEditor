@@ -652,10 +652,10 @@ public partial class MainWindow : Window
                 }
                 if (currentPreset != null && currentPreset.SpecularMap != null)
                 {
-                    GL.ActiveTexture(TextureUnit.Texture1);
                     int textureId;
                     if (TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
                     {
+                        GL.ActiveTexture(TextureUnit.Texture1);
                         GL.BindTexture(TextureTarget.Texture2D, textureId);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 1);
