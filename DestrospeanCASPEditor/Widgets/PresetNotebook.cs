@@ -117,12 +117,24 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         valueWidget = spinButton;
                         break;
                     case "pattern":
-                        var entry = new Entry
+                        var label = new Label(value)
                             {
-                                Text = value
+                                UseUnderline = false,
+                                Xalign = 0
                             };
-                        entry.Changed += (sender, e) => complate[propertyName] = entry.Text;
-                        valueWidget = entry;
+                        var button = new Button(label);
+                        button.Clicked += (sender, e) =>
+                            {
+                                var changePatternDialog = new ChangePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
+                                if (changePatternDialog.Run() == (int)ResponseType.Ok)
+                                {
+                                    var key = changePatternDialog.ResourceKey;
+                                    label.Text = changePatternDialog.PatternPath;
+                                    complate[propertyName] = label.Text;
+                                }
+                                changePatternDialog.Destroy();
+                            };
+                        valueWidget = button;
                         break;
                     case "texture":
                         var comboBox = ImageResourceComboBox.CreateInstance(complate.ParentPackage, value, Image);
@@ -145,9 +157,8 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         valueWidget = hBox;
                         break;
                 }
-                table.Attach(new Label
+                table.Attach(new Label(propertyName)
                     {
-                        Text = propertyName,
                         UseUnderline = false,
                         Xalign = 0
                     }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
@@ -189,10 +200,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             var hBox = new HBox(false, 0);
-            hBox.PackStart(new Label
-                {
-                    Text = isDefault ? "Default" : "Preset " + pageIndex.ToString()
-                }, true, true, 0);
+            hBox.PackStart(new Label(isDefault ? "Default" : "Preset " + pageIndex.ToString()), true, true, 0);
             if (CASPart.Presets.Count > 1 && CASPart.DefaultPreset == null || !isDefault)
             {
                 hBox.PackEnd(deleteButton, false, true, 0);
@@ -222,10 +230,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     };
                 scrolledWindow.AddWithViewport(table);
                 var pattern = complate as CASPart.Pattern;
-                subNotebook.AppendPage(scrolledWindow, new Label
-                    {
-                        Text = pattern == null ? "Configuration" : pattern.Name
-                    });
+                subNotebook.AppendPage(scrolledWindow, new Label(pattern == null ? "Configuration" : pattern.Name));
                 AddPropertiesToTable(table, complate);
             }
             ShowAll();

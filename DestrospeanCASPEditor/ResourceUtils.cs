@@ -227,6 +227,28 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public static EvaluatedResourceKey EvaluateResourceKey(this IPackage package, string key)
+        {   
+            try
+            {
+                return package.EvaluateResourceKeyInternal(key);
+            }
+            catch (ResourceIndexEntryNotFoundException)
+            {
+                foreach (var gamePackage in GameContentPackages.Values)
+                {
+                    try
+                    {
+                        return gamePackage.EvaluateResourceKeyInternal(key);
+                    }
+                    catch (ResourceIndexEntryNotFoundException)
+                    {
+                    }
+                }
+                throw new ResourceIndexEntryNotFoundException("No resource with the given key could be found.");
+            }
+        }
+
         public static EvaluatedResourceKey EvaluateResourceKey(this IPackage package, System.Xml.XmlNode xmlNode)
         {   
             if (!((System.Xml.XmlElement)xmlNode).HasAttribute("reskey"))

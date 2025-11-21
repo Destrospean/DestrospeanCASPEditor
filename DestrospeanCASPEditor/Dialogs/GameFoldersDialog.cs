@@ -37,9 +37,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 entry.Changed += (sender, e) => SetInstallDirectory(game, entry.Text);
                 var alignment = new Alignment(0, .5f, 1, 0);
                 alignment.Add(entry);
-                GameFolderTable.Attach(new Label
+                GameFolderTable.Attach(new Label(game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""))
                     {
-                        Text = game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""),
                         UseUnderline = false,
                         Xalign = 0
                     }, 0, 1, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Fill | AttachOptions.Shrink, 0, 0, 0);

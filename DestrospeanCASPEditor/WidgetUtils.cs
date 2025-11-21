@@ -45,10 +45,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     ColumnSpacing = DefaultTableColumnSpacing
                 };
             scrolledWindow.AddWithViewport(table);
-            notebook.AppendPage(scrolledWindow, new Label
-                {
-                    Text = "GEOM " + (notebook.NPages + pageIndexOffset).ToString()
-                });
+            notebook.AppendPage(scrolledWindow, new Label("GEOM " + (notebook.NPages + pageIndexOffset).ToString()));
             table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
             notebook.ShowAll();
         }
@@ -84,9 +81,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     geom.Shader = (ShaderType)Enum.Parse(typeof(ShaderType), shaderComboBox.ActiveText);
                     mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
-            table.Attach(new Label
+            table.Attach(new Label("Shader")
                 {
-                    Text = "Shader",
                     Xalign = 0
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
@@ -247,11 +243,10 @@ namespace Destrospean.DestrospeanCASPEditor
                     valueWidget = comboBox;
                 }
                 AttachLabelAndValueWidget:
-                var deleteButton = new Button
+                var deleteButton = new Button(new Gtk.Image(Stock.Delete, IconSize.Menu))
                     {
                         Relief = ReliefStyle.None,
                     };
-                deleteButton.Add(new Gtk.Image(Stock.Delete, IconSize.Menu));
                 deleteButton.Clicked += (sender, e) =>
                     {
                         geom.Mtnf.SData.Remove(element);
@@ -264,9 +259,8 @@ namespace Destrospean.DestrospeanCASPEditor
                         mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
                 var labelHBox = new HBox(false, 6);
-                labelHBox.PackStart(new Label
+                labelHBox.PackStart(new Label(element.Field.ToString())
                     {
-                        Text = element.Field.ToString(),
                         UseUnderline = false,
                         Xalign = 0
                     }, true, true, 0);
@@ -281,13 +275,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     Xalign = 1
                 }, true, true, 0);
-            addPropertyButtonHBox.PackStart(new Label
+            addPropertyButtonHBox.PackStart(new Label("Add Property")
                 {
-                    Text = "Add Property",
                     Xalign = 0
                 }, true, true, 0);
-            var addPropertyButton = new Button();
-            addPropertyButton.Add(addPropertyButtonHBox);
+            var addPropertyButton = new Button(addPropertyButtonHBox);
             addPropertyButton.Clicked += (sender, e) =>
                 {
                     var addGEOMPropertyDialog = new AddGEOMPropertyDialog(mainWindow);

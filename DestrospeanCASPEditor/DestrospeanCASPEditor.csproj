@@ -223,6 +223,7 @@
     <Compile Include="CmarNYCBorrowed\HSVColor.cs" />
     <Compile Include="CmarNYCBorrowed\PatternInfo.cs" />
     <Compile Include="CmarNYCBorrowed\TextureUtils.cs" />
+    <Compile Include="Dialogs\ChangePatternDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

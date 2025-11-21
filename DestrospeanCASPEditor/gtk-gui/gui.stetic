@@ -359,7 +359,7 @@
             <property name="RowSpacing">6</property>
             <property name="ColumnSpacing">6</property>
             <child>
-              <widget class="Gtk.ComboBox" id="DataTypeComboBox">
+              <widget class="Gtk.ComboBox" id="mDataTypeComboBox">
                 <property name="MemberName" />
                 <property name="IsTextCombo">True</property>
                 <property name="Items" translatable="yes" />
@@ -380,7 +380,7 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Label" id="DataTypeLabel">
+              <widget class="Gtk.Label" id="mDataTypeLabel">
                 <property name="MemberName" />
                 <property name="Xalign">0</property>
                 <property name="LabelProp" translatable="yes">Data Type</property>
@@ -400,7 +400,7 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.ComboBox" id="FieldComboBox">
+              <widget class="Gtk.ComboBox" id="mFieldComboBox">
                 <property name="MemberName" />
                 <property name="IsTextCombo">True</property>
                 <property name="Items" translatable="yes" />
@@ -419,7 +419,7 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Label" id="FieldLabel">
+              <widget class="Gtk.Label" id="mFieldLabel">
                 <property name="MemberName" />
                 <property name="Xalign">0</property>
                 <property name="LabelProp" translatable="yes">Field</property>

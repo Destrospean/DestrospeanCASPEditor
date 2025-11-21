@@ -115,17 +115,15 @@ public partial class MainWindow : Window
         }
         flagPageVBox.PackStart(buttonHBox, false, false, 0);
         flagPageVBox.PackStart(flagNotebook, true, true, 0);
-        Button nextButton = new Button(),
-        prevButton = new Button(),
-        resetViewButton = new Button("Reset View");
-        nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
+        Button nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
             {
                 Xalign = .5f
-            });
-        prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None)
+            }),
+        prevButton = new Button(new Arrow(ArrowType.Left, ShadowType.None)
             {
                 Xalign = .5f,
-            });
+            }),
+        resetViewButton = new Button("Reset View");
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
         resetViewButton.Clicked += (sender, e) =>
@@ -212,13 +210,11 @@ public partial class MainWindow : Window
                 </ui>");
             var menuBar = (MenuBar)uiManager.GetWidget("/GEOMPropertiesMenuBar");
             menuBar.PackDirection = PackDirection.Rtl;
-            Button nextButton = new Button(),
-            prevButton = new Button();
-            nextButton.Add(new Arrow(ArrowType.Right, ShadowType.None)
+            Button nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
                 {
                     Xalign = .5f
-                });
-            prevButton.Add(new Arrow(ArrowType.Left, ShadowType.None)
+                }),
+            prevButton = new Button(new Arrow(ArrowType.Left, ShadowType.None)
                 {
                     Xalign = .5f
                 });
@@ -286,10 +282,7 @@ public partial class MainWindow : Window
             lodPageVBox.PackStart(geomPageButtonHBox, false, true, 0);
             lodPageVBox.PackStart(geomNotebook, true, true, 0);
             lodPageVBox.ShowAll();
-            ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label
-                {
-                    Text = "LOD " + lodKvp.Key.ToString()
-                });
+            ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label("LOD " + lodKvp.Key.ToString()));
             lodKvp.Value.ForEach(x => geomNotebook.AddProperties(CurrentPackage, x, Image));
             if (lodKvp.Value == new List<List<GeometryResource>>(casPart.LODs.Values)[startLODPageIndex])
             {

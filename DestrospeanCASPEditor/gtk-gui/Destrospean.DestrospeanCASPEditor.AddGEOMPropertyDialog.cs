@@ -6,13 +6,13 @@ namespace Destrospean.DestrospeanCASPEditor
 	{
 		private global::Gtk.Table ComboBoxTable;
 		
-		private global::Gtk.ComboBox DataTypeComboBox;
+		private global::Gtk.ComboBox mDataTypeComboBox;
 		
-		private global::Gtk.Label DataTypeLabel;
+		private global::Gtk.Label mDataTypeLabel;
 		
-		private global::Gtk.ComboBox FieldComboBox;
+		private global::Gtk.ComboBox mFieldComboBox;
 		
-		private global::Gtk.Label FieldLabel;
+		private global::Gtk.Label mFieldLabel;
 		
 		private global::Gtk.Button CancelButton;
 		
@@ -37,41 +37,41 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.ComboBoxTable.RowSpacing = ((uint)(6));
 			this.ComboBoxTable.ColumnSpacing = ((uint)(6));
 			// Container child ComboBoxTable.Gtk.Table+TableChild
-			this.DataTypeComboBox = global::Gtk.ComboBox.NewText ();
-			this.DataTypeComboBox.Name = "DataTypeComboBox";
-			this.ComboBoxTable.Add (this.DataTypeComboBox);
-			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.DataTypeComboBox]));
+			this.mDataTypeComboBox = global::Gtk.ComboBox.NewText ();
+			this.mDataTypeComboBox.Name = "mDataTypeComboBox";
+			this.ComboBoxTable.Add (this.mDataTypeComboBox);
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mDataTypeComboBox]));
 			w2.TopAttach = ((uint)(1));
 			w2.BottomAttach = ((uint)(2));
 			w2.LeftAttach = ((uint)(1));
 			w2.RightAttach = ((uint)(2));
 			w2.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child ComboBoxTable.Gtk.Table+TableChild
-			this.DataTypeLabel = new global::Gtk.Label ();
-			this.DataTypeLabel.Name = "DataTypeLabel";
-			this.DataTypeLabel.Xalign = 0F;
-			this.DataTypeLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Data Type");
-			this.ComboBoxTable.Add (this.DataTypeLabel);
-			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.DataTypeLabel]));
+			this.mDataTypeLabel = new global::Gtk.Label ();
+			this.mDataTypeLabel.Name = "mDataTypeLabel";
+			this.mDataTypeLabel.Xalign = 0F;
+			this.mDataTypeLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Data Type");
+			this.ComboBoxTable.Add (this.mDataTypeLabel);
+			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mDataTypeLabel]));
 			w3.TopAttach = ((uint)(1));
 			w3.BottomAttach = ((uint)(2));
 			w3.XOptions = ((global::Gtk.AttachOptions)(4));
 			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child ComboBoxTable.Gtk.Table+TableChild
-			this.FieldComboBox = global::Gtk.ComboBox.NewText ();
-			this.FieldComboBox.Name = "FieldComboBox";
-			this.ComboBoxTable.Add (this.FieldComboBox);
-			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.FieldComboBox]));
+			this.mFieldComboBox = global::Gtk.ComboBox.NewText ();
+			this.mFieldComboBox.Name = "mFieldComboBox";
+			this.ComboBoxTable.Add (this.mFieldComboBox);
+			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mFieldComboBox]));
 			w4.LeftAttach = ((uint)(1));
 			w4.RightAttach = ((uint)(2));
 			w4.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child ComboBoxTable.Gtk.Table+TableChild
-			this.FieldLabel = new global::Gtk.Label ();
-			this.FieldLabel.Name = "FieldLabel";
-			this.FieldLabel.Xalign = 0F;
-			this.FieldLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Field");
-			this.ComboBoxTable.Add (this.FieldLabel);
-			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.FieldLabel]));
+			this.mFieldLabel = new global::Gtk.Label ();
+			this.mFieldLabel.Name = "mFieldLabel";
+			this.mFieldLabel.Xalign = 0F;
+			this.mFieldLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Field");
+			this.ComboBoxTable.Add (this.mFieldLabel);
+			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mFieldLabel]));
 			w5.XOptions = ((global::Gtk.AttachOptions)(4));
 			w5.YOptions = ((global::Gtk.AttachOptions)(4));
 			w1.Add (this.ComboBoxTable);
