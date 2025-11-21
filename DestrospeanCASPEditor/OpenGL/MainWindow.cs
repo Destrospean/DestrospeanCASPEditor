@@ -105,8 +105,7 @@ public partial class MainWindow : Window
                 vec4 signA = vec4(1.0, -1.0, 1.0, -1.0);
                 vec4 signB = vec4(-1.0, 1.0, -1.0, 1.0);
                 mat4 inv = mat4(i0 * signA, i1 * signB, i2 * signA, i3 * signB);
-                vec4 row0 = inv[0];
-                float det = dot(m[0], row0);
+                float det = dot(m[0], inv[0]);
                 return inv * (1.0 / det);
             }
 
