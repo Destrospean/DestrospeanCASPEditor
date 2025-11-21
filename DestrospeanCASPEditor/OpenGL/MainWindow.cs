@@ -211,8 +211,7 @@ public partial class MainWindow : Window
  
             void main()
             {
-                vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
+                vec4 texcolor = texture2D(maintexture, f_texcoord);
                 if (texcolor.a < 0.1)
                 {{
                     discard;
@@ -269,9 +268,12 @@ public partial class MainWindow : Window
 
             void main()
             {{
-                vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
                 vec3 n = normalize(v_norm);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
+                vec4 texcolor = texture2D(maintexture, f_texcoord);
+                if (texcolor.a < 0.1)
+                {{
+                    discard;
+                }}
                 vec4 light_ambient = light_ambientIntensity * vec4(light_color, 0.0);
                 vec4 light_diffuse = light_diffuseIntensity * vec4(light_color, 0.0);
                 gl_FragColor = texcolor * light_ambient * vec4(material_ambient, 0.0);
@@ -319,10 +321,13 @@ public partial class MainWindow : Window
 
             void main()
             {{
-                gl_FragColor = vec4(0, 0, 0, 1);
-                vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
                 vec3 n = normalize(v_norm);
+                vec4 texcolor = texture2D(maintexture, f_texcoord);
+                if (texcolor.a < 0.1)
+                {{
+                    discard;
+                }}
+                gl_FragColor = vec4(0, 0, 0, 1);
                 for (int i = 0; i < 5; i++)
                 {{
                     if (lights[i].color == vec3(0, 0, 0))
@@ -376,14 +381,13 @@ public partial class MainWindow : Window
 
             void main()
             {{
-                vec2 flipped_texcoord = vec2(f_texcoord.x, 1.0 - f_texcoord.y);
-                vec4 texcolor = texture2D(maintexture, flipped_texcoord);
+                vec3 n = normalize(v_norm);
+                vec4 texcolor = texture2D(maintexture, f_texcoord);
                 if (texcolor.a < 0.1)
                 {{
                     discard;
                 }}
                 gl_FragColor = vec4(0, 0, 0, 1);
-                vec3 n = normalize(v_norm);
                 for (int i = 0; i < 5; i++)
                 {{
                     if (lights[i].color == vec3(0, 0, 0))
@@ -414,7 +418,7 @@ public partial class MainWindow : Window
                     float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                     if (hasSpecularMap)
                     {{
-                        material_specularreflection = material_specularreflection * texture2D(map_specular, flipped_texcoord).r;
+                        material_specularreflection = material_specularreflection * texture2D(map_specular, f_texcoord).r;
                     }}
                     if (lights[i].type != 1 || inCone)
                     {{
@@ -472,7 +476,7 @@ public partial class MainWindow : Window
                     var uvElement = vertexElement as GEOM.UVElement;
                     if (uvElement != null)
                     {
-                        textureCoordinates.Add(new Vector2(uvElement.U, 1 - uvElement.V));
+                        textureCoordinates.Add(new Vector2(uvElement.U, uvElement.V));
                     }
                 }
             }
