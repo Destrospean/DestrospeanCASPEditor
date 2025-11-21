@@ -105,8 +105,7 @@ public partial class MainWindow : Window
                 vec4 signA = vec4(1.0, -1.0, 1.0, -1.0);
                 vec4 signB = vec4(-1.0, 1.0, -1.0, 1.0);
                 mat4 inv = mat4(i0 * signA, i1 * signB, i2 * signA, i3 * signB);
-                float det = dot(m[0], inv[0]);
-                return inv * (1.0 / det);
+                return inv * 1.0 / dot(m[0], inv[0]);
             }
 
             mat3 transpose(mat3 m)
@@ -278,9 +277,9 @@ public partial class MainWindow : Window
                 vec4 light_diffuse = light_diffuseIntensity * vec4(light_color, 0.0);
                 gl_FragColor = texcolor * light_ambient * vec4(material_ambient, 0.0);
                 float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                gl_FragColor = gl_FragColor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
+                gl_FragColor = gl_FragColor + light_diffuse * texcolor * vec4(material_diffuse, 0.0) * lambertmaterial_diffuse;
                 vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
-                vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
+                vec3 viewvec = normalize(vec3(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)) - v_pos); 
                 float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                 gl_FragColor = gl_FragColor + vec4(material_specular * light_color, 0.0) * material_specularreflection;
             }}", backportedFunctions)));
@@ -326,10 +325,10 @@ public partial class MainWindow : Window
                 {{
                     discard;
                 }}
-                gl_FragColor = vec4(0, 0, 0, 1);
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
                 for (int i = 0; i < 5; i++)
                 {{
-                    if (lights[i].color == vec3(0, 0, 0))
+                    if (lights[i].color == vec3(0.0, 0.0, 0.0))
                     {{
                         continue;
                     }}
@@ -338,9 +337,9 @@ public partial class MainWindow : Window
                     vec4 light_diffuse = lights[i].diffuseIntensity * vec4(lights[i].color, 0.0);
                     gl_FragColor = gl_FragColor + texcolor * light_ambient * vec4(material_ambient, 0.0);
                     float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
-                    gl_FragColor = gl_FragColor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
+                    gl_FragColor = gl_FragColor + light_diffuse * texcolor * vec4(material_diffuse, 0.0) * lambertmaterial_diffuse;
                     vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
-                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
+                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)) - v_pos); 
                     float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                     gl_FragColor = gl_FragColor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                 }}
@@ -386,15 +385,15 @@ public partial class MainWindow : Window
                 {{
                     discard;
                 }}
-                gl_FragColor = vec4(0, 0, 0, 1);
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
                 for (int i = 0; i < 5; i++)
                 {{
-                    if (lights[i].color == vec3(0, 0, 0))
+                    if (lights[i].color == vec3(0.0, 0.0, 0.0))
                     {{
                         continue;
                     }}
                     vec3 lightvec = normalize(lights[i].position - v_pos);
-                    vec4 lightcolor = vec4(0, 0, 0, 1);
+                    vec4 lightcolor = vec4(0.0, 0.0, 0.0, 1.0);
                     bool inCone = false;
                     if (lights[i].type == 1 && degrees(acos(dot(lightvec, lights[i].direction))) < lights[i].coneAngle)
                     {{
@@ -410,10 +409,10 @@ public partial class MainWindow : Window
                     float lambertmaterial_diffuse = max(dot(n, lightvec), 0.0);
                     if (lights[i].type != 1 || inCone)
                     {{
-                        lightcolor = lightcolor + (light_diffuse * texcolor * vec4(material_diffuse, 0.0)) * lambertmaterial_diffuse;
+                        lightcolor = lightcolor + light_diffuse * texcolor * vec4(material_diffuse, 0.0) * lambertmaterial_diffuse;
                     }}
                     vec3 reflectionvec = normalize(reflect(-lightvec, v_norm));
-                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0, 0, 0, 1)) - v_pos); 
+                    vec3 viewvec = normalize(vec3(inverse(view) * vec4(0.0, 0.0, 0.0, 1.0)) - v_pos); 
                     float material_specularreflection = max(dot(v_norm, lightvec), 0.0) * pow(max(dot(reflectionvec, viewvec), 0.0), material_specExponent);
                     if (hasSpecularMap)
                     {{
@@ -424,7 +423,7 @@ public partial class MainWindow : Window
                         lightcolor = lightcolor + vec4(material_specular * lights[i].color, 0.0) * material_specularreflection;
                     }}
                     float distancefactor = distance(lights[i].position, v_pos);
-                    float attenuation = 1.0 / (1.0 + (distancefactor * lights[i].linearAttenuation) + (distancefactor * distancefactor * lights[i].quadraticAttenuation));
+                    float attenuation = 1.0 / (1.0 + distancefactor * lights[i].linearAttenuation + distancefactor * distancefactor * lights[i].quadraticAttenuation);
                     gl_FragColor = gl_FragColor + lightcolor * attenuation;
                 }}
             }}", backportedFunctions)));
