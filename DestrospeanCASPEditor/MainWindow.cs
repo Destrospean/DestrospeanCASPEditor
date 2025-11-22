@@ -382,7 +382,7 @@ public partial class MainWindow : Window
         }
         Resize(DefaultWidth, DefaultHeight);
         Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
-        AllowShrink = Platform.IsRunningUnderWine;
+        Resizable = !Platform.IsRunningUnderWine;
     }
 
     public void ClearTemporaryData()
@@ -642,17 +642,5 @@ public partial class MainWindow : Window
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)
     {
-    }
-
-    protected void OnSizeAllocated(object sender, SizeAllocatedArgs a)
-    {
-        if (Platform.IsRunningUnderWine && (a.Allocation.Height < DefaultHeight - 1 || a.Allocation.Width < DefaultWidth))
-        {
-            int x, y;
-            GetPosition(out x, out y);
-            ReshowWithInitialSize();
-            Move(x, y);
-            Resize(a.Allocation.Width < DefaultWidth ? DefaultWidth : a.Allocation.Width, a.Allocation.Height < DefaultHeight - 1 ? DefaultHeight : a.Allocation.Height);
-        }
     }
 }

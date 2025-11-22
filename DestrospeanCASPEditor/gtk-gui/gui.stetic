@@ -108,7 +108,6 @@
     <property name="DefaultWidth">1080</property>
     <property name="DefaultHeight">540</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
-    <signal name="SizeAllocated" handler="OnSizeAllocated" />
     <child>
       <widget class="Gtk.HPaned" id="MainPane">
         <property name="MemberName" />
