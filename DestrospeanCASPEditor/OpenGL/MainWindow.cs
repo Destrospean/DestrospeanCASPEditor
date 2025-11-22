@@ -592,7 +592,7 @@ public partial class MainWindow : Window
         }
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
         {
-            if (mKeysHeld.Contains(Gdk.Key.Control_L))
+            if (mKeysHeld.Contains(Gdk.Key.Alt_L))
             {
                 mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
                 mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
