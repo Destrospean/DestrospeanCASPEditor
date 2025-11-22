@@ -595,7 +595,7 @@ public partial class MainWindow : Window
         fileChooserDialog.Destroy();
     }
 
-    [GLib.ConnectBeforeAttribute]
+    [GLib.ConnectBefore]
     protected void OnResourceTreeViewButtonPress(object o, ButtonPressEventArgs args)
     {
         TreeViewColumn column;

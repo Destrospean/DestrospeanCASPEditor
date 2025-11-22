@@ -32,6 +32,16 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             Orientation.Y = Math.Max(Math.Min(Orientation.Y + y, (float)Math.PI / 2 - .1f), (float)-Math.PI / 2 + .1f);
         }
 
+        public void AddTranslation(float x, float y, float z)
+        {
+            x *= MouseSensitivity;
+            y *= MouseSensitivity;
+            z *= MouseSensitivity;
+            Position.X += x;
+            Position.Y -= y;
+            Position.Z += z;
+        }
+
         public void Move(float x, float y, float z)
         {
             Vector3 offset = new Vector3(),

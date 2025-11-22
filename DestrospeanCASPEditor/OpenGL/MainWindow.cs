@@ -30,6 +30,8 @@ public partial class MainWindow : Window
 
     int[] mIndexData;
 
+    List<Gdk.Key> mKeysHeld = new List<Gdk.Key>();
+
     Vector2 mLastMousePosition;
 
     List<Light> mLights = new List<Light>();
@@ -499,6 +501,10 @@ public partial class MainWindow : Window
         mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
         mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
         mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
+        mGLWidget.KeyPressEvent += (o, args) =>
+            {
+                Console.WriteLine(args.Event.KeyValue);
+            };
         mGLWidget.MotionNotifyEvent += (o, args) =>
             {
                 if (args.Event.Device.Source == Gdk.InputSource.Mouse)
@@ -529,6 +535,11 @@ public partial class MainWindow : Window
                 NextState = NextStateOptions.UpdateModels;
                 GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
             };
+        KeyPressEvent += OnKeyPress;
+        KeyReleaseEvent += (o, args) =>
+            {
+                mKeysHeld.RemoveAll(x => x == args.Event.Key);
+            };
     }
 
     void ProcessInput()
@@ -537,15 +548,22 @@ public partial class MainWindow : Window
         mLastMousePosition += delta;
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
         {
-            mCamera.AddRotation(delta.X, delta.Y);
+            if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+            {
+                mCamera.AddRotation(delta.X, delta.Y);
+            }
+            else
+            {
+                mCamera.AddTranslation(delta.X, delta.Y, 0);
+            }
         }
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
         {
-            mCamera.Move(delta.X, 0, delta.Y);
+            mCamera.AddRotation(delta.X, delta.Y);
         }
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
         {
-            mCamera.Move(delta.X, delta.Y, 0);
+            mCamera.AddTranslation(delta.X, 0, delta.Y);
         }
         mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
@@ -609,6 +627,16 @@ public partial class MainWindow : Window
             return true;
         }
         return false;
+    }
+
+    [GLib.ConnectBefore]
+    protected void OnKeyPress(object sender, Gtk.KeyPressEventArgs args)
+    {
+        if (!mKeysHeld.Contains(args.Event.Key))
+        {
+            mKeysHeld.Add(args.Event.Key);
+        }
+        //args.RetVal = true;
     }
 
     protected void OnRenderFrame()
