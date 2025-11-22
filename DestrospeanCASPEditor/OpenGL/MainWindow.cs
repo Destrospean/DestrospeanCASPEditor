@@ -497,8 +497,8 @@ public partial class MainWindow : Window
                 WidthRequest = Image.WidthRequest
             };
         mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
-        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld += (byte)Math.Pow(2, args.Event.Button - 1);
-        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld -= (byte)Math.Pow(2, args.Event.Button - 1);
+        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
+        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
         mGLWidget.MotionNotifyEvent += (o, args) =>
             {
                 if (args.Event.Device.Source == Gdk.InputSource.Mouse)
