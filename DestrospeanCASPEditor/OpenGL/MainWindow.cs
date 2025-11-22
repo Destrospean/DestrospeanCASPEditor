@@ -566,13 +566,18 @@ public partial class MainWindow : Window
         {
             if (mKeysHeld.Contains(Gdk.Key.Control_L))
             {
-                //mCamera.AddRotation(delta.X, delta.Y);
-                mCurrentRotation.X += delta.Y * mCamera.MouseSensitivity;
-                mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+                if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                {
+                    mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                    mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+                }
+                else
+                {
+                    mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+                }
             }
             else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
             {
-                //mCamera.AddTranslation(delta.X, 0, delta.Y);
                 mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
             }
             else
@@ -580,11 +585,22 @@ public partial class MainWindow : Window
                 mCamera.AddTranslation(delta.X, -delta.Y, 0);
             }
         }
+        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
+        {
+            mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+            mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+        }
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
         {
-            //mCamera.AddRotation(delta.X, delta.Y);
-            mCurrentRotation.X += delta.Y * mCamera.MouseSensitivity;
-            mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+            if (mKeysHeld.Contains(Gdk.Key.Control_L))
+            {
+                mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+            }
+            else
+            {
+                mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+            }
         }
         mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
