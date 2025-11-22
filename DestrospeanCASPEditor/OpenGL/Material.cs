@@ -21,7 +21,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         {
         }
 
-        public Material(string geometryResource, Vector3 ambient, Vector3 diffuse, Vector3 specular, float specularExponent = 1, float opacity = 1)
+        public Material(Vector3 ambient, Vector3 diffuse, Vector3 specular, float specularExponent = 1, float opacity = 1)
         {
             AmbientColor = ambient;
             DiffuseColor = diffuse;
