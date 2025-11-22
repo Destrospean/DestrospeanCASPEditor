@@ -26,13 +26,15 @@ public partial class MainWindow : Window
 
     GLWidget mGLWidget;
 
-    int mIBOElements, mMouseButtonHeld;
+    int mIBOElements;
 
     int[] mIndexData;
 
     Vector2 mLastMousePosition;
 
     List<Light> mLights = new List<Light>();
+
+    MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
 
     float mMouseX,
     mMouseY,
@@ -51,6 +53,15 @@ public partial class MainWindow : Window
     public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
 
     public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
+
+    [Flags]
+    enum MouseButtonsHeld : byte
+    {
+        None,
+        Left,
+        Middle,
+        Right = 4,
+    }
 
     void InitProgram()
     {
@@ -486,8 +497,8 @@ public partial class MainWindow : Window
                 WidthRequest = Image.WidthRequest
             };
         mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
-        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonHeld = (int)args.Event.Button;
-        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonHeld = -1;
+        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld += (byte)Math.Pow(2, args.Event.Button - 1);
+        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld -= (byte)Math.Pow(2, args.Event.Button - 1);
         mGLWidget.MotionNotifyEvent += (o, args) =>
             {
                 if (args.Event.Device.Source == Gdk.InputSource.Mouse)
@@ -524,17 +535,17 @@ public partial class MainWindow : Window
     {
         var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
         mLastMousePosition += delta;
-        switch (mMouseButtonHeld)
+        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
         {
-            case 1:
-                mCamera.AddRotation(delta.X, delta.Y);
-                break;
-            case 2:
-                mCamera.Move(delta.X, 0, delta.Y);
-                break;
-            case 3:
-                mCamera.Move(delta.X, delta.Y, 0);
-                break;
+            mCamera.AddRotation(delta.X, delta.Y);
+        }
+        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
+        {
+            mCamera.Move(delta.X, 0, delta.Y);
+        }
+        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
+        {
+            mCamera.Move(delta.X, delta.Y, 0);
         }
         mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
@@ -613,33 +624,64 @@ public partial class MainWindow : Window
         {
             GL.BindTexture(TextureTarget.Texture2D, volume.TextureID);
             GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref volume.ModelViewProjectionMatrix);
+            if (mShaders[mActiveShader].GetUniform("light_ambientIntensity") != -1)
+            {
+                GL.Uniform1(mShaders[mActiveShader].GetUniform("light_ambientIntensity"), mLights[0].AmbientIntensity);
+            }
+            if (mShaders[mActiveShader].GetUniform("light_color") != -1)
+            {
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("light_color"), ref mLights[0].Color);
+            }
+            if (mShaders[mActiveShader].GetUniform("light_diffuseIntensity") != -1)
+            {
+                GL.Uniform1(mShaders[mActiveShader].GetUniform("light_diffuseIntensity"), mLights[0].DiffuseIntensity);
+            }
+            if (mShaders[mActiveShader].GetUniform("light_position") != -1)
+            {
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("light_position"), ref mLights[0].Position);
+            }
+            for (var i = 0; i < Math.Min(mLights.Count, kMaxLights); i++)
+            {
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity"), mLights[i].AmbientIntensity);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].color") != -1)
+                {
+                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].color"), ref mLights[i].Color);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle"), mLights[i].ConeAngle);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity"), mLights[i].DiffuseIntensity);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].direction") != -1)
+                {
+                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].direction"), ref mLights[i].Direction);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation"), mLights[i].LinearAttenuation);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].position") != -1)
+                {
+                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].position"), ref mLights[i].Position);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation"), mLights[i].QuadraticAttenuation);
+                }
+                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].type") != -1)
+                {
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].type"), (int)mLights[i].Type);
+                }
+            }
             if (mShaders[mActiveShader].GetAttribute("maintexture") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), volume.TextureID);
-            }
-            if (mShaders[mActiveShader].GetUniform("view") != -1)
-            {
-                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("view"), false, ref mViewMatrix);
-            }
-            if (mShaders[mActiveShader].GetUniform("model") != -1)
-            {
-                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("model"), false, ref volume.ModelMatrix);
-            }
-            if (mShaders[mActiveShader].GetUniform("material_ambient") != -1)
-            {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_ambient"), ref volume.Material.AmbientColor);
-            }
-            if (mShaders[mActiveShader].GetUniform("material_diffuse") != -1)
-            {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_diffuse"), ref volume.Material.DiffuseColor);
-            }
-            if (mShaders[mActiveShader].GetUniform("material_specular") != -1)
-            {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_specular"), ref volume.Material.SpecularColor);
-            }
-            if (mShaders[mActiveShader].GetUniform("material_specExponent") != -1)
-            {
-                GL.Uniform1(mShaders[mActiveShader].GetUniform("material_specExponent"), volume.Material.SpecularExponent);
             }
             if (mShaders[mActiveShader].GetUniform("map_specular") != -1)
             {
@@ -667,60 +709,29 @@ public partial class MainWindow : Window
                     GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 0);
                 }
             }
-            if (mShaders[mActiveShader].GetUniform("light_position") != -1)
+            if (mShaders[mActiveShader].GetUniform("material_ambient") != -1)
             {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("light_position"), ref mLights[0].Position);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_ambient"), ref volume.Material.AmbientColor);
             }
-            if (mShaders[mActiveShader].GetUniform("light_color") != -1)
+            if (mShaders[mActiveShader].GetUniform("material_diffuse") != -1)
             {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("light_color"), ref mLights[0].Color);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_diffuse"), ref volume.Material.DiffuseColor);
             }
-            if (mShaders[mActiveShader].GetUniform("light_diffuseIntensity") != -1)
+            if (mShaders[mActiveShader].GetUniform("material_specExponent") != -1)
             {
-                GL.Uniform1(mShaders[mActiveShader].GetUniform("light_diffuseIntensity"), mLights[0].DiffuseIntensity);
+                GL.Uniform1(mShaders[mActiveShader].GetUniform("material_specExponent"), volume.Material.SpecularExponent);
             }
-            if (mShaders[mActiveShader].GetUniform("light_ambientIntensity") != -1)
+            if (mShaders[mActiveShader].GetUniform("material_specular") != -1)
             {
-                GL.Uniform1(mShaders[mActiveShader].GetUniform("light_ambientIntensity"), mLights[0].AmbientIntensity);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_specular"), ref volume.Material.SpecularColor);
             }
-            for (int i = 0; i < Math.Min(mLights.Count, kMaxLights); i++)
+            if (mShaders[mActiveShader].GetUniform("model") != -1)
             {
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].position") != -1)
-                {
-                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].position"), ref mLights[i].Position);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].color") != -1)
-                {
-                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].color"), ref mLights[i].Color);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].diffuseIntensity"), mLights[i].DiffuseIntensity);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].ambientIntensity"), mLights[i].AmbientIntensity);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].direction") != -1)
-                {
-                    GL.Uniform3(mShaders[mActiveShader].GetUniform("lights[" + i + "].direction"), ref mLights[i].Direction);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].type") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].type"), (int)mLights[i].Type);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].coneAngle"), mLights[i].ConeAngle);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].linearAttenuation"), mLights[i].LinearAttenuation);
-                }
-                if (mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation") != -1)
-                {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("lights[" + i + "].quadraticAttenuation"), mLights[i].QuadraticAttenuation);
-                }
+                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("model"), false, ref volume.ModelMatrix);
+            }
+            if (mShaders[mActiveShader].GetUniform("view") != -1)
+            {
+                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("view"), false, ref mViewMatrix);
             }
             GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
             indexAt += volume.IndexCount;

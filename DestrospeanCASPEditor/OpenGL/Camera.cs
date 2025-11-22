@@ -17,9 +17,9 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             {
                 return Matrix4.LookAt(Position, Position + new Vector3
                     {
-                        X = (float)(Math.Sin((float)Orientation.X) * Math.Cos((float)Orientation.Y)),
-                        Y = (float)Math.Sin((float)Orientation.Y),
-                        Z = (float)(Math.Cos((float)Orientation.X) * Math.Cos((float)Orientation.Y))
+                        X = (float)(Math.Sin(Orientation.X) * Math.Cos(Orientation.Y)),
+                        Y = (float)Math.Sin(Orientation.Y),
+                        Z = (float)(Math.Cos(Orientation.X) * Math.Cos(Orientation.Y))
                     }, Vector3.UnitY);
             }
         }
@@ -35,7 +35,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         public void Move(float x, float y, float z)
         {
             Vector3 offset = new Vector3(),
-            forward = new Vector3((float)Math.Sin((float)Orientation.X), 0, (float)Math.Cos((float)Orientation.X)),
+            forward = new Vector3((float)Math.Sin(Orientation.X), 0, (float)Math.Cos(Orientation.X)),
             right = new Vector3(-forward.Z, 0, forward.X);
             offset += x * right;
             offset += y * forward;
