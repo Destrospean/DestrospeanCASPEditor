@@ -38,7 +38,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             y *= MouseSensitivity;
             z *= MouseSensitivity;
             Position.X += x;
-            Position.Y -= y;
+            Position.Y += y;
             Position.Z += z;
         }
 

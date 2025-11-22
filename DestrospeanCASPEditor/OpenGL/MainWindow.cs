@@ -22,6 +22,8 @@ public partial class MainWindow : Window
 
     Vector3[] mColorData, mNormalData, mVertexData;
 
+    Vector3 mCurrentRotation = Vector3.Zero;
+
     bool mGLInitialized = false;
 
     GLWidget mGLWidget;
@@ -38,7 +40,8 @@ public partial class MainWindow : Window
 
     MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
 
-    float mMouseX,
+    float mFOV = MathHelper.DegreesToRadians(30),
+    mMouseX,
     mMouseY,
     mTime = 0;
 
@@ -375,16 +378,16 @@ public partial class MainWindow : Window
                 }}
             }}", backportedFunctions)));
         mActiveShader = Platform.IsWindows && Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
-        mLights.Add(new Light(new Vector3(0, 1, 4), new Vector3(1, 1, 1))
+        mLights.Add(new Light(new Vector3(0, 1, 3), Vector3.One)
             {
                 QuadraticAttenuation = .05f
             });
-        mLights.Add(new Light(new Vector3(0, 1, -4), new Vector3(1, 1, 1))
+        mLights.Add(new Light(new Vector3(0, 1, -3), Vector3.One)
             {
                 Direction = new Vector3(0, 0, -1),
                 QuadraticAttenuation = .05f
             });
-        mCamera.Position = new Vector3(0, 7f / 6, 5f / 3);
+        mCamera.Position = new Vector3(0, 1, 4);
     }
 
     void LoadGEOMs(CASPart casPart)
@@ -415,7 +418,7 @@ public partial class MainWindow : Window
                             continue;
                         }
                         vertices.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
-                        colors.Add(new Vector3(1, 1, 1));
+                        colors.Add(Vector3.One);
                         continue;
                     }
                     var uvElement = vertexElement as GEOM.UVElement;
@@ -458,13 +461,13 @@ public partial class MainWindow : Window
                 material = new Material
                     {
 #pragma warning disable 0618
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : new Vector3(1, 1, 1),
+                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : Vector3.One,
 #pragma warning restore 0618
                         AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : new Vector3(1, 1, 1),
+                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : Vector3.One,
                         DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
                         NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : new Vector3(1, 1, 1),
+                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : Vector3.One,
                         SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
                     };
                 Materials.Add(key, material);
@@ -498,12 +501,25 @@ public partial class MainWindow : Window
                 HeightRequest = Image.HeightRequest,
                 WidthRequest = Image.WidthRequest
             };
-        mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask));
+        mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask | Gdk.EventMask.ScrollMask));
         mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
         mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
         mGLWidget.KeyPressEvent += (o, args) =>
             {
                 Console.WriteLine(args.Event.KeyValue);
+            };
+        mGLWidget.ScrollEvent += (o, args) =>
+            {
+                var delta = MathHelper.DegreesToRadians(1);
+                switch ((int)args.Event.Direction)
+                {
+                    case 0:
+                        mFOV -= mFOV - delta > 0 ? delta : 0;
+                        break;
+                    case 1:
+                        mFOV += mFOV + delta <= MathHelper.DegreesToRadians(110) ? delta : 0;
+                        break;
+                }
             };
         mGLWidget.MotionNotifyEvent += (o, args) =>
             {
@@ -548,22 +564,27 @@ public partial class MainWindow : Window
         mLastMousePosition += delta;
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
         {
-            if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+            if (mKeysHeld.Contains(Gdk.Key.Control_L))
             {
-                mCamera.AddRotation(delta.X, delta.Y);
+                //mCamera.AddRotation(delta.X, delta.Y);
+                mCurrentRotation.X += delta.Y * mCamera.MouseSensitivity;
+                mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+            }
+            else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+            {
+                //mCamera.AddTranslation(delta.X, 0, delta.Y);
+                mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
             }
             else
             {
-                mCamera.AddTranslation(delta.X, delta.Y, 0);
+                mCamera.AddTranslation(delta.X, -delta.Y, 0);
             }
-        }
-        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
-        {
-            mCamera.AddRotation(delta.X, delta.Y);
         }
         if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
         {
-            mCamera.AddTranslation(delta.X, 0, delta.Y);
+            //mCamera.AddRotation(delta.X, delta.Y);
+            mCurrentRotation.X += delta.Y * mCamera.MouseSensitivity;
+            mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
         }
         mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
@@ -815,8 +836,9 @@ public partial class MainWindow : Window
         }
         foreach (var volume in mObjects)
         {
+            volume.Rotation = mCurrentRotation;
             volume.CalculateModelMatrix();
-            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(1, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
+            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(mFOV, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
             volume.ModelViewProjectionMatrix = volume.ModelMatrix * volume.ViewProjectionMatrix;
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);

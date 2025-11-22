@@ -129,7 +129,9 @@ public partial class MainWindow : Window
         resetViewButton.Clicked += (sender, e) =>
             {
                 mCamera.Orientation = new OpenTK.Vector3((float)Math.PI, 0, 0);
-                mCamera.Position = new OpenTK.Vector3(0, 7f / 6, 5f / 3);
+                mCamera.Position = new OpenTK.Vector3(0, 1, 4);
+                mCurrentRotation = OpenTK.Vector3.Zero;
+                mFOV = OpenTK.MathHelper.DegreesToRadians(30);
             };
         flagNotebook.SwitchPage += (o, args) =>
             {
