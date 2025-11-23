@@ -161,8 +161,6 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public readonly string Name;
-
             public override IPackage ParentPackage
             {
                 get
@@ -206,9 +204,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public readonly Preset Preset;
 
+            public readonly string SlotName;
+
             public Pattern(Preset preset, XmlNode patternXmlNode) : base()
             {
-                Name = patternXmlNode.Attributes["variable"].Value;
+                SlotName = patternXmlNode.Attributes["variable"].Value;
                 PatternInfo = new PatternInfo
                     {
                         Name = patternXmlNode.Attributes["name"].Value
@@ -478,19 +478,19 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public string[] PatternNames
-            {
-                get
-                {
-                    return mInternal.PatternNames;
-                }
-            }
-
             public List<Pattern> Patterns
             {
                 get
                 {
                     return mInternal.Patterns;
+                }
+            }
+
+            public string[] PatternSlotNames
+            {
+                get
+                {
+                    return mInternal.PatternSlotNames;
                 }
             }
 
@@ -676,7 +676,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                             }
                         }
-                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.Name + " Enabled")) ? x.PatternImage : null));
+                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.SlotName + " Enabled")) ? x.PatternImage : null));
                         if (maskArray != null)
                         {
                             if (multiplier != null)
@@ -716,15 +716,15 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
 
-                public string[] PatternNames
+                public readonly List<Pattern> Patterns;
+
+                public string[] PatternSlotNames
                 {
                     get
                     {
-                        return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.Name)).ToArray();
+                        return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.SlotName)).ToArray();
                     }
                 }
-
-                public readonly List<Pattern> Patterns;
 
                 public readonly Preset Preset;
 
@@ -811,6 +811,56 @@ namespace Destrospean.DestrospeanCASPEditor
                         mInternal.Texture = mInternal.NewTexture;
                         MainWindow.Singleton.ModelsNeedUpdated = true;
                     }).Start();
+            }
+
+            public void ReplacePattern(string patternSlotName, string patternResourceKey)
+            {
+                int i = 0,
+                patternIndex = Patterns.FindIndex(x => x.SlotName == patternSlotName);
+                var evaluated = ParentPackage.EvaluateResourceKey(patternResourceKey);
+                var patternXmlDocument = new XmlDocument();
+                patternXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+                foreach (var presetChild in mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate").ChildNodes)
+                {
+                    var presetChildNode = (XmlNode)presetChild;
+                    if (presetChildNode.Name == "pattern" && i++ == patternIndex)
+                    {
+                        presetChildNode.Attributes["reskey"].Value = patternResourceKey;
+                        for (var j = presetChildNode.ChildNodes.Count - 1; j > -1; j--)
+                        {
+                            switch (presetChildNode.ChildNodes[j].Attributes["key"].Value.ToLower())
+                            {
+                                case "assetroot":
+                                case "filename":
+                                    break;
+                                default:
+                                    presetChildNode.RemoveChild(presetChildNode.ChildNodes[j]);
+                                    break;
+                            }
+                        }
+                        foreach (var patternChild in patternXmlDocument.SelectSingleNode("complate").ChildNodes)
+                        {
+                            var patternChildNode = (XmlNode)patternChild;
+                            if (patternChildNode.Name == "variables")
+                            {
+                                foreach (var patternGrandchild in patternChildNode.ChildNodes)
+                                {
+                                    var patternGrandchildNode = (XmlNode)patternGrandchild;
+                                    if (patternGrandchildNode.Name == "param")
+                                    {
+                                        var defaultValue = patternGrandchildNode.Attributes["default"].Value;
+                                        var valueElement = mXmlDocument.CreateElement("value");
+                                        valueElement.SetAttribute("key", patternGrandchildNode.Attributes["name"].Value);
+                                        valueElement.SetAttribute("value", patternGrandchildNode.Attributes["type"].Value == "texture" && defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : patternGrandchildNode.Attributes["default"].Value);
+                                        presetChildNode.AppendChild(valueElement);
+                                    }
+                                }
+                            }
+                        }
+                        Patterns[patternIndex] = new Pattern(this, presetChildNode);
+                        break;
+                    }
+                }
             }
 
             public override void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)

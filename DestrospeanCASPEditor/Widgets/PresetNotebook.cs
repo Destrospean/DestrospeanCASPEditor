@@ -128,7 +128,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 var changePatternDialog = new ChangePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
                                 if (changePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
-                                    var key = changePatternDialog.ResourceKey;
+                                    ((CASPart.Preset)complate).ReplacePattern(propertyName, changePatternDialog.ResourceKey);
                                     label.Text = changePatternDialog.PatternPath;
                                     complate[propertyName] = label.Text;
                                 }
@@ -230,7 +230,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     };
                 scrolledWindow.AddWithViewport(table);
                 var pattern = complate as CASPart.Pattern;
-                subNotebook.AppendPage(scrolledWindow, new Label(pattern == null ? "Configuration" : pattern.Name));
+                subNotebook.AppendPage(scrolledWindow, new Label(pattern == null ? "Configuration" : pattern.SlotName));
                 AddPropertiesToTable(table, complate);
             }
             ShowAll();
