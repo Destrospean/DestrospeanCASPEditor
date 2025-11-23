@@ -264,8 +264,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 hsvColors = new List<float[]>(),
                 hsvShift = new List<float[]>(),
                 rgbColors = new List<float[]>();
-                float[] hsvShiftBackground = null,
-                solidColor = null;
+                float[] hsvShiftBackground = null;
                 foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                 {
                     string key = propertyXmlNodeKvp.Key.ToLower(),
@@ -284,20 +283,12 @@ namespace Destrospean.DestrospeanCASPEditor
                     else if (key.StartsWith("color"))
                     {
                         var color = GetColor(value);
-                        color = new float[]
+                        rgbColors.Add(new float[]
                             {
                                 color[0],
                                 color[1],
                                 color[2]
-                            };
-                        if (PatternInfo.Name.Contains("solidColor") || PatternInfo.Name.Contains("Flat Color"))
-                        {
-                            solidColor = color;
-                        }
-                        else
-                        {
-                            rgbColors.Add(color);
-                        }
+                            });
                     }
                     else if (key.StartsWith("base h"))
                     {
@@ -431,7 +422,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         Name = PatternInfo.Name,
                         RGBColors = rgbColors.ToArray(),
                         RGBMask = rgbMask,
-                        SolidColor = solidColor
+                        SolidColor = rgbColors.Count == 1 ? rgbColors[0] : null
                     };
                 if (regeneratePresetTexture)
                 {
@@ -825,6 +816,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     var presetChildNode = (XmlNode)presetChild;
                     if (presetChildNode.Name == "pattern" && i++ == patternIndex)
                     {
+                        presetChildNode.Attributes["name"].Value = patternXmlDocument.SelectSingleNode("complate").Attributes["name"].Value;
                         presetChildNode.Attributes["reskey"].Value = patternResourceKey;
                         for (var j = presetChildNode.ChildNodes.Count - 1; j > -1; j--)
                         {

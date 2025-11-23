@@ -46,22 +46,19 @@
         {
             get
             {
-                if (Name.Contains("solidColor") || Name.Contains("Flat Color"))
+                if (SolidColor != null)
                 {
                     return PatternType.Solid;
                 }
-                else if (Name.Contains("None"))
-                {
-                    return PatternType.None;
-                }
-                else if (HSVBaseBG != null || HSVBase != null || HSVBG != null || HSV != null || HSVShiftBG != null || HSVShift != null)
-                {
-                    return PatternType.HSV;
-                }
-                else
+                if (RGBColors.Length > 1)
                 {
                     return PatternType.Colored;
                 }
+                if (HSVBaseBG != null || HSVBase != null || HSVBG != null || HSV != null || HSVShiftBG != null || HSVShift != null)
+                {
+                    return PatternType.HSV;
+                }
+                return PatternType.None;
             }
         }
     }
