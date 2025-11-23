@@ -129,8 +129,18 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 if (changePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
                                     ((CASPart.Preset)complate).ReplacePattern(propertyName, changePatternDialog.ResourceKey);
-                                    label.Text = changePatternDialog.PatternPath;
-                                    complate[propertyName] = label.Text;
+                                    complate[propertyName] = changePatternDialog.PatternPath;
+                                    for (int i = 0; i < (mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).NPages; i++)
+                                    {
+                                        var patternTable = (Table)((Viewport)((ScrolledWindow)(mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).GetNthPage(i)).Child).Child;
+                                        foreach (var child in patternTable.Children)
+                                        {
+                                            patternTable.Remove(child);
+                                        }
+                                        patternTable.NRows = 1;
+                                        AddPropertiesToTable(patternTable, i == 0 ? complate : ((CASPart.Preset)complate).Patterns[i - 1]);
+                                        patternTable.ShowAll();
+                                    }
                                 }
                                 changePatternDialog.Destroy();
                             };
