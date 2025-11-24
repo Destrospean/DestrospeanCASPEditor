@@ -130,7 +130,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 {
                                     ((CASPart.Preset)complate).ReplacePattern(propertyName, changePatternDialog.ResourceKey);
                                     complate[propertyName] = changePatternDialog.PatternPath;
-                                    for (int i = 0; i < (mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).NPages; i++)
+                                    for (var i = 0; i < (mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).NPages; i++)
                                     {
                                         var patternTable = (Table)((Viewport)((ScrolledWindow)(mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).GetNthPage(i)).Child).Child;
                                         foreach (var child in patternTable.Children)
