@@ -79,7 +79,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
             }
-            System.Action setPatternKeysAndNames = () =>
+            System.Action setPatternKeysAndPaths = () =>
                 {
                     patternKeys.Clear();
                     patternPaths.Clear();
@@ -116,10 +116,10 @@ namespace Destrospean.DestrospeanCASPEditor
             FieldComboBox.Model = categoryListStore;
             FieldComboBox.PackStart(categoryCell, true);
             FieldComboBox.Active = 0;
-            FieldComboBox.Changed += (sender, e) => setPatternKeysAndNames();
+            FieldComboBox.Changed += (sender, e) => setPatternKeysAndPaths();
             DataTypeComboBox.Model = patternNameListStore;
             DataTypeComboBox.PackStart(patternNameCell, true);
-            setPatternKeysAndNames();
+            setPatternKeysAndPaths();
             Response += (o, args) =>
                 {
                     if (args.ResponseId == ResponseType.Ok)
