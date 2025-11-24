@@ -84,18 +84,24 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternKeys.Clear();
                     patternPaths.Clear();
                     patternNameListStore.Clear();
-                    var patternKeysAndNames = patternsByCategory[categories[FieldComboBox.Active == -1 ? 0 : FieldComboBox.Active]];
-                    for (var i = 0; i < patternKeysAndNames.Count; i += 2)
+                    var patternKeysAndPaths = patternsByCategory[categories[FieldComboBox.Active == -1 ? 0 : FieldComboBox.Active]];
+                    var patternNamesKeysPaths = new List<string[]>();
+                    for (var i = 0; i < patternKeysAndPaths.Count; i += 2)
                     {
-                        patternKeys.Add(patternKeysAndNames[i]);
-                        patternPaths.Add(patternKeysAndNames[i + 1]);
+                        patternNamesKeysPaths.Add(new string[]
+                            {
+                                patternKeysAndPaths[i + 1].Substring(patternKeysAndPaths[i + 1].LastIndexOf("\\") + 1),
+                                patternKeysAndPaths[i],
+                                patternKeysAndPaths[i + 1]
+                            });
+
                     }
-                    patternKeys.Sort();
-                    patternPaths.Sort();
-                    foreach (var patternPath in patternPaths)
+                    patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
+                    foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        var patternPathParts = patternPath.Split('\\');
-                        patternNameListStore.AppendValues(patternPathParts[patternPathParts.Length - 1]);
+                        patternNameListStore.AppendValues(patternNameKeyPath[0]);
+                        patternKeys.Add(patternNameKeyPath[1]);
+                        patternPaths.Add(patternNameKeyPath[2]);
                     }
                     DataTypeComboBox.Active = 0;
                 };
