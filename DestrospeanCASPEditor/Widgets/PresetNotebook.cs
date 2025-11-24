@@ -117,12 +117,11 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         valueWidget = spinButton;
                         break;
                     case "pattern":
-                        var label = new Label(value)
+                        var button = new Button(new Label(value)
                             {
                                 UseUnderline = false,
                                 Xalign = 0
-                            };
-                        var button = new Button(label);
+                            });
                         button.Clicked += (sender, e) =>
                             {
                                 var changePatternDialog = new ChangePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
