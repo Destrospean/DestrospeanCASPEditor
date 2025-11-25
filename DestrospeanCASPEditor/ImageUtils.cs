@@ -11,7 +11,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>();
 
-        public static readonly Dictionary<IResourceIndexEntry, List<Pixbuf>> PreloadedImagePixbufs = new Dictionary<IResourceIndexEntry, List<Pixbuf>>();
+        public static readonly Dictionary<string, List<Pixbuf>> PreloadedImagePixbufs = new Dictionary<string, List<Pixbuf>>();
 
         public static readonly Dictionary<string, Bitmap> PreloadedImages = new Dictionary<string, Bitmap>();
 
@@ -64,7 +64,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
             PreloadedImages[variables.Item1] = variables.Item2;
-            PreloadedImagePixbufs[resourceIndexEntry] = new List<Pixbuf>
+            PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
                 {
                     variables.Item2.GetAsPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                 };

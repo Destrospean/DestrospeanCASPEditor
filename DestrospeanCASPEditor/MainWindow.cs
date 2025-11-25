@@ -351,7 +351,7 @@ public partial class MainWindow : Window
                     switch ((string)model.GetValue(iter, 0))
                     {
                         case "_IMG":
-                            Image.Pixbuf = ImageUtils.PreloadedImagePixbufs[resourceIndexEntry][0];
+                            Image.Pixbuf = ImageUtils.PreloadedImagePixbufs[resourceIndexEntry.ReverseEvaluateResourceKey()][0];
                             break;
                         case "CASP":
                             mGLWidget.Show();
@@ -445,10 +445,11 @@ public partial class MainWindow : Window
             switch (tag)
             {
                 case "_IMG":
-                    if (!ImageUtils.PreloadedImagePixbufs.ContainsKey(resourceIndexEntry) || missingResourceKeyIndex > -1)
+                    var key = resourceIndexEntry.ReverseEvaluateResourceKey();
+                    if (!ImageUtils.PreloadedImagePixbufs.ContainsKey(key) || missingResourceKeyIndex > -1)
                     {
                         CurrentPackage.PreloadImage(resourceIndexEntry, Image);
-                        ImageUtils.PreloadedImagePixbufs[resourceIndexEntry].Add(ImageUtils.PreloadedImagePixbufs[resourceIndexEntry][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
+                        ImageUtils.PreloadedImagePixbufs[key].Add(ImageUtils.PreloadedImagePixbufs[key][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
                     }
                     break;
                 case "CASP":
@@ -637,7 +638,6 @@ public partial class MainWindow : Window
             CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
         }
         CurrentPackage.SavePackage();
-        RefreshWidgets(false);
         NextState = NextStateOptions.NoUnsavedChanges;
     }
 
