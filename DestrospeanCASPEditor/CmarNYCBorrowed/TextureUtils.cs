@@ -198,9 +198,9 @@ namespace Destrospean.CmarNYCBorrowed
             var argbValues = new uint[byteCount];
             Marshal.Copy(bitmapData.Scan0, bgraValues, 0, byteCount);
             image.UnlockBits(bitmapData);
-            for (int i = 0, j = 0; i < byteCount; i += 4, j++)
+            for (var i = 0; i < byteCount; i += 4)
             {
-                argbValues[j] = ((uint)bgraValues[i + 3] << 24) + ((uint)bgraValues[i + 2] << 16) + ((uint)bgraValues[i + 1] << 8) + bgraValues[i];
+                argbValues[i >> 2] = ((uint)bgraValues[i + 3] << 24) + ((uint)bgraValues[i + 2] << 16) + ((uint)bgraValues[i + 1] << 8) + bgraValues[i];
             }
             return argbValues;
         }

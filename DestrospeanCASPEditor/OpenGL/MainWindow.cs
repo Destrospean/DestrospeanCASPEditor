@@ -504,10 +504,6 @@ public partial class MainWindow : Window
         mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask | Gdk.EventMask.ScrollMask));
         mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
         mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
-        mGLWidget.KeyPressEvent += (o, args) =>
-            {
-                Console.WriteLine(args.Event.KeyValue);
-            };
         mGLWidget.ScrollEvent += (o, args) =>
             {
                 var delta = MathHelper.DegreesToRadians(1);

@@ -145,6 +145,14 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             };
                         valueWidget = button;
                         break;
+                    case "string":
+                        var entry = new Entry
+                            {
+                                Text = value
+                            };
+                        entry.Changed += (sender, e) => complate[propertyName] = entry.Text;
+                        valueWidget = entry;
+                        break;
                     case "texture":
                         var comboBox = ImageResourceComboBox.CreateInstance(complate.ParentPackage, value, Image);
                         comboBox.Changed += (sender, e) => complate[propertyName] = comboBox[comboBox.Active].Label;
