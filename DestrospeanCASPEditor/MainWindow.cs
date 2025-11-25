@@ -637,6 +637,7 @@ public partial class MainWindow : Window
             CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
         }
         CurrentPackage.SavePackage();
+        RefreshWidgets(false);
         NextState = NextStateOptions.NoUnsavedChanges;
     }
 

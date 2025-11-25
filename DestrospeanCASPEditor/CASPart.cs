@@ -936,12 +936,9 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 return;
             }
-            using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(AllPresets[0].XmlFile.ReadToEnd())))
-            {
-                var tempResourceIndexEntry = ParentPackage.AddResource(DefaultPresetResourceIndexEntry, stream, false);
-                ParentPackage.ReplaceResource(DefaultPresetResourceIndexEntry, WrapperDealer.GetResource(0, ParentPackage, tempResourceIndexEntry));
-                ParentPackage.DeleteResource(tempResourceIndexEntry);
-            }
+            var tempResourceIndexEntry = ParentPackage.AddResource(DefaultPresetResourceIndexEntry, new MemoryStream(System.Text.Encoding.UTF8.GetBytes(AllPresets[0].XmlFile.ReadToEnd())), false);
+            ParentPackage.ReplaceResource(DefaultPresetResourceIndexEntry, WrapperDealer.GetResource(0, ParentPackage, tempResourceIndexEntry));
+            ParentPackage.DeleteResource(tempResourceIndexEntry);
         }
 
         public void SavePreset(int index)
