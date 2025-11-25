@@ -558,48 +558,98 @@ namespace Destrospean.DestrospeanCASPEditor
                         tipColor = null;
                         int height = 1024,
                         width = 1024;
+                        List<Bitmap> logos = new List<Bitmap>(),
+                        stencils = new List<Bitmap>();
+                        List<bool> logosEnabled = new List<bool>(),
+                        stencilsEnabled = new List<bool>();
+                        List<float[]> logosLowerRight = new List<float[]>(),
+                        logosUpperLeft = new List<float[]>();
+                        List<float> logosRotation = new List<float>(),
+                        stencilsRotation = new List<float>();
                         string partType = null;
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
-                            var value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
-                            switch (propertyXmlNodeKvp.Key.ToLower())
+                            string key = propertyXmlNodeKvp.Key.ToLower(),
+                            value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
+                            if (key.StartsWith("logo"))
                             {
-                                case "clothing ambient":
-                                    AmbientMap = value;
-                                    break;
-                                case "clothing specular":
-                                    SpecularMap = value;
-                                    break;
-                                case "control map":
-                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                    break;
-                                case "diffuse color":
-                                    diffuseColor = GetColor(value);
-                                    break;
-                                case "diffuse map":
-                                    diffuseMap = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "highlight color":
-                                    highlightColor = GetColor(value);
-                                    break;
-                                case "mask":
-                                    maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
-                                    break;
-                                case "multiplier":
-                                    multiplier = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "overlay":
-                                    overlay = ParentPackage.GetTexture(value, width, height);
-                                    break;
-                                case "parttype":
-                                    partType = value;
-                                    break;
-                                case "root color":
-                                    rootColor = GetColor(value);
-                                    break;
-                                case "tip color":
-                                    tipColor = GetColor(value);
-                                    break;
+                                if (key.EndsWith("enabled"))
+                                {
+                                    logosEnabled.Add(bool.Parse(value));
+                                }
+                                else if (key.EndsWith("lowerright"))
+                                {
+                                    logosLowerRight.Add(GetColor(value));
+                                }
+                                else if (key.EndsWith("upperleft"))
+                                {
+                                    logosUpperLeft.Add(GetColor(value));
+                                }
+                                else if (key.EndsWith("rotation"))
+                                {
+                                    logosRotation.Add(float.Parse(value));
+                                }
+                                else if (key.EndsWith("texture"))
+                                {
+                                    logos.Add(ParentPackage.GetTexture(value, width, height));
+                                }
+                            }
+                            else if (key.StartsWith("stencil"))
+                            {
+                                if (key.Length == 9)
+                                {
+                                    stencils.Add(ParentPackage.GetTexture(value, width, height));
+                                }
+                                else if (key.EndsWith("enabled"))
+                                {
+                                    stencilsEnabled.Add(bool.Parse(value));
+                                }
+                                else if (key.EndsWith("rotation"))
+                                {
+                                    stencilsRotation.Add(float.Parse(value));
+                                }
+                            }
+                            else
+                            {
+                                switch (key)
+                                {
+                                    case "clothing ambient":
+                                        AmbientMap = value;
+                                        break;
+                                    case "clothing specular":
+                                        SpecularMap = value;
+                                        break;
+                                    case "control map":
+                                        controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        break;
+                                    case "diffuse color":
+                                        diffuseColor = GetColor(value);
+                                        break;
+                                    case "diffuse map":
+                                        diffuseMap = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "highlight color":
+                                        highlightColor = GetColor(value);
+                                        break;
+                                    case "mask":
+                                        maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        break;
+                                    case "multiplier":
+                                        multiplier = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "overlay":
+                                        overlay = ParentPackage.GetTexture(value, width, height);
+                                        break;
+                                    case "parttype":
+                                        partType = value;
+                                        break;
+                                    case "root color":
+                                        rootColor = GetColor(value);
+                                        break;
+                                    case "tip color":
+                                        tipColor = GetColor(value);
+                                        break;
+                                }
                             }
                         }
                         if (diffuseMap != null)
@@ -651,9 +701,9 @@ namespace Destrospean.DestrospeanCASPEditor
                                     };
                                 using (var graphics = Graphics.FromImage(diffuseMap))
                                 {
-                                    var convert = new ColorMatrix(hairMatrix);
                                     var attributes = new ImageAttributes();
-                                    attributes.SetColorMatrix(convert, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                    var colorMatrix = new ColorMatrix(hairMatrix);
+                                    attributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                                     graphics.DrawImage(diffuseMap, new Rectangle(0, 0, diffuseMap.Width, diffuseMap.Height), 0, 0, diffuseMap.Width, diffuseMap.Height, GraphicsUnit.Pixel, attributes);
                                 }
                                 if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
@@ -693,6 +743,20 @@ namespace Destrospean.DestrospeanCASPEditor
                             if (overlay != null)
                             {
                                 graphics.DrawImage(overlay, 0, 0);
+                            }
+                            for (var i = 0; i < stencils.Count && stencils.Count == stencilsEnabled.Count; i++)
+                            {
+                                if (stencilsEnabled[i])
+                                {
+                                    graphics.DrawImage(stencils[i], 0, 0);
+                                }
+                            }
+                            for (var i = 0; i < logos.Count; i++)
+                            {
+                                if (logosEnabled[i])
+                                {
+                                    graphics.DrawImage(RotateImage(logos[i], OpenTK.MathHelper.RadiansToDegrees(logosRotation[i])), logosUpperLeft[i][0] * width, logosUpperLeft[i][1] * height, (logosLowerRight[i][0] - logosUpperLeft[i][0]) * width, (logosLowerRight[i][1] - logosUpperLeft[i][1]) * height);
+                                }
                             }
                         }
                         return texture;
@@ -774,6 +838,20 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                         }
                     }
+                }
+
+                public static Bitmap RotateImage(Bitmap image, float angle)
+                {
+                    var imageCopy = new Bitmap(image.Width, image.Height); 
+                    using (var graphics = Graphics.FromImage(imageCopy))
+                    {
+                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        graphics.TranslateTransform(image.Width / 2f, image.Height / 2f);
+                        graphics.RotateTransform(angle);
+                        graphics.TranslateTransform(-image.Width / 2f, -image.Height / 2f);
+                        graphics.DrawImage(image, 0, 0);
+                    }
+                    return imageCopy;
                 }
             }
 
