@@ -548,10 +548,7 @@ public partial class MainWindow : Window
                 GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
             };
         KeyPressEvent += OnKeyPress;
-        KeyReleaseEvent += (o, args) =>
-            {
-                mKeysHeld.RemoveAll(x => x == args.Event.Key);
-            };
+        KeyReleaseEvent += (o, args) => mKeysHeld.RemoveAll(x => x == args.Event.Key);
     }
 
     void ProcessInput()
