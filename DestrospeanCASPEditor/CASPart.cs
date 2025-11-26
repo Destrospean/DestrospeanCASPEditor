@@ -748,14 +748,16 @@ namespace Destrospean.DestrospeanCASPEditor
                             {
                                 if (stencilsEnabled[i])
                                 {
-                                    graphics.DrawImage(stencils[i], 0, 0);
+                                    graphics.DrawImage(RotateImage(QuadrupleCanvasSize(stencils[i]), stencilsRotation[i] * 360), -stencils[i].Width >> 1, -stencils[i].Height >> 1);
                                 }
                             }
                             for (var i = 0; i < logos.Count; i++)
                             {
                                 if (logosEnabled[i])
                                 {
-                                    graphics.DrawImage(RotateImage(logos[i], OpenTK.MathHelper.RadiansToDegrees(logosRotation[i])), logosUpperLeft[i][0] * width, logosUpperLeft[i][1] * height, (logosLowerRight[i][0] - logosUpperLeft[i][0]) * width, (logosLowerRight[i][1] - logosUpperLeft[i][1]) * height);
+                                    int logoHeight = (int)((logosLowerRight[i][1] - logosUpperLeft[i][1]) * height),
+                                    logoWidth = (int)((logosLowerRight[i][0] - logosUpperLeft[i][0]) * width);
+                                    graphics.DrawImage(RotateImage(QuadrupleCanvasSize(logos[i]), logosRotation[i] * 360), logosUpperLeft[i][0] * width - (logoWidth >> 1), logosUpperLeft[i][1] * height - (logoHeight >> 1), logoWidth << 1, logoHeight << 1);
                                 }
                             }
                         }
@@ -840,15 +842,26 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
 
+                public static Bitmap QuadrupleCanvasSize(Bitmap image)
+                {
+                    var imageCopy = new Bitmap(image.Width << 1, image.Height << 1); 
+                    using (var graphics = Graphics.FromImage(imageCopy))
+                    {
+                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        graphics.DrawImage(image, image.Width >> 1, image.Height >> 1);
+                    }
+                    return imageCopy;
+                }
+
                 public static Bitmap RotateImage(Bitmap image, float angle)
                 {
                     var imageCopy = new Bitmap(image.Width, image.Height); 
                     using (var graphics = Graphics.FromImage(imageCopy))
                     {
                         graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        graphics.TranslateTransform(image.Width / 2f, image.Height / 2f);
+                        graphics.TranslateTransform(image.Width >> 1, image.Height >> 1);
                         graphics.RotateTransform(angle);
-                        graphics.TranslateTransform(-image.Width / 2f, -image.Height / 2f);
+                        graphics.TranslateTransform(-image.Width >> 1, -image.Height >> 1);
                         graphics.DrawImage(image, 0, 0);
                     }
                     return imageCopy;
