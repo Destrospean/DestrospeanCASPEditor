@@ -218,6 +218,8 @@
     <Compile Include="CmarNYCBorrowed\PatternInfo.cs" />
     <Compile Include="CmarNYCBorrowed\TextureUtils.cs" />
     <Compile Include="Dialogs\ChangePatternDialog.cs" />
+    <Compile Include="CmarNYCBorrowed\MeshUtils.cs" />
+    <Compile Include="CmarNYCBorrowed\BGEO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

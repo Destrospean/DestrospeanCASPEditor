@@ -62,12 +62,12 @@ namespace Destrospean.CmarNYCBorrowed
             for (var i = 0; i < finalArray.Length; i += 4)
             {
                 var hsv = new HSVColor(backArray[i + 2], backArray[i + 1], backArray[i]);
-                byte[] color = (hsv + backChannel).AsRGB,
+                byte[] color = (hsv + backChannel).ToRGB(),
                 maskArray = BitConverter.GetBytes(rgbMaskArray[i >> 2]);
                 if (pattern.ChannelsEnabled.Length > 0 && pattern.ChannelsEnabled[0] && maskArray[1] > 0)
                 {
                     var tempHSV = new HSVColor(greenArray[i + 2], greenArray[i + 1], greenArray[i]);
-                    var tempColor = (tempHSV + greenChannel).AsRGB;
+                    var tempColor = (tempHSV + greenChannel).ToRGB();
                     var weight = maskArray[1] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {
@@ -77,7 +77,7 @@ namespace Destrospean.CmarNYCBorrowed
                 if (pattern.ChannelsEnabled.Length > 1 && pattern.ChannelsEnabled[1] && maskArray[0] > 0)
                 {
                     var tempHSV = new HSVColor(blueArray[i + 2], blueArray[i + 1], blueArray[i]);
-                    var tempColor = (tempHSV + blueChannel).AsRGB;
+                    var tempColor = (tempHSV + blueChannel).ToRGB();
                     var weight = maskArray[0] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {
@@ -87,7 +87,7 @@ namespace Destrospean.CmarNYCBorrowed
                 if (pattern.ChannelsEnabled.Length > 2 && pattern.ChannelsEnabled[2] && maskArray[3] > 0)
                 {
                     var tempHSV = new HSVColor(alphaArray[i + 2], alphaArray[i + 1], alphaArray[i]);
-                    var tempColor = (tempHSV + alphaChannel).AsRGB;
+                    var tempColor = (tempHSV + alphaChannel).ToRGB();
                     var weight = maskArray[3] * kInverseByteMax;
                     for (var j = 0; j < 3; j++)
                     {

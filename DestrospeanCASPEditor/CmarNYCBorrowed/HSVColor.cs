@@ -6,104 +6,6 @@ namespace Destrospean.CmarNYCBorrowed
     {
         float mHue, mSaturation, mValue;
 
-        /// <summary>
-        /// Returns byte array of red (0-255), green (0-255), blue (0-255)
-        /// </summary>
-        public byte[] AsRGB
-        {
-            get
-            {
-                double blue,
-                green,
-                hue = mHue,
-                red;
-                while (hue < 0)
-                {
-                    hue += 360;
-                }
-                while (hue >= 360)
-                {
-                    hue -= 360;
-                }
-                if (mValue <= 0)
-                {
-                    double channel;
-                    blue = channel = 0;
-                    green = channel;
-                    red = channel;
-                }
-                else if (mSaturation <= 0)
-                {
-                    double channel;
-                    blue = channel = mValue;
-                    green = channel;
-                    red = channel;
-                }
-                else
-                {
-                    double hueDividedBy60 = hue / 60,
-                    roundedDown = Math.Floor(hueDividedBy60),
-                    modifier = hueDividedBy60 - roundedDown,
-                    channel0 = mValue * (1.0 - mSaturation),
-                    channel1 = mValue * (1.0 - mSaturation * modifier),
-                    channel2 = mValue * (1.0 - mSaturation * (1.0 - modifier));
-                    switch ((int)roundedDown)
-                    {
-                        case -1:
-                            red = mValue;
-                            green = channel0;
-                            blue = channel1;
-                            break;
-                        case 0:
-                            red = mValue;
-                            green = channel2;
-                            blue = channel0;
-                            break;
-                        case 1:
-                            red = channel1;
-                            green = mValue;
-                            blue = channel0;
-                            break;
-                        case 2:
-                            red = channel0;
-                            green = mValue;
-                            blue = channel2;
-                            break;
-                        case 3:
-                            red = channel0;
-                            green = channel1;
-                            blue = mValue;
-                            break;
-                        case 4:
-                            red = channel2;
-                            green = channel0;
-                            blue = mValue;
-                            break;
-                        case 5:
-                            red = mValue;
-                            green = channel0;
-                            blue = channel1;
-                            break;
-                        case 6:
-                            red = mValue;
-                            green = channel2;
-                            blue = channel0;
-                            break;
-                        default:
-                            double channel;
-                            blue = channel = mValue;
-                            green = channel;
-                            red = channel;
-                            break;
-                    }
-                }
-                return new byte[]
-                {
-                    Clamp((int)(red * byte.MaxValue)), Clamp((int)(green * byte.MaxValue)), Clamp((int)(blue * byte.MaxValue))
-                };
-            }
-        }
-
         public float Hue
         {
             get
@@ -237,6 +139,101 @@ namespace Destrospean.CmarNYCBorrowed
         public static HSVColor operator -(HSVColor minuendHSV, HSVColor subtrahendHSV)
         {
             return new HSVColor(minuendHSV.mHue - subtrahendHSV.mHue, minuendHSV.mSaturation - subtrahendHSV.mSaturation, minuendHSV.mValue - subtrahendHSV.mValue, true);
+        }
+
+        /// <summary>
+        /// Returns byte array of red (0-255), green (0-255), blue (0-255)
+        /// </summary>
+        public byte[] ToRGB()
+        {
+            double blue,
+            green,
+            hue = mHue,
+            red;
+            while (hue < 0)
+            {
+                hue += 360;
+            }
+            while (hue >= 360)
+            {
+                hue -= 360;
+            }
+            if (mValue <= 0)
+            {
+                double channel;
+                blue = channel = 0;
+                green = channel;
+                red = channel;
+            }
+            else if (mSaturation <= 0)
+            {
+                double channel;
+                blue = channel = mValue;
+                green = channel;
+                red = channel;
+            }
+            else
+            {
+                double hueDividedBy60 = hue / 60,
+                roundedDown = Math.Floor(hueDividedBy60),
+                modifier = hueDividedBy60 - roundedDown,
+                channel0 = mValue * (1.0 - mSaturation),
+                channel1 = mValue * (1.0 - mSaturation * modifier),
+                channel2 = mValue * (1.0 - mSaturation * (1.0 - modifier));
+                switch ((int)roundedDown)
+                {
+                    case -1:
+                        red = mValue;
+                        green = channel0;
+                        blue = channel1;
+                        break;
+                    case 0:
+                        red = mValue;
+                        green = channel2;
+                        blue = channel0;
+                        break;
+                    case 1:
+                        red = channel1;
+                        green = mValue;
+                        blue = channel0;
+                        break;
+                    case 2:
+                        red = channel0;
+                        green = mValue;
+                        blue = channel2;
+                        break;
+                    case 3:
+                        red = channel0;
+                        green = channel1;
+                        blue = mValue;
+                        break;
+                    case 4:
+                        red = channel2;
+                        green = channel0;
+                        blue = mValue;
+                        break;
+                    case 5:
+                        red = mValue;
+                        green = channel0;
+                        blue = channel1;
+                        break;
+                    case 6:
+                        red = mValue;
+                        green = channel2;
+                        blue = channel0;
+                        break;
+                    default:
+                        double channel;
+                        blue = channel = mValue;
+                        green = channel;
+                        red = channel;
+                        break;
+                }
+            }
+            return new byte[]
+            {
+                Clamp((int)(red * byte.MaxValue)), Clamp((int)(green * byte.MaxValue)), Clamp((int)(blue * byte.MaxValue))
+            };
         }
     }
 }

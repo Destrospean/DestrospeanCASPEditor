@@ -40,23 +40,13 @@ namespace Destrospean.DestrospeanCASPEditor
             return checkerboard;
         }
 
-        public static Pixbuf GetAsPixbuf(this Bitmap image)
-        {
-            using (var stream = new System.IO.MemoryStream())
-            {
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                stream.Seek(0, System.IO.SeekOrigin.Begin);
-                return new Pixbuf(stream);
-            }
-        }
-
         public static void PreloadGameImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
             PreloadedGameImages[variables.Item1] = variables.Item2;
             PreloadedGameImagePixbufs[variables.Item1] = new List<Pixbuf>
                 {
-                    variables.Item2.GetAsPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                    variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                 };
         }
 
@@ -66,7 +56,7 @@ namespace Destrospean.DestrospeanCASPEditor
             PreloadedImages[variables.Item1] = variables.Item2;
             PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
                 {
-                    variables.Item2.GetAsPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                    variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                 };
         }
 
@@ -86,6 +76,16 @@ namespace Destrospean.DestrospeanCASPEditor
             pixelPtr[1] = g;
             pixelPtr[2] = b;
             pixelPtr[3] = a;
+        }
+
+        public static Pixbuf ToPixbuf(this Bitmap image)
+        {
+            using (var stream = new System.IO.MemoryStream())
+            {
+                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                stream.Seek(0, System.IO.SeekOrigin.Begin);
+                return new Pixbuf(stream);
+            }
         }
     }
 }
