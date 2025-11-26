@@ -63,7 +63,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
             var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
-            var shaders = new List<string>(Enum.GetNames(typeof(Xmods.DataLib.XmodsEnums.Shader)));
+            var shaders = new List<string>();
+            foreach (var shader in Enum.GetValues(typeof(Xmods.DataLib.XmodsEnums.Shader)))
+            {
+                shaders.Add(string.Format("{0} ({1})", shader, (uint)shader));
+            }
             shaders.Sort();
             var shaderComboBoxAlignment = new Alignment(0, .5f, 1, 0)
                 {
@@ -71,12 +75,12 @@ namespace Destrospean.DestrospeanCASPEditor
                 };
             var shaderComboBox = new ComboBox(shaders.ToArray())
                 {
-                    Active = shaders.IndexOf(((Xmods.DataLib.XmodsEnums.Shader)(uint)geom.Shader).ToString())
+                    Active = shaders.IndexOf(string.Format("{0} ({1})", (Xmods.DataLib.XmodsEnums.Shader)geom.Shader, (uint)geom.Shader))
                 };
             shaderComboBoxAlignment.Add(shaderComboBox);
             shaderComboBox.Changed += (sender, e) =>
                 {
-                    geom.Shader = (ShaderType)(uint)Enum.Parse(typeof(Xmods.DataLib.XmodsEnums.Shader), shaderComboBox.ActiveText);
+                    geom.Shader = (ShaderType)Enum.Parse(typeof(Xmods.DataLib.XmodsEnums.Shader), shaderComboBox.ActiveText.Split(' ')[0]);
                     mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             table.Attach(new Label("Shader")
