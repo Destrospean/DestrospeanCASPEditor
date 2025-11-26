@@ -395,37 +395,28 @@ public partial class MainWindow : Window
         mObjects.Clear();
         foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
-            var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
+            var geom = geometryResource.ToGEOM();
             List<Vector3> colors = new List<Vector3>(),
             normals = new List<Vector3>(),
             vertices = new List<Vector3>();
             var faces = new List<Tuple<int, int, int>>();
             var textureCoordinates = new List<Vector2>();
-            foreach (var face in geom.Faces)
+            for (var i = 0; i < geom.numberFaces; i++)
             {
-                faces.Add(new Tuple<int, int, int>(face.VertexDataIndex0, face.VertexDataIndex1, face.VertexDataIndex2));
+                var indices = geom.getFace(i);
+                faces.Add(new Tuple<int, int, int>(indices[0], indices[1], indices[2]));
             }
-            foreach (var vertexDataElement in geom.VertexData)
+            for (var i = 0; i < geom.numberVertices; i++)
             {
-                foreach (var vertexElement in vertexDataElement.Vertex)
+                colors.Add(Vector3.One);
+                float[] normal = geom.getNormal(i),
+                position = geom.getPosition(i);
+                normals.Add(new Vector3(normal[0], normal[1], normal[2]));
+                vertices.Add(new Vector3(position[0], position[1], position[2]));
+                for (var j = 0; j < geom.numberUV; j++)
                 {
-                    var positionElement = vertexElement as GEOM.PositionElement;
-                    if (positionElement != null && positionElement as GEOM.TangentNormalElement == null)
-                    {
-                        if (positionElement is GEOM.NormalElement)
-                        {
-                            normals.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
-                            continue;
-                        }
-                        vertices.Add(new Vector3(positionElement.X, positionElement.Y, positionElement.Z));
-                        colors.Add(Vector3.One);
-                        continue;
-                    }
-                    var uvElement = vertexElement as GEOM.UVElement;
-                    if (uvElement != null)
-                    {
-                        textureCoordinates.Add(new Vector2(uvElement.U, uvElement.V));
-                    }
+                    var uv = geom.getUV(i, j);
+                    textureCoordinates.Add(new Vector2(uv[0], uv[1]));
                 }
             }
             var key = "";
@@ -442,7 +433,7 @@ public partial class MainWindow : Window
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var element in geom.Mtnf.SData)
+                foreach (var element in ((GEOM)geometryResource.ChunkEntries[0].RCOLBlock).Mtnf.SData)
                 {
                     var elementFloat3 = element as ElementFloat3;
                     if (elementFloat3 != null)
