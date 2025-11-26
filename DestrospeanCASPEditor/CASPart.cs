@@ -744,7 +744,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             {
                                 graphics.DrawImage(overlay, 0, 0);
                             }
-                            for (var i = 0; i < stencils.Count && stencils.Count == stencilsEnabled.Count; i++)
+                            for (var i = 0; i < stencils.Count; i++)
                             {
                                 if (stencilsEnabled[i])
                                 {
