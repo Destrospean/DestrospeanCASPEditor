@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using CASPartResource;
 using Xmods.DataLib;
 
 namespace Destrospean.CmarNYCBorrowed
@@ -135,7 +136,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public override string ToString()
             {
-                return ((XmodsEnums.Species)mAgeGenderSpecies).ToString() + ((XmodsEnums.Age)mAgeGenderSpecies).ToString() + ((XmodsEnums.Gender)mAgeGenderSpecies).ToString() + Environment.NewLine +
+                return ((SpeciesType)mAgeGenderSpecies).ToString() + ((AgeFlags)mAgeGenderSpecies).ToString() + ((GenderFlags)mAgeGenderSpecies).ToString() + Environment.NewLine +
                     "LOD 0: First vertex " + mFirstVertexID[0].ToString() + ", Number vertices " + mVertexIDCount[0].ToString() + ", Number entries " + mEntryCount[0] + Environment.NewLine +
                     "LOD 1: First vertex " + mFirstVertexID[1].ToString() + ", Number vertices " + mVertexIDCount[1].ToString() + ", Number entries " + mEntryCount[1] + Environment.NewLine +
                     "LOD 2: First vertex " + mFirstVertexID[2].ToString() + ", Number vertices " + mVertexIDCount[2].ToString() + ", Number entries " + mEntryCount[2] + Environment.NewLine +
@@ -431,7 +432,7 @@ namespace Destrospean.CmarNYCBorrowed
             return mSection1[section1EntryIndex];
         }
 
-        public int GetSection1EntryIndex(CASPartResource.SpeciesType species, CASPartResource.AgeFlags age, CASPartResource.GenderFlags gender)
+        public int GetSection1EntryIndex(SpeciesType species, AgeFlags age, GenderFlags gender)
         {
             for (var i = 0; i < mSection1Count; i++)
             {
