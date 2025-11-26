@@ -8,12 +8,12 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public static class MeshUtils
     {
-        public static GEOM LoadBGEOMorph(GeometryResource baseMesh, BlendGeometryResource morph, int lod, SpeciesType species, AgeFlags age, GenderFlags gender)
+        public static GEOM LoadBGEOMorph(GeometryResource baseMesh, BlendGeometryResource morph, int lod, SpeciesType species, AgeFlags age, GenderFlags gender, float weight)
         {
-            return LoadBGEOMorph(baseMesh.ToGEOM(), morph.ToBGEO(), lod, species, age, gender);
+            return LoadBGEOMorph(baseMesh.ToGEOM(), morph.ToBGEO(), lod, species, age, gender, weight);
         }
 
-        public static GEOM LoadBGEOMorph(GEOM baseMesh, BGEO morph, int lod, SpeciesType species, AgeFlags age, GenderFlags gender)
+        public static GEOM LoadBGEOMorph(GEOM baseMesh, BGEO morph, int lod, SpeciesType species, AgeFlags age, GenderFlags gender, float weight)
         {
             if (baseMesh == null || !baseMesh.hasVertexIDs)
             {
@@ -24,7 +24,6 @@ namespace Destrospean.CmarNYCBorrowed
                 return new GEOM(baseMesh);
             }
             var morphMesh = new GEOM(baseMesh);
-            var weight = morph.Weight;
             var entry = morph.GetSection1EntryIndex(species, age, gender);
             if (entry < 0)
             {

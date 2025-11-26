@@ -17,10 +17,6 @@ namespace Destrospean.CmarNYCBorrowed
 
         Section3[] mSection3;
 
-        public string Name = "unknown";
-
-        public float Weight;
-
         public int Section1Count
         {
             get
