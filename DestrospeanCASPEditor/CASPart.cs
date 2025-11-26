@@ -402,7 +402,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         Background = background,
                         Channels = channels.Count == 0 ? null : channels.ToArray(),
-                        ChannelEnabled = channelsEnabled.Count == 0 ? null : channelsEnabled.ToArray(),
+                        ChannelsEnabled = channelsEnabled.Count == 0 ? null : channelsEnabled.ToArray(),
                         HSV = hsvColors.Count == 0 ? null : hsvColors.ToArray(),
                         HSVBase = baseHSVColors.Count == 0 ? null : baseHSVColors.ToArray(),
                         HSVBaseBG = baseHueBackground == float.MinValue || baseSaturationBackground == float.MinValue || baseValueBackground == float.MinValue ? null : new float[]

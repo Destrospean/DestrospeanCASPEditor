@@ -16,7 +16,7 @@
 
         public string[] Channels;
 
-        public bool[] ChannelEnabled;
+        public bool[] ChannelsEnabled;
 
         public float[][] HSV, HSVBase, HSVShift;
 
