@@ -220,6 +220,7 @@
     <Compile Include="Dialogs\ChangePatternDialog.cs" />
     <Compile Include="CmarNYCBorrowed\MeshUtils.cs" />
     <Compile Include="CmarNYCBorrowed\BGEO.cs" />
+    <Compile Include="MeshUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

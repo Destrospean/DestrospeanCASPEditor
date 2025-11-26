@@ -21,48 +21,6 @@ namespace Destrospean.CmarNYCBorrowed
 
         public float Weight;
 
-        public List<VertexData> GetDeltas(int entry, int lod)
-        {
-            var vertexDeltas = new List<VertexData>();
-            int runningOffset = GetLODInitialOffset(entry, lod),
-            section2Count = GetSection2Count(entry, lod),
-            section2Start = GetSection2StartIndex(entry, lod),
-            section2StartVertexID = GetLODStartVertexID(entry, lod),
-            section3Start = GetSection3StartIndex(entry, lod);
-            for (var i = 0; i < section2Count; i++)
-            {
-                var section2 = GetSection2(section2Start + i);
-                runningOffset += section2.Offset;
-                Vector3 normal = new Vector3(),
-                position = new Vector3();
-                int tempIndex = runningOffset;
-                if (section2.HasPosition)
-                {
-                    position = new Vector3(GetSection3(tempIndex + section3Start));
-                    tempIndex++;
-                }
-                if (section2.HasNormals)
-                {
-                    normal = new Vector3(GetSection3(tempIndex + section3Start));
-                }
-                var vertexData = new VertexData(section2StartVertexID + i, position, normal);
-                vertexDeltas.Add(vertexData);
-            }
-            return vertexDeltas;
-        }
-
-        public int GetSection1EntryIndex(XmodsEnums.Species species, XmodsEnums.Age age, XmodsEnums.Gender gender)
-        {
-            for (var i = 0; i < mSection1Count; i++)
-            {
-                if (((mSection1[i].AgeGenderSpecies & (uint)species) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)age) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)gender) > 0))
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
         public int Section1Count
         {
             get
@@ -76,206 +34,6 @@ namespace Destrospean.CmarNYCBorrowed
             get
             {
                 return mSection1LODCount;
-            }
-        }
-
-        public int GetSection2Count()
-        {
-            return mSection2Count;
-        }
-
-        public int GetSection2Count(int section1EntryIndex)
-        {
-            var section1 = GetSection1(section1EntryIndex);
-            int temp = 0;
-            for (var i = 0; i < mSection1LODCount; i++)
-            {
-                temp += section1.GetLODData(i)[1];
-            }
-            return temp;
-        }
-
-        public int GetSection2Count(int section1entryIndex, int lod)
-        {
-            return GetSection1(section1entryIndex).GetLODData(lod)[1];
-        }
-
-        public int GetSection3Count()
-        {
-            return mSection3Count;
-        }
-
-        public int GetSection3Count(int section1EntryIndex)
-        {
-            var section1 = GetSection1(section1EntryIndex);
-            var temp = 0;
-            for (var i = 0; i < mSection1LODCount; i++)
-            {
-                temp += section1.GetLODData(i)[2];
-            }
-            return temp;
-        }
-
-        public int GetSection3Count(int section1EntryIndex, int lod)
-        {
-            return GetSection1(section1EntryIndex).GetLODData(lod)[2];
-        }
-
-        public Section1 GetSection1(int section1entryIndex)
-        {
-            return mSection1[section1entryIndex];
-        }
-
-        public Section2 GetSection2(int section2Index)
-        {
-            return mSection2[section2Index];
-        }
-
-        public float[] GetSection3(int section3Index)
-        {
-            return mSection3[section3Index].DeltaValues;
-        }
-
-        public int GetSection2StartIndex(int section1entryIndex, int lod)
-        {
-            int temp = 0;
-            for (var i = 0; i < section1entryIndex; i++)
-            {
-                for (var j = 0; j < Section1LODCount; j++)
-                {
-                    temp += mSection1[i].GetLODData(j)[1];
-                }
-            }
-            for (var j = 0; j < lod; j++)
-            {
-                temp += mSection1[section1entryIndex].GetLODData(j)[1];
-            }
-            return temp;
-        }
-
-        public int GetSection3StartIndex(int section1EntryIndex, int lod)
-        {
-            var temp = 0;
-            for (var i = 0; i < section1EntryIndex; i++)
-            {
-                for (var j = 0; j < Section1LODCount; j++)
-                {
-                    temp += mSection1[i].GetLODData(j)[2];
-                }
-            }
-            for (var j = 0; j < lod; j++)
-            {
-                temp += mSection1[section1EntryIndex].GetLODData(j)[2];
-            }
-            return temp;
-        }
-
-        public int GetLODStartVertexID(int section1EntryIndex, int lod)
-        {
-            return mSection1[section1EntryIndex].GetLODData(lod)[0];
-        }
-
-        public int GetLODInitialOffset(int section1EntryIndex, int lod)
-        {
-            if (section1EntryIndex == 0 & lod == 0)
-            {
-                return 0;
-            }
-            var offset = 0;
-            for (var i = 0; i < section1EntryIndex; i++)
-            {
-                int count = GetSection2Count(i),
-                start = GetSection2StartIndex(i, 0);
-                for (var j = start; j < start + count; j++)
-                {
-                    Section2 tmp = GetSection2(j);
-                    offset += tmp.Offset;
-                }
-            }
-            for (var i = 0; i < lod; i++)
-            {
-                int lodCount = GetSection2Count(section1EntryIndex, i),
-                lodStart = GetSection2StartIndex(section1EntryIndex, i);
-                for (var j = lodStart; j < lodStart + lodCount; j++)
-                {
-                    offset += GetSection2(j).Offset;
-                }
-            }
-            return offset;
-        }
-
-        public BGEO()
-        {
-        }
-
-        public BGEO(BinaryReader reader)
-        {
-            reader.BaseStream.Position = 0;
-            mMagic = reader.ReadChars(4);
-            if (new string(mMagic) != "BGEO")
-            {
-                throw new BlendException("Not a valid BGEO file.");
-            }
-            mVersion = reader.ReadInt32();
-            if (mVersion != 768)
-            {
-                throw new BlendException("Not a recognized BGEO version.");
-            }
-            mSection1Count = reader.ReadInt32();
-            mSection1LODCount = reader.ReadInt32();
-            mSection2Count = reader.ReadInt32();
-            mSection3Count = reader.ReadInt32();
-            mSection1HeaderSize = reader.ReadInt32();
-            mSection1LODSize = reader.ReadInt32();
-            mSection1Offset = reader.ReadInt32();
-            mSection2Offset = reader.ReadInt32();
-            mSection3Offset = reader.ReadInt32();
-            mSection1 = new Section1[mSection1Count];
-            for (var i = 0; i < mSection1Count; i++)
-            {
-                mSection1[i] = new Section1(reader, mSection1LODCount);
-            }
-            mSection2 = new Section2[mSection2Count];
-            for (var i = 0; i < mSection2Count; i++)
-            {
-                mSection2[i] = new Section2(reader);
-            }
-            mSection3 = new Section3[mSection3Count];
-            for (var i = 0; i < mSection3Count; i++)
-            {
-                mSection3[i] = new Section3(reader);
-            }
-            var section2Index = 0;
-            for (var i = 0; i < mSection1Count; i++)
-            {
-                section2Index = mSection1[i].FixSection3Count(mSection2, mSection1LODCount, section2Index);
-            }
-        }
-
-        public void WriteFile(BinaryWriter writer)
-        {
-            writer.Write(mMagic);
-            writer.Write(mVersion);
-            writer.Write(mSection1Count);
-            writer.Write(mSection1LODCount);
-            writer.Write(mSection2Count);
-            writer.Write(mSection3Count);
-            writer.Write(mSection1HeaderSize);
-            writer.Write(mSection1LODSize);
-            writer.Write(mSection1Offset);
-            writer.Write(mSection2Offset);
-            writer.Write(mSection3Offset);
-            for (var i = 0; i < mSection1Count; i++)
-            {
-                mSection1[i].Write(writer, mSection1LODCount);
-            }
-            for (var i = 0; i < mSection2Count; i++)
-            {
-                mSection2[i].Write(writer);
-            }
-            for (var i = 0; i < mSection3Count; i++)
-            {
-                mSection3[i].Write(writer);
             }
         }
 
@@ -559,6 +317,247 @@ namespace Destrospean.CmarNYCBorrowed
             {
             }
         }
+
+        public BGEO()
+        {
+        }
+
+        public BGEO(BinaryReader reader)
+        {
+            reader.BaseStream.Position = 0;
+            mMagic = reader.ReadChars(4);
+            if (new string(mMagic) != "BGEO")
+            {
+                throw new BlendException("Not a valid BGEO file.");
+            }
+            mVersion = reader.ReadInt32();
+            if (mVersion != 768)
+            {
+                throw new BlendException("Not a recognized BGEO version.");
+            }
+            mSection1Count = reader.ReadInt32();
+            mSection1LODCount = reader.ReadInt32();
+            mSection2Count = reader.ReadInt32();
+            mSection3Count = reader.ReadInt32();
+            mSection1HeaderSize = reader.ReadInt32();
+            mSection1LODSize = reader.ReadInt32();
+            mSection1Offset = reader.ReadInt32();
+            mSection2Offset = reader.ReadInt32();
+            mSection3Offset = reader.ReadInt32();
+            mSection1 = new Section1[mSection1Count];
+            for (var i = 0; i < mSection1Count; i++)
+            {
+                mSection1[i] = new Section1(reader, mSection1LODCount);
+            }
+            mSection2 = new Section2[mSection2Count];
+            for (var i = 0; i < mSection2Count; i++)
+            {
+                mSection2[i] = new Section2(reader);
+            }
+            mSection3 = new Section3[mSection3Count];
+            for (var i = 0; i < mSection3Count; i++)
+            {
+                mSection3[i] = new Section3(reader);
+            }
+            var section2Index = 0;
+            for (var i = 0; i < mSection1Count; i++)
+            {
+                section2Index = mSection1[i].FixSection3Count(mSection2, mSection1LODCount, section2Index);
+            }
+        }
+
+        public List<VertexData> GetDeltas(int entry, int lod)
+        {
+            var vertexDeltas = new List<VertexData>();
+            int runningOffset = GetLODInitialOffset(entry, lod),
+            section2Count = GetSection2Count(entry, lod),
+            section2Start = GetSection2StartIndex(entry, lod),
+            section2StartVertexID = GetLODStartVertexID(entry, lod),
+            section3Start = GetSection3StartIndex(entry, lod);
+            for (var i = 0; i < section2Count; i++)
+            {
+                var section2 = GetSection2(section2Start + i);
+                runningOffset += section2.Offset;
+                Vector3 normal = new Vector3(),
+                position = new Vector3();
+                int tempIndex = runningOffset;
+                if (section2.HasPosition)
+                {
+                    position = new Vector3(GetSection3(tempIndex + section3Start));
+                    tempIndex++;
+                }
+                if (section2.HasNormals)
+                {
+                    normal = new Vector3(GetSection3(tempIndex + section3Start));
+                }
+                var vertexData = new VertexData(section2StartVertexID + i, position, normal);
+                vertexDeltas.Add(vertexData);
+            }
+            return vertexDeltas;
+        }
+
+        public int GetLODInitialOffset(int section1EntryIndex, int lod)
+        {
+            if (section1EntryIndex == 0 & lod == 0)
+            {
+                return 0;
+            }
+            var offset = 0;
+            for (var i = 0; i < section1EntryIndex; i++)
+            {
+                int count = GetSection2Count(i),
+                start = GetSection2StartIndex(i, 0);
+                for (var j = start; j < start + count; j++)
+                {
+                    Section2 tmp = GetSection2(j);
+                    offset += tmp.Offset;
+                }
+            }
+            for (var i = 0; i < lod; i++)
+            {
+                int lodCount = GetSection2Count(section1EntryIndex, i),
+                lodStart = GetSection2StartIndex(section1EntryIndex, i);
+                for (var j = lodStart; j < lodStart + lodCount; j++)
+                {
+                    offset += GetSection2(j).Offset;
+                }
+            }
+            return offset;
+        }
+
+        public int GetLODStartVertexID(int section1EntryIndex, int lod)
+        {
+            return mSection1[section1EntryIndex].GetLODData(lod)[0];
+        }
+
+        public Section1 GetSection1(int section1EntryIndex)
+        {
+            return mSection1[section1EntryIndex];
+        }
+
+        public int GetSection1EntryIndex(CASPartResource.SpeciesType species, CASPartResource.AgeFlags age, CASPartResource.GenderFlags gender)
+        {
+            for (var i = 0; i < mSection1Count; i++)
+            {
+                if (((mSection1[i].AgeGenderSpecies & (uint)species) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)age) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)gender) > 0))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public Section2 GetSection2(int section2Index)
+        {
+            return mSection2[section2Index];
+        }
+
+        public int GetSection2Count()
+        {
+            return mSection2Count;
+        }
+
+        public int GetSection2Count(int section1EntryIndex)
+        {
+            var section1 = GetSection1(section1EntryIndex);
+            int temp = 0;
+            for (var i = 0; i < mSection1LODCount; i++)
+            {
+                temp += section1.GetLODData(i)[1];
+            }
+            return temp;
+        }
+
+        public int GetSection2Count(int section1EntryIndex, int lod)
+        {
+            return GetSection1(section1EntryIndex).GetLODData(lod)[1];
+        }
+
+        public int GetSection2StartIndex(int section1entryIndex, int lod)
+        {
+            int temp = 0;
+            for (var i = 0; i < section1entryIndex; i++)
+            {
+                for (var j = 0; j < Section1LODCount; j++)
+                {
+                    temp += mSection1[i].GetLODData(j)[1];
+                }
+            }
+            for (var j = 0; j < lod; j++)
+            {
+                temp += mSection1[section1entryIndex].GetLODData(j)[1];
+            }
+            return temp;
+        }
+
+        public int GetSection3Count()
+        {
+            return mSection3Count;
+        }
+
+        public int GetSection3Count(int section1EntryIndex)
+        {
+            var section1 = GetSection1(section1EntryIndex);
+            var temp = 0;
+            for (var i = 0; i < mSection1LODCount; i++)
+            {
+                temp += section1.GetLODData(i)[2];
+            }
+            return temp;
+        }
+
+        public float[] GetSection3(int section3Index)
+        {
+            return mSection3[section3Index].DeltaValues;
+        }
+
+        public int GetSection3Count(int section1EntryIndex, int lod)
+        {
+            return GetSection1(section1EntryIndex).GetLODData(lod)[2];
+        }
+
+        public int GetSection3StartIndex(int section1EntryIndex, int lod)
+        {
+            var temp = 0;
+            for (var i = 0; i < section1EntryIndex; i++)
+            {
+                for (var j = 0; j < Section1LODCount; j++)
+                {
+                    temp += mSection1[i].GetLODData(j)[2];
+                }
+            }
+            for (var j = 0; j < lod; j++)
+            {
+                temp += mSection1[section1EntryIndex].GetLODData(j)[2];
+            }
+            return temp;
+        }
+
+        public void WriteFile(BinaryWriter writer)
+        {
+            writer.Write(mMagic);
+            writer.Write(mVersion);
+            writer.Write(mSection1Count);
+            writer.Write(mSection1LODCount);
+            writer.Write(mSection2Count);
+            writer.Write(mSection3Count);
+            writer.Write(mSection1HeaderSize);
+            writer.Write(mSection1LODSize);
+            writer.Write(mSection1Offset);
+            writer.Write(mSection2Offset);
+            writer.Write(mSection3Offset);
+            for (var i = 0; i < mSection1Count; i++)
+            {
+                mSection1[i].Write(writer, mSection1LODCount);
+            }
+            for (var i = 0; i < mSection2Count; i++)
+            {
+                mSection2[i].Write(writer);
+            }
+            for (var i = 0; i < mSection3Count; i++)
+            {
+                mSection3[i].Write(writer);
+            }
+        }
     }
 }
-
