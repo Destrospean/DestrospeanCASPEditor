@@ -1620,7 +1620,6 @@ namespace Destrospean.CmarNYCBorrowed
 
         public static void MatchSeamVerts(GEOM geom)
         {
-            List<UVStitch> geomStitches = new List<UVStitch>(geom.uvStitches);
             for (int i = 0; i < geom.numVerts; i++)
             {
                 for (int j = 0; j < geom.numVerts; j++)
@@ -1629,7 +1628,6 @@ namespace Destrospean.CmarNYCBorrowed
                     {
                         if (i == j) continue;
                         byte[] sourceBones = geom.getBones(i);
-                        byte[] targetBones = new byte[sourceBones.Length];
                         byte[] sourceWeights = geom.getBoneWeights(i);
                         geom.setBones(j, sourceBones);
                         geom.setBoneWeights(j, sourceWeights);
@@ -2244,7 +2242,6 @@ namespace Destrospean.CmarNYCBorrowed
             for (int i = 0; i < this.numVerts; i++)
             {
                 Vector3 iPos = new Vector3(this.GetPosition(i));
-                Vector3 iNorm = new Vector3(this.GetNormal(i));
                 for (int j = 0; j < head.numVerts; j++)
                 {
                     if (iPos.positionClose(head.GetPosition(j)))

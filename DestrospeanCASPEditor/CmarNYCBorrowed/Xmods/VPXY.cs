@@ -8,17 +8,13 @@ namespace Destrospean.CmarNYCBorrowed
     {
         float[] mBoundingBox;
 
-        byte mBoxType, mCount, mFlag;
+        byte mCount, mFlag;
 
-        int mChunkPosition, mChunkSize, mExtCount, mFTPTIndex, mIndex3, mIntCount, mRCOLCount, mRCOLVersion, mTGICount, mTGIOffset, mTGISize, mVersion;
+        int mExtCount, mIntCount, mTGICount, mTGISize, mVersion;
 
         Entry[] mEntries;
 
         TGI[] mExtITG, mIntITG, mTGIList;
-
-        char[] mMagic;
-
-        uint mUnknown;
 
         public TGI[] AllLinks
         {
@@ -204,9 +200,9 @@ namespace Destrospean.CmarNYCBorrowed
         public VPXY(BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
-            mRCOLVersion = reader.ReadInt32();
-            mRCOLCount = reader.ReadInt32();
-            mIndex3 = reader.ReadInt32();
+            reader.ReadInt32();
+            reader.ReadInt32();
+            reader.ReadInt32();
             mExtCount = reader.ReadInt32();
             mIntCount = reader.ReadInt32();
             if (mIntCount > 0)
@@ -226,12 +222,11 @@ namespace Destrospean.CmarNYCBorrowed
                 uint type = reader.ReadUInt32(), group = reader.ReadUInt32();
                 mExtITG[i] = new TGI(type, group, instance);
             }
-            mChunkPosition = reader.ReadInt32();
-            mChunkSize = reader.ReadInt32();
-            mMagic = new char[4];
-            mMagic = reader.ReadChars(4);
+            reader.ReadInt32();
+            reader.ReadInt32();
+            reader.ReadChars(4);
             mVersion = reader.ReadInt32();
-            mTGIOffset = reader.ReadInt32();
+            reader.ReadInt32();
             mTGISize = reader.ReadInt32();
             mCount = reader.ReadByte();
             mEntries = new Entry[mCount];
@@ -239,19 +234,19 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 mEntries[i] = new Entry(reader);
             }
-            mBoxType = reader.ReadByte();
+            reader.ReadByte();
             mBoundingBox = new float[6];
             for (var i = 0; i < 6; i++)
             {
                 mBoundingBox[i] = reader.ReadSingle();
             }
-            mUnknown = reader.ReadUInt32();
+            reader.ReadUInt32();
             if (mVersion <= 4)
             {
                 mFlag = reader.ReadByte();
                 if (mFlag == 1)
                 {
-                    mFTPTIndex = reader.ReadInt32();
+                    reader.ReadInt32();
                 }
             }
             if (mTGISize > 0)

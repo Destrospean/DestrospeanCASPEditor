@@ -402,7 +402,6 @@ namespace Destrospean.CmarNYCBorrowed
                 flags = other.flags;
 
                 rig = r;
-                int index = other.index;
                 localRotation = new Quaternion(other.localRotation.Coordinates);
                 globalRotation = new Quaternion(other.globalRotation.Coordinates);
                 localTransform = new Matrix4D(other.localTransform.Matrix);
