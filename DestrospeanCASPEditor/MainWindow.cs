@@ -275,10 +275,90 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
+            HScale fatnessSlider = new HScale(-1, 1, 0.01)
+                {
+                    Value = mFat - mThin
+                },
+            fitnessSlider = new HScale(0, 1, 0.01)
+                {
+                    Value = mFit
+                },
+            specialSlider = new HScale(0, 1, 0.01)
+                {
+                    Value = mSpecial
+                };
+            System.Action changeOtherSliders = () =>
+                {
+                    for (var i = 0; i < casPart.LODs.Count; i++)
+                    {
+                        if (new List<int>(casPart.LODs.Keys)[i] == lodKvp.Key)
+                        {
+                            continue;
+                        }
+                        foreach (var child in ((VBox)ResourcePropertyNotebook.GetNthPage(i)).Children)
+                        {
+                            var hBox = child as HBox;
+                            if (hBox != null)
+                            {
+                                var hScaleIndex = 0;
+                                foreach (var hBoxChild in hBox.Children)
+                                {
+                                    var hScale = hBoxChild as HScale;
+                                    if (hScale != null)
+                                    {
+                                        hScale.Value = hScaleIndex == 0 ? fatnessSlider.Value : hScaleIndex == 1 ? fitnessSlider.Value : specialSlider.Value;
+                                        hScaleIndex++;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                };
+            fatnessSlider.ValueChanged += (sender, e) =>
+                {
+                    mFat = fatnessSlider.Value > 0 ? (float)fatnessSlider.Value : 0;
+                    mThin = fatnessSlider.Value < 0 ? (float)-fatnessSlider.Value : 0;
+                    changeOtherSliders();
+                    ModelsNeedUpdated = true;
+                };
+            fitnessSlider.ValueChanged += (sender, e) =>
+                {
+                    mFit = (float)fitnessSlider.Value;
+                    changeOtherSliders();
+                    ModelsNeedUpdated = true;
+                };
+            specialSlider.ValueChanged += (sender, e) =>
+                {
+                    mSpecial = (float)specialSlider.Value;
+                    changeOtherSliders();
+                    ModelsNeedUpdated = true;
+                };
             var geomPageButtonHBox = new HBox(false, 0);
             geomPageButtonHBox.PackEnd(menuBar, true, true, 4);
             geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
             geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
+            geomPageButtonHBox.PackStart(new Image
+                {
+                    File = string.Format("{0}{1}Icons{1}fatness.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
+                    HeightRequest = 32,
+                    WidthRequest = 32
+                }, false, true, 4);
+            geomPageButtonHBox.PackStart(fatnessSlider, true, true, 4);
+            geomPageButtonHBox.PackStart(new Image
+                {
+                    File = string.Format("{0}{1}Icons{1}fitness.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
+                    HeightRequest = 32,
+                    WidthRequest = 32
+                }, false, true, 4);
+            geomPageButtonHBox.PackStart(fitnessSlider, true, true, 4);
+            geomPageButtonHBox.PackStart(new Image
+                {
+                    File = string.Format("{0}{1}Icons{1}babybump.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
+                    HeightRequest = 32,
+                    WidthRequest = 32
+                }, false, true, 4);
+            geomPageButtonHBox.PackStart(specialSlider, true, true, 4);
             geomPageButtonHBox.ShowAll();
             var lodPageVBox = new VBox(false, 0);
             lodPageVBox.PackStart(geomPageButtonHBox, false, true, 0);

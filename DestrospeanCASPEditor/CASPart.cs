@@ -14,6 +14,26 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public class CASPart
     {
+        RIG mCurrentRig = null;
+
+        public AgeGender AdjustedAge
+        {
+            get
+            {
+                var age = (AgeGender)(uint)CASPartResource.AgeGender.Age;
+                return age >= AgeGender.Teen && age <= AgeGender.Elder ? AgeGender.Adult : age;
+            }
+        }
+
+        public Species AdjustedSpecies
+        {
+            get
+            {
+                var species = (Species)((uint)CASPartResource.AgeGender.Species << 8);
+                return species == 0 ? Species.Human : species;
+            }
+        }
+
         public List<Preset> AllPresets
         {
             get
@@ -28,6 +48,22 @@ namespace Destrospean.DestrospeanCASPEditor
         }
             
         public readonly CASPartResource.CASPartResource CASPartResource;
+
+        public RIG CurrentRig
+        {
+            get
+            {
+                if (mCurrentRig == null)
+                {
+                    mCurrentRig = MeshUtils.GetTS3Rig(ParentPackage, AdjustedSpecies, AdjustedAge);
+                }
+                return mCurrentRig;
+            }
+            private set
+            {
+                mCurrentRig = value;
+            }
+        }
 
         public readonly Preset DefaultPreset;
 
@@ -380,7 +416,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                 }
-                for (int i = 0; i < baseHues.Count && baseHues.Count == baseSaturations.Count && baseHues.Count == baseValues.Count; i++)
+                for (var i = 0; i < baseHues.Count && baseHues.Count == baseSaturations.Count && baseHues.Count == baseValues.Count; i++)
                 {
                     baseHSVColors.Add(new float[]
                         {
@@ -389,7 +425,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             baseValues[i]
                         });
                 }
-                for (int i = 0; i < hues.Count && hues.Count == saturations.Count && hues.Count == values.Count; i++)
+                for (var i = 0; i < hues.Count && hues.Count == saturations.Count && hues.Count == values.Count; i++)
                 {
                     hsvColors.Add(new float[]
                         {
@@ -986,6 +1022,11 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
+        public void ClearCurrentRig()
+        {
+            CurrentRig = null;
+        }
+
         public void LoadLODs(Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
         {
             var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
@@ -995,9 +1036,9 @@ namespace Destrospean.DestrospeanCASPEditor
                 vpxyResources.Add(vpxyResourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
                 vpxyResource = vpxyResources[vpxyResourceIndexEntry];
             }
-            foreach (var entry in ((VPXY)vpxyResource.ChunkEntries[0].RCOLBlock).Entries)
+            foreach (var entry in ((s3pi.GenericRCOLResource.VPXY)vpxyResource.ChunkEntries[0].RCOLBlock).Entries)
             {
-                var entry00 = entry as VPXY.Entry00;
+                var entry00 = entry as s3pi.GenericRCOLResource.VPXY.Entry00;
                 if (entry00 != null)
                 {
                     LODs[entry00.EntryID] = new List<GeometryResource>();
@@ -1014,7 +1055,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     continue;
                 }
-                var entry01 = entry as VPXY.Entry01;
+                var entry01 = entry as s3pi.GenericRCOLResource.VPXY.Entry01;
                 if (entry01 != null)
                 {
                 }

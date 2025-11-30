@@ -141,6 +141,13 @@ namespace Destrospean.DestrospeanCASPEditor
                 set;
             }
 
+            public ResourceKey(Destrospean.CmarNYCBorrowed.TGI tgi)
+            {
+                Instance = tgi.Instance;
+                ResourceGroup = tgi.Group;
+                ResourceType = tgi.Type;
+            }
+
             public ResourceKey(uint type, uint group, ulong instance)
             {
                 Instance = instance;

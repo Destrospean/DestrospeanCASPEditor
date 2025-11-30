@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using CASPartResource;
-using Xmods.DataLib;
 
 namespace Destrospean.CmarNYCBorrowed
 {
@@ -34,6 +32,8 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
+        public float Weight;
+
         public class Section1
         {
             uint mAgeGenderSpecies, mRegion;
@@ -46,7 +46,7 @@ namespace Destrospean.CmarNYCBorrowed
                     var temp = mAgeGenderSpecies;
                     if ((temp & 0x0F00) == 0)
                     {
-                        temp = temp | (uint)XmodsEnums.Species.Human;
+                        temp = temp | (uint)Species.Human;
                     }
                     return temp;
                 }
@@ -72,7 +72,7 @@ namespace Destrospean.CmarNYCBorrowed
                 mVertexIDCount = vertexIDCount;
                 mEntryCount = entryCount;
                 mOriginalEntryCount = entryCount;
-                if (firstVertexID.Length != 4 | vertexIDCount.Length != 4 | entryCount.Length != 4)
+                if (firstVertexID.Length != 4 || vertexIDCount.Length != 4 || entryCount.Length != 4)
                 {
                     throw new BlendException("Section 1 constructor: LOD information arrays must have four elements.");
                 }
@@ -136,7 +136,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public override string ToString()
             {
-                return ((SpeciesType)mAgeGenderSpecies).ToString() + ((AgeFlags)mAgeGenderSpecies).ToString() + ((GenderFlags)mAgeGenderSpecies).ToString() + Environment.NewLine +
+                return ((Species)mAgeGenderSpecies).ToString() + ((AgeGender)mAgeGenderSpecies).ToString() + Environment.NewLine +
                     "LOD 0: First vertex " + mFirstVertexID[0].ToString() + ", Number vertices " + mVertexIDCount[0].ToString() + ", Number entries " + mEntryCount[0] + Environment.NewLine +
                     "LOD 1: First vertex " + mFirstVertexID[1].ToString() + ", Number vertices " + mVertexIDCount[1].ToString() + ", Number entries " + mEntryCount[1] + Environment.NewLine +
                     "LOD 2: First vertex " + mFirstVertexID[2].ToString() + ", Number vertices " + mVertexIDCount[2].ToString() + ", Number entries " + mEntryCount[2] + Environment.NewLine +
@@ -285,6 +285,7 @@ namespace Destrospean.CmarNYCBorrowed
         public class VertexData
         {
             public Vector3 Normals, Position;
+
             public int VertexID;
 
             public VertexData(int id, Vector3 position, Vector3 normals)
@@ -377,7 +378,7 @@ namespace Destrospean.CmarNYCBorrowed
                 runningOffset += section2.Offset;
                 Vector3 normal = new Vector3(),
                 position = new Vector3();
-                int tempIndex = runningOffset;
+                var tempIndex = runningOffset;
                 if (section2.HasPosition)
                 {
                     position = new Vector3(GetSection3(tempIndex + section3Start));
@@ -395,7 +396,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public int GetLODInitialOffset(int section1EntryIndex, int lod)
         {
-            if (section1EntryIndex == 0 & lod == 0)
+            if (section1EntryIndex == 0 && lod == 0)
             {
                 return 0;
             }
@@ -406,8 +407,7 @@ namespace Destrospean.CmarNYCBorrowed
                 start = GetSection2StartIndex(i, 0);
                 for (var j = start; j < start + count; j++)
                 {
-                    Section2 tmp = GetSection2(j);
-                    offset += tmp.Offset;
+                    offset += GetSection2(j).Offset;
                 }
             }
             for (var i = 0; i < lod; i++)
@@ -432,7 +432,7 @@ namespace Destrospean.CmarNYCBorrowed
             return mSection1[section1EntryIndex];
         }
 
-        public int GetSection1EntryIndex(SpeciesType species, AgeFlags age, GenderFlags gender)
+        public int GetSection1EntryIndex(Species species, AgeGender age, AgeGender gender)
         {
             for (var i = 0; i < mSection1Count; i++)
             {
@@ -457,7 +457,7 @@ namespace Destrospean.CmarNYCBorrowed
         public int GetSection2Count(int section1EntryIndex)
         {
             var section1 = GetSection1(section1EntryIndex);
-            int temp = 0;
+            var temp = 0;
             for (var i = 0; i < mSection1LODCount; i++)
             {
                 temp += section1.GetLODData(i)[1];
@@ -470,10 +470,10 @@ namespace Destrospean.CmarNYCBorrowed
             return GetSection1(section1EntryIndex).GetLODData(lod)[1];
         }
 
-        public int GetSection2StartIndex(int section1entryIndex, int lod)
+        public int GetSection2StartIndex(int section1EntryIndex, int lod)
         {
-            int temp = 0;
-            for (var i = 0; i < section1entryIndex; i++)
+            var temp = 0;
+            for (var i = 0; i < section1EntryIndex; i++)
             {
                 for (var j = 0; j < Section1LODCount; j++)
                 {
@@ -482,7 +482,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             for (var j = 0; j < lod; j++)
             {
-                temp += mSection1[section1entryIndex].GetLODData(j)[1];
+                temp += mSection1[section1EntryIndex].GetLODData(j)[1];
             }
             return temp;
         }

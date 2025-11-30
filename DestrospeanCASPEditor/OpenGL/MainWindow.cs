@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.OpenGL;
 using Gtk;
@@ -9,6 +11,8 @@ using meshExpImp.ModelBlocks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
+using s3pi.WrapperDealer;
+using Shader = Destrospean.DestrospeanCASPEditor.OpenGL.Shader;
 using Vector2 = OpenTK.Vector2;
 using Vector3 = OpenTK.Vector3;
 
@@ -41,8 +45,12 @@ public partial class MainWindow : Window
     MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
 
     float mFOV = MathHelper.DegreesToRadians(30),
+    mFat = 0,
+    mFit = 0,
     mMouseX,
     mMouseY,
+    mSpecial = 0,
+    mThin = 0,
     mTime = 0;
 
     readonly List<Volume> mObjects = new List<Volume>();
@@ -393,29 +401,154 @@ public partial class MainWindow : Window
     void LoadGEOMs(CASPart casPart)
     {
         mObjects.Clear();
+        var lod = new List<int>(casPart.LODs.Keys)[ResourcePropertyNotebook.CurrentPage];
         foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
             var geom = geometryResource.ToGEOM();
+            byte[] bblnIndices =
+                {
+                    casPart.CASPartResource.BlendInfoFatIndex,
+                    casPart.CASPartResource.BlendInfoFitIndex,
+                    casPart.CASPartResource.BlendInfoThinIndex,
+                    casPart.CASPartResource.BlendInfoSpecialIndex
+                };
+            float[] scales =
+                {
+                    mFat,
+                    mFit,
+                    mThin,
+                    mSpecial
+                };
+            for (var i = 0; i < bblnIndices.Length; i++)
+            {
+                BBLN bbln;
+                ResourceUtils.EvaluatedResourceKey evaluated;
+                try
+                {
+                    evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
+                    bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                }
+                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                {
+                    bbln = null;
+                }
+                if (bbln == null)
+                {
+                    continue;
+                }
+                BGEO bgeo;
+                try
+                {
+                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                    bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
+                }
+                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                {
+                    bgeo = null;
+                }
+                foreach (var entry in bbln.Entries)
+                {
+                    foreach (var geomMorph in entry.GEOMMorphs)
+                    {
+                        if (bgeo != null)
+                        {
+                            bgeo.Weight = scales[i] * geomMorph.Amount;
+                            geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
+                        }
+                        else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
+                        {
+                            Destrospean.CmarNYCBorrowed.VPXY vpxy;
+                            try
+                            {
+                                var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                                vpxy = null;
+                            }
+                            if (vpxy != null)
+                            {
+                                var deltaLinks = vpxy.MeshLinks(lod);
+                                var deltas = new List<Destrospean.CmarNYCBorrowed.GEOM>();
+                                foreach (var link in deltaLinks)
+                                {
+                                    Destrospean.CmarNYCBorrowed.GEOM delta;
+                                    try
+                                    {
+                                        var deltaEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                        delta = ((GeometryResource)WrapperDealer.GetResource(0, deltaEvaluated.Package, deltaEvaluated.ResourceIndexEntry)).ToGEOM();
+                                    }
+                                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                    {
+                                        delta = null;
+                                    }
+                                    if (delta != null)
+                                    {
+                                        deltas.Add(delta);
+                                    }
+                                }
+                                geom = geom.LoadGEOMMorph(deltas.ToArray(), scales[i]);
+                            }
+                        }
+                    }
+                    foreach (var boneMorph in entry.BoneMorphs)
+                    {
+                        Destrospean.CmarNYCBorrowed.VPXY vpxy;
+                        try
+                        {   
+                            var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                            vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
+                        }
+                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                        {
+                            vpxy = null;
+                        }
+                        if (vpxy == null)
+                        {
+                            continue;
+                        }
+                        foreach (var link in vpxy.AllLinks)
+                        {
+                            BOND bond;
+                            try
+                            {   
+                                var bondEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, bondEvaluated.Package, bondEvaluated.ResourceIndexEntry).Stream));
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                                bond = null;
+                            }
+                            if (bond != null)
+                            {
+                                bond.Weight = scales[i] * boneMorph.Amount;
+                                geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
+                            }
+                        }
+                    }
+                }
+            }
             List<Vector3> colors = new List<Vector3>(),
             normals = new List<Vector3>(),
             vertices = new List<Vector3>();
             var faces = new List<Tuple<int, int, int>>();
             var textureCoordinates = new List<Vector2>();
-            for (var i = 0; i < geom.numberFaces; i++)
+            for (var i = 0; i < geom.FaceCount; i++)
             {
-                var indices = geom.getFace(i);
+                var indices = geom.GetFaceIndices(i);
                 faces.Add(new Tuple<int, int, int>(indices[0], indices[1], indices[2]));
             }
-            for (var i = 0; i < geom.numberVertices; i++)
+            for (var i = 0; i < geom.VertexCount; i++)
             {
                 colors.Add(Vector3.One);
-                float[] normal = geom.getNormal(i),
-                position = geom.getPosition(i);
+                float[] normal = geom.GetNormal(i),
+                position = geom.GetPosition(i);
                 normals.Add(new Vector3(normal[0], normal[1], normal[2]));
                 vertices.Add(new Vector3(position[0], position[1], position[2]));
-                for (var j = 0; j < geom.numberUV; j++)
+                for (var j = 0; j < geom.UVCount; j++)
                 {
-                    var uv = geom.getUV(i, j);
+                    var uv = geom.GetUV(i, j);
                     textureCoordinates.Add(new Vector2(uv[0], uv[1]));
                 }
             }
@@ -433,7 +566,7 @@ public partial class MainWindow : Window
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var element in ((GEOM)geometryResource.ChunkEntries[0].RCOLBlock).Mtnf.SData)
+                foreach (var element in ((meshExpImp.ModelBlocks.GEOM)geometryResource.ChunkEntries[0].RCOLBlock).Mtnf.SData)
                 {
                     var elementFloat3 = element as ElementFloat3;
                     if (elementFloat3 != null)

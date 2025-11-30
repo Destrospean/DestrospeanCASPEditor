@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gdk;
 using Gtk;
@@ -62,9 +63,9 @@ namespace Destrospean.DestrospeanCASPEditor
                     break;
                 }
             }
-            var geom = (GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
+            var geom = (meshExpImp.ModelBlocks.GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
             var shaders = new List<string>();
-            foreach (var shader in Enum.GetValues(typeof(Xmods.DataLib.XmodsEnums.Shader)))
+            foreach (var shader in Enum.GetValues(typeof(Shader)))
             {
                 shaders.Add(string.Format("{0} ({1})", shader, (uint)shader));
             }
@@ -75,12 +76,12 @@ namespace Destrospean.DestrospeanCASPEditor
                 };
             var shaderComboBox = new ComboBox(shaders.ToArray())
                 {
-                    Active = shaders.IndexOf(string.Format("{0} ({1})", (Xmods.DataLib.XmodsEnums.Shader)geom.Shader, (uint)geom.Shader))
+                    Active = shaders.IndexOf(string.Format("{0} ({1})", (Shader)geom.Shader, (uint)geom.Shader))
                 };
             shaderComboBoxAlignment.Add(shaderComboBox);
             shaderComboBox.Changed += (sender, e) =>
                 {
-                    geom.Shader = (ShaderType)Enum.Parse(typeof(Xmods.DataLib.XmodsEnums.Shader), shaderComboBox.ActiveText.Split(' ')[0]);
+                    geom.Shader = (ShaderType)Enum.Parse(typeof(Shader), shaderComboBox.ActiveText.Split(' ')[0]);
                     mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             table.Attach(new Label("Shader")
@@ -401,6 +402,10 @@ namespace Destrospean.DestrospeanCASPEditor
                         else
                         {
                             propertyInfo.SetValue(property, value, null);
+                        }
+                        foreach (var casPart in MainWindow.Singleton.CASParts.Values)
+                        {
+                            casPart.ClearCurrentRig();
                         }
                         MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };

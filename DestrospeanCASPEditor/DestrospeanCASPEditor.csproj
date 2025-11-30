@@ -172,9 +172,6 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="XmodsDataLib">
-      <HintPath>..\libs\XmodsDataLib.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -219,8 +216,20 @@
     <Compile Include="CmarNYCBorrowed\TextureUtils.cs" />
     <Compile Include="Dialogs\ChangePatternDialog.cs" />
     <Compile Include="CmarNYCBorrowed\MeshUtils.cs" />
-    <Compile Include="CmarNYCBorrowed\BGEO.cs" />
-    <Compile Include="MeshUtils.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\AxisAngle.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\BBLN.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\BGEO.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\BOND.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Enums.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\GEOM.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Matrix3D.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Matrix4D.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Quaternion.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\RIG.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\TGI.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Vector2.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Vector3.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\VPXY.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -228,5 +237,73 @@
     <Folder Include="Dialogs\" />
     <Folder Include="OpenGL\" />
     <Folder Include="CmarNYCBorrowed\" />
+    <Folder Include="CmarNYCBorrowed\Xmods\" />
   </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <NameConventionPolicy>
+            <Rules>
+              <NamingRule Name="Namespaces" AffectedEntity="Namespace" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Types" AffectedEntity="Class, Struct, Enum, Delegate" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Interfaces" AffectedEntity="Interface" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>I</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Attributes" AffectedEntity="CustomAttributes" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>Attribute</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Event Arguments" AffectedEntity="CustomEventArgs" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>EventArgs</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Exceptions" AffectedEntity="CustomExceptions" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>Exception</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Methods" AffectedEntity="Methods" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Static Readonly Fields" AffectedEntity="ReadonlyField" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="False" IncludeStaticEntities="True" />
+              <NamingRule Name="Fields (Non Private)" AffectedEntity="Field" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="ReadOnly Fields (Non Private)" AffectedEntity="ReadonlyField" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False" />
+              <NamingRule Name="Fields (Private)" AffectedEntity="Field, ReadonlyField" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False">
+                <RequiredPrefixes>
+                  <String>m</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Static Fields (Private)" AffectedEntity="Field" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="False" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>s</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="ReadOnly Fields (Private)" AffectedEntity="ReadonlyField" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False">
+                <RequiredPrefixes>
+                  <String>m</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Constant Fields" AffectedEntity="ConstantField" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>k</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Properties" AffectedEntity="Property" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Events" AffectedEntity="Event" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Enum Members" AffectedEntity="EnumMember" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Parameters" AffectedEntity="Parameter" VisibilityMask="VisibilityMask" NamingStyle="CamelCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Type Parameters" AffectedEntity="TypeParameter" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>T</String>
+                </RequiredPrefixes>
+              </NamingRule>
+            </Rules>
+          </NameConventionPolicy>
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
 </Project>
