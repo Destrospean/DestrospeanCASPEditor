@@ -51,22 +51,6 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public TGI[] MeshLinks(int lod)
-        {
-            var temp = new List<TGI>();
-            foreach (var entry in mEntries)
-            {
-                if (entry.Type == EntryType.MeshEntry && entry.LOD == lod)
-                {
-                    foreach (var i in entry.IndexArray)
-                    {
-                        temp.Add(mTGIList[i]);
-                    }
-                }
-            }
-            return temp.ToArray();
-        }
-
         public enum EntryType : byte
         {
             MeshEntry = 0,
@@ -263,6 +247,22 @@ namespace Destrospean.CmarNYCBorrowed
                 mTGICount = 0;
                 mTGIList = new TGI[0];
             }
+        }
+
+        public TGI[] MeshLinks(int lod)
+        {
+            var temp = new List<TGI>();
+            foreach (var entry in mEntries)
+            {
+                if (entry.Type == EntryType.MeshEntry && entry.LOD == lod)
+                {
+                    foreach (var i in entry.IndexArray)
+                    {
+                        temp.Add(mTGIList[i]);
+                    }
+                }
+            }
+            return temp.ToArray();
         }
     }
 }

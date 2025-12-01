@@ -5,160 +5,48 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public class BOND
     {
-        public uint ContextVersion = 3;
-        public TGI[] PublicKey;
-        public TGI[] ExternalKey;
-        public TGI[] DelayLoadKey;
-        public ObjectData[] ObjectKey;
-        uint version = 1;
+        uint mVersion = 1;
+
         public BoneAdjust[] Adjustments;
 
-        public float Weight = 1f;
-        public string Name = "unknown";
+        public uint ContextVersion = 3;
 
-        public void RemoveBoneAdjust(int index)
-        {
-            BoneAdjust[] tmp = new BoneAdjust[this.Adjustments.Length - 1];
-            Array.Copy(this.Adjustments, 0, tmp, 0, index);
-            Array.Copy(this.Adjustments, index + 1, tmp, index, tmp.Length - index);
-            this.Adjustments = tmp;
-        }
-
-        public void AddBoneAdjust(BoneAdjust adjust)
-        {
-            BoneAdjust[] tmp = new BoneAdjust[this.Adjustments.Length + 1];
-            Array.Copy(this.Adjustments, tmp, this.Adjustments.Length);
-            tmp[tmp.Length - 1] = new BoneAdjust(adjust);
-            this.Adjustments = tmp;
-        }
+        public TGI[] DelayLoadKey, ExternalKey, PublicKey;
 
         /// <summary>
         /// Tests for extreme scaling
         /// </summary>
         /// <returns></returns>
-        public bool IsSizeMorph()
+        public bool IsSizeMorph
         {
-            foreach (BoneAdjust b in this.Adjustments)
+            get
             {
-                if ((b.SlotHash == 0xFEAE6981 || b.SlotHash == 0x57884BB9 || b.SlotHash == 0x556B181A ||
-                    b.SlotHash == 0x6FA96266 || b.SlotHash == 0xAFAC05CF || b.SlotHash == 0x6FAF7238) &&
-                    (Math.Abs(b.ScaleX) > 0.1f || Math.Abs(b.ScaleY) > 0.1f || Math.Abs(b.ScaleZ) > 0.1f))
-                    return true;
-            }
-            return false;
-        }
-
-        public BOND(BinaryReader br)
-        {
-            br.BaseStream.Position = 0;
-            this.ContextVersion = br.ReadUInt32();
-            uint publicKeyCount = br.ReadUInt32();
-            uint externalKeyCount = br.ReadUInt32();
-            uint delayLoadKeyCount = br.ReadUInt32();
-            uint objectKeyCount = br.ReadUInt32();
-            this.PublicKey = new TGI[publicKeyCount];
-            for (int i = 0; i < publicKeyCount; i++) PublicKey[i] = new TGI(br, TGI.TGIsequence.ITG);
-            this.ExternalKey = new TGI[externalKeyCount];
-            for (int i = 0; i < externalKeyCount; i++) ExternalKey[i] = new TGI(br, TGI.TGIsequence.ITG);
-            this.DelayLoadKey = new TGI[delayLoadKeyCount];
-            for (int i = 0; i < delayLoadKeyCount; i++) DelayLoadKey[i] = new TGI(br, TGI.TGIsequence.ITG);
-            this.ObjectKey = new ObjectData[objectKeyCount];
-            //for (int i = 0; i < objectKeyCount; i++) objectKey[i] = new ObjectData(br);
-            ObjectKey[0] = new ObjectData(br);
-            version = br.ReadUInt32();
-            uint boneAdjustCount = br.ReadUInt32();
-            Adjustments = new BoneAdjust[boneAdjustCount];
-            for (uint i = 0; i < boneAdjustCount; i++)
-            {
-                Adjustments[i] = new BoneAdjust(br);
+                foreach (var a in Adjustments)
+                {
+                    if ((a.SlotHash == 0xFEAE6981 || a.SlotHash == 0x57884BB9 || a.SlotHash == 0x556B181A || a.SlotHash == 0x6FA96266 || a.SlotHash == 0xAFAC05CF || a.SlotHash == 0x6FAF7238) && (Math.Abs(a.ScaleX) > .1f || Math.Abs(a.ScaleY) > .1f || Math.Abs(a.ScaleZ) > .1f))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
-        public BOND()
-        {
-            this.PublicKey = new TGI[] { new TGI() };
-            this.Adjustments = new BoneAdjust[0];
-        }
+        public string Name = "unknown";
 
-        internal void Write(BinaryWriter bw)
-        {
-            bw.Write(this.ContextVersion);
-            if (this.PublicKey == null) this.PublicKey = new TGI[0];
-            bw.Write(PublicKey.Length);
-            if (this.ExternalKey == null) this.ExternalKey = new TGI[0];
-            bw.Write(ExternalKey.Length);
-            if (this.DelayLoadKey == null) this.DelayLoadKey = new TGI[0];
-            bw.Write(DelayLoadKey.Length);
-            bw.Write(1);
-            for (int i = 0; i < PublicKey.Length; i++) PublicKey[i].Write(bw, TGI.TGIsequence.ITG);
-            for (int i = 0; i < ExternalKey.Length; i++) ExternalKey[i].Write(bw, TGI.TGIsequence.ITG);
-            for (int i = 0; i < DelayLoadKey.Length; i++) DelayLoadKey[i].Write(bw, TGI.TGIsequence.ITG);
-            this.ObjectKey = new ObjectData[] { new ObjectData((uint)(20 + (PublicKey.Length * 16) + (ExternalKey.Length * 16) + (DelayLoadKey.Length * 16) + 8),
-                (uint)(4 + (Adjustments.Length * 44))) };
-            for (int i = 0; i < ObjectKey.Length; i++) ObjectKey[i].Write(bw);
-            bw.Write(version);
-            if (Adjustments == null) Adjustments = new BoneAdjust[0];
-            bw.Write(Adjustments.Length);
-            for (uint i = 0; i < Adjustments.Length; i++)
-            {
-                Adjustments[i].Write(bw);
-            }
-        }
+        public ObjectData[] ObjectKey;
 
-        public class ObjectData
-        {
-            internal uint position;
-            internal uint length;
-
-            internal ObjectData(BinaryReader br)
-            {
-                this.position = br.ReadUInt32();
-                this.length = br.ReadUInt32();
-            }
-
-            internal ObjectData(uint position, uint length)
-            {
-                this.position = position;
-                this.length = length;
-            }
-
-            internal void Write(BinaryWriter bw)
-            {
-                bw.Write(this.position);
-                bw.Write(this.length);
-            }
-        }
+        public float Weight = 1;
 
         public class BoneAdjust
         {
+            public float OffsetX, OffsetY, OffsetZ, QuatW, QuatX, QuatY, QuatZ, ScaleX, ScaleY, ScaleZ;
+
             public uint SlotHash;
-            public float OffsetX;
-            public float OffsetY;
-            public float OffsetZ;
-            public float ScaleX;
-            public float ScaleY;
-            public float ScaleZ;
-            public float QuatX;
-            public float QuatY;
-            public float QuatZ;
-            public float QuatW;
 
-            public BoneAdjust(BinaryReader br)
+            public BoneAdjust()
             {
-                SlotHash = br.ReadUInt32();
-                OffsetX = br.ReadSingle();
-                OffsetY = br.ReadSingle();
-                OffsetZ = br.ReadSingle();
-                ScaleX = br.ReadSingle();
-                ScaleY = br.ReadSingle();
-                ScaleZ = br.ReadSingle();
-                QuatX = br.ReadSingle();
-                QuatY = br.ReadSingle();
-                QuatZ = br.ReadSingle();
-                QuatW = br.ReadSingle();
             }
-
-            public BoneAdjust() {}
 
             public BoneAdjust(BoneAdjust other)
             {
@@ -175,26 +63,173 @@ namespace Destrospean.CmarNYCBorrowed
                 QuatW = other.QuatW;
             }
 
-            internal void Write(BinaryWriter bw)
+            public BoneAdjust(BinaryReader reader)
             {
-                bw.Write(SlotHash);
-                bw.Write(OffsetX);
-                bw.Write(OffsetY);
-                bw.Write(OffsetZ);
-                bw.Write(ScaleX);
-                bw.Write(ScaleY);
-                bw.Write(ScaleZ);
-                bw.Write(QuatX);
-                bw.Write(QuatY);
-                bw.Write(QuatZ);
-                if (QuatX > 0f || QuatY > 0f || QuatZ > 0f)
+                SlotHash = reader.ReadUInt32();
+                OffsetX = reader.ReadSingle();
+                OffsetY = reader.ReadSingle();
+                OffsetZ = reader.ReadSingle();
+                ScaleX = reader.ReadSingle();
+                ScaleY = reader.ReadSingle();
+                ScaleZ = reader.ReadSingle();
+                QuatX = reader.ReadSingle();
+                QuatY = reader.ReadSingle();
+                QuatZ = reader.ReadSingle();
+                QuatW = reader.ReadSingle();
+            }
+
+            public void Write(BinaryWriter writer)
+            {
+                writer.Write(SlotHash);
+                writer.Write(OffsetX);
+                writer.Write(OffsetY);
+                writer.Write(OffsetZ);
+                writer.Write(ScaleX);
+                writer.Write(ScaleY);
+                writer.Write(ScaleZ);
+                writer.Write(QuatX);
+                writer.Write(QuatY);
+                writer.Write(QuatZ);
+                if (QuatX > 0 || QuatY > 0 || QuatZ > 0)
                 {
-                    bw.Write(QuatW);
+                    writer.Write(QuatW);
                 }
                 else
                 {
-                    bw.Write(0f);
+                    writer.Write(0f);
                 }
+            }
+        }
+
+        public class ObjectData
+        {
+            uint mLength, mPosition;
+
+            public ObjectData(uint position, uint length)
+            {
+                mPosition = position;
+                mLength = length;
+            }
+
+            public ObjectData(BinaryReader reader)
+            {
+                mPosition = reader.ReadUInt32();
+                mLength = reader.ReadUInt32();
+            }
+
+            public void Write(BinaryWriter writer)
+            {
+                writer.Write(mPosition);
+                writer.Write(mLength);
+            }
+        }
+
+        public BOND()
+        {
+            PublicKey = new TGI[]
+                {
+                    new TGI()
+                };
+            Adjustments = new BoneAdjust[0];
+        }
+
+        public BOND(BinaryReader reader)
+        {
+            reader.BaseStream.Position = 0;
+            ContextVersion = reader.ReadUInt32();
+            uint publicKeyCount = reader.ReadUInt32(),
+            externalKeyCount = reader.ReadUInt32(),
+            delayLoadKeyCount = reader.ReadUInt32(),
+            objectKeyCount = reader.ReadUInt32();
+            PublicKey = new TGI[publicKeyCount];
+            for (var i = 0; i < publicKeyCount; i++)
+            {
+                PublicKey[i] = new TGI(reader, TGI.TGISequence.ITG);
+            }
+            ExternalKey = new TGI[externalKeyCount];
+            for (var i = 0; i < externalKeyCount; i++)
+            {
+                ExternalKey[i] = new TGI(reader, TGI.TGISequence.ITG);
+            }
+            DelayLoadKey = new TGI[delayLoadKeyCount];
+            for (var i = 0; i < delayLoadKeyCount; i++)
+            {
+                DelayLoadKey[i] = new TGI(reader, TGI.TGISequence.ITG);
+            }
+            ObjectKey = new ObjectData[objectKeyCount];
+            ObjectKey[0] = new ObjectData(reader);
+            mVersion = reader.ReadUInt32();
+            Adjustments = new BoneAdjust[reader.ReadUInt32()];
+            for (var i = 0; i < Adjustments.Length; i++)
+            {
+                Adjustments[i] = new BoneAdjust(reader);
+            }
+        }
+
+        public void AddBoneAdjust(BoneAdjust adjust)
+        {
+            var temp = new BoneAdjust[Adjustments.Length + 1];
+            Array.Copy(Adjustments, temp, Adjustments.Length);
+            temp[temp.Length - 1] = new BoneAdjust(adjust);
+            Adjustments = temp;
+        }
+
+        public void RemoveBoneAdjust(int index)
+        {
+            var temp = new BoneAdjust[Adjustments.Length - 1];
+            Array.Copy(Adjustments, 0, temp, 0, index);
+            Array.Copy(Adjustments, index + 1, temp, index, temp.Length - index);
+            Adjustments = temp;
+        }
+
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(ContextVersion);
+            if (PublicKey == null)
+            {
+                PublicKey = new TGI[0];
+            }
+            writer.Write(PublicKey.Length);
+            if (ExternalKey == null)
+            {
+                ExternalKey = new TGI[0];
+            }
+            writer.Write(ExternalKey.Length);
+            if (DelayLoadKey == null)
+            {
+                DelayLoadKey = new TGI[0];
+            }
+            writer.Write(DelayLoadKey.Length);
+            writer.Write(1);
+            for (var i = 0; i < PublicKey.Length; i++)
+            {
+                PublicKey[i].Write(writer, TGI.TGISequence.ITG);
+            }
+            for (var i = 0; i < ExternalKey.Length; i++)
+            {
+                ExternalKey[i].Write(writer, TGI.TGISequence.ITG);
+            }
+            for (var i = 0; i < DelayLoadKey.Length; i++)
+            {
+                DelayLoadKey[i].Write(writer, TGI.TGISequence.ITG);
+            }
+            ObjectKey = new ObjectData[]
+                {
+                    new ObjectData((uint)(20 + (PublicKey.Length << 4) + (ExternalKey.Length << 4) + (DelayLoadKey.Length << 4) + 8), (uint)(4 + Adjustments.Length * 44))
+                };
+            for (var i = 0; i < ObjectKey.Length; i++)
+            {
+                ObjectKey[i].Write(writer);
+            }
+            writer.Write(mVersion);
+            if (Adjustments == null)
+            {
+                Adjustments = new BoneAdjust[0];
+            }
+            writer.Write(Adjustments.Length);
+            for (var i = 0; i < Adjustments.Length; i++)
+            {
+                Adjustments[i].Write(writer);
             }
         }
     }

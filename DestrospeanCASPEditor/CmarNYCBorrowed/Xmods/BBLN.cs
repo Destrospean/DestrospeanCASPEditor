@@ -45,7 +45,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             MorphEntry[] mBoneMorphs, mGEOMMorphs;
 
-            CASregions mRegion;
+            CASRegions mRegion;
 
             public MorphEntry[] BoneMorphs
             {
@@ -73,22 +73,20 @@ namespace Destrospean.CmarNYCBorrowed
 
             public Entry(BinaryReader reader)
             {
-                mRegion = (CASregions)reader.ReadUInt32();
-                var geomMorphCount = reader.ReadInt32();
-                mGEOMMorphs = new BBLN.MorphEntry[geomMorphCount];
-                for (var i = 0; i < geomMorphCount; i++)
+                mRegion = (CASRegions)reader.ReadUInt32();
+                mGEOMMorphs = new MorphEntry[reader.ReadInt32()];
+                for (var i = 0; i < mGEOMMorphs.Length; i++)
                 {
-                    mGEOMMorphs[i] = new BBLN.MorphEntry(reader);
+                    mGEOMMorphs[i] = new MorphEntry(reader);
                 }
-                var boneMorphCount = reader.ReadInt32();
-                mBoneMorphs = new BBLN.MorphEntry[boneMorphCount];
-                for (var i = 0; i < boneMorphCount; i++)
+                mBoneMorphs = new MorphEntry[reader.ReadInt32()];
+                for (var i = 0; i < mBoneMorphs.Length; i++)
                 {
-                    mBoneMorphs[i] = new BBLN.MorphEntry(reader);
+                    mBoneMorphs[i] = new MorphEntry(reader);
                 }
             }
 
-            public Entry(CASregions region, BBLN.MorphEntry[] geomMorphs, BBLN.MorphEntry[] boneMorphs)
+            public Entry(CASRegions region, MorphEntry[] geomMorphs, MorphEntry[] boneMorphs)
             {
                 mRegion = region;
                 mGEOMMorphs = geomMorphs;
@@ -172,15 +170,13 @@ namespace Destrospean.CmarNYCBorrowed
                 mBGEOGroup = reader.ReadUInt32();
                 mBGEOInstance = reader.ReadUInt64();
             }
-            var entryCount = reader.ReadInt32();
-            mEntries = new BBLN.Entry[entryCount];
-            for (var i = 0; i < entryCount; i++)
+            mEntries = new Entry[reader.ReadInt32()];
+            for (var i = 0; i < mEntries.Length; i++)
             {
-                mEntries[i] = new BBLN.Entry(reader);
+                mEntries[i] = new Entry(reader);
             }
-            var tgiCount = reader.ReadInt32();
-            mTGIList = new TGI[tgiCount];
-            for (var i = 0; i < tgiCount; i++)
+            mTGIList = new TGI[reader.ReadInt32()];
+            for (var i = 0; i < mTGIList.Length; i++)
             {
                 mTGIList[i] = new TGI(reader);
             }
@@ -198,7 +194,7 @@ namespace Destrospean.CmarNYCBorrowed
                 mBGEOInstance = linkedResourceTGI.Instance;
             }
             mEntries = new Entry[1];
-            mEntries[0] = new Entry(CASregions.Body, new MorphEntry[]
+            mEntries[0] = new Entry(CASRegions.Body, new MorphEntry[]
                 {
                     new MorphEntry(77951, 1, 0)
                 }, new MorphEntry[0]);

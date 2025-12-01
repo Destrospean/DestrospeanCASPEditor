@@ -46,27 +46,11 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public AxisAngle(float[] values)
+        public AxisAngle(float angle, float[] axis)
         {
-            mX = values[0];
-            mY = values[1];
-            mZ = values[2];
-            mAngle = values[3];
-        }
-
-        public AxisAngle(double[] values)
-        {
-            mX = values[0];
-            mY = values[1];
-            mZ = values[2];
-            mAngle = values[3];
-        }
-
-        public AxisAngle(double angle, double x, double y, double z)
-        {
-            mX = x;
-            mY = y;
-            mZ = z;
+            mX = axis[0];
+            mY = axis[1];
+            mZ = axis[2];
             mAngle = angle;
         }
 
@@ -78,12 +62,28 @@ namespace Destrospean.CmarNYCBorrowed
             mAngle = angle;
         }
 
-        public AxisAngle(float angle, float[] axis)
+        public AxisAngle(double angle, double x, double y, double z)
         {
-            mX = axis[0];
-            mY = axis[1];
-            mZ = axis[2];
+            mX = x;
+            mY = y;
+            mZ = z;
             mAngle = angle;
+        }
+
+        public AxisAngle(double[] values)
+        {
+            mX = values[0];
+            mY = values[1];
+            mZ = values[2];
+            mAngle = values[3];
+        }
+
+        public AxisAngle(float[] values)
+        {
+            mX = values[0];
+            mY = values[1];
+            mZ = values[2];
+            mAngle = values[3];
         }
 
         public void Normalize()

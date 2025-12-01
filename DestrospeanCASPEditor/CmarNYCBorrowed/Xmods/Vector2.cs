@@ -4,86 +4,55 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public struct Vector2
     {
-        private float x, y;
-
-        public float X
-        {
-            get { return x; }
-            set { x = value; }
-        }
-
-        public float Y
-        {
-            get { return y; }
-            set { y = value; }
-        }
-
         public float[] Coordinates
         {
-            get { return new float[] { x, y }; }
+            get
+            {
+                return new float[]
+                {
+                    X,
+                    Y
+                };
+            }
             set
             {
-                x = value[0];
-                y = value[1];
+                X = value[0];
+                Y = value[1];
             }
-        }
-
-        public Vector2(float x, float y)
-        {
-            this.x = x;
-            this.y = y;
-        }
-
-        public Vector2(float[] coordinates)
-        {
-            this.x = coordinates[0];
-            this.y = coordinates[1];
-        }
-
-        public Vector2(Vector2 vector)
-        {
-            this.x = vector.X;
-            this.y = vector.Y;
         }
 
         public double Magnitude
         {
-            get { return Math.Sqrt((this.x * this.x) + (this.y * this.y)); }
+            get
+            {
+                return Math.Sqrt(X * X + Y * Y);
+            }
         }
 
-        public float Distance(Vector2 other)
+        public float X, Y;
+
+        public Vector2(float[] coordinates)
         {
-            double deltaX = this.x - other.x;
-            double deltaY = this.y - other.y;
-            return (float)Math.Sqrt(Math.Pow(deltaX, 2d) + Math.Pow(deltaY, 2d));
+            X = coordinates[0];
+            Y = coordinates[1];
+        }
+
+        public Vector2(float x, float y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public Vector2(Vector2 vector)
+        {
+            X = vector.X;
+            Y = vector.Y;
         }
 
         public static bool operator ==(Vector2 v1, Vector2 v2)
         {
-            const float EPSILON = 0.00005f;
-            return
-                (
-                    (Math.Abs(v1.X - v2.X) < EPSILON) &&
-                    (Math.Abs(v1.Y - v2.Y) < EPSILON)
-                );
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Vector2)
-            {
-                Vector2 other = (Vector2)obj;
-                return (other == this);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool Equals(Vector2 obj)
-        {
-            return obj == this;
+            var epsilon = .00005f;
+            return Math.Abs(v1.X - v2.X) < epsilon && Math.Abs(v1.Y - v2.Y) < epsilon;
         }
 
         public static bool operator !=(Vector2 v1, Vector2 v2)
@@ -93,17 +62,17 @@ namespace Destrospean.CmarNYCBorrowed
 
         public static Vector2 operator +(Vector2 v1, Vector2 v2)
         {
-            return new Vector2(v1.x + v2.x, v1.y + v2.y);
+            return new Vector2(v1.X + v2.X, v1.Y + v2.Y);
         }
 
         public static Vector2 operator -(Vector2 v1, Vector2 v2)
         {
-            return new Vector2(v1.x - v2.x, v1.y - v2.y);
+            return new Vector2(v1.X - v2.X, v1.Y - v2.Y);
         }
 
         public static Vector2 operator *(Vector2 v1, float m2)
         {
-            return new Vector2(v1.x * m2, v1.y * m2);
+            return new Vector2(v1.X * m2, v1.Y * m2);
         }
 
         public static Vector2 operator *(float m1, Vector2 v2)
@@ -111,37 +80,38 @@ namespace Destrospean.CmarNYCBorrowed
             return v2 * m1;
         }
 
-        public static Vector2 Normalize(Vector2 v1)
+        public float Distance(Vector2 other)
         {
-            // Check for divide by zero errors
-            if (v1.Magnitude == 0)
+            return (float)Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
+        }
+
+        public float DistanceFromLine(Vector2 p1, Vector2 p2)
+        {
+            return Math.Abs(((p2.Y - p1.Y) * X) - ((p2.X - p1.X) * Y) + (p2.X * p1.Y) - (p2.Y * p1.X)) / p1.Distance(p2);
+        }
+
+        public bool DistanceFromLineRestricted(Vector2 p1, Vector2 p2, out float distance, out int endpointIndex)
+        {
+            Vector2 line = p2 - p1,
+            temp = this - p1;
+            float lineLenSq = (line.X * line.X) + (line.Y * line.Y),
+            distanceOnSegment = Vector2.Dot(temp, line) / lineLenSq;
+            endpointIndex = 0;
+            if (distanceOnSegment >= 0 && distanceOnSegment <= 1)
             {
-                throw new DivideByZeroException("Cannot normalize a vector with magnitude of zero!");
+                Vector2 projectedPoint = p1 + (line * distanceOnSegment);
+                distance = Distance(projectedPoint);
+                return true;
             }
             else
             {
-                // find the inverse of the vector's magnitude
-                float inverse = (float)(1f / v1.Magnitude);
-                return new Vector2(v1.X * inverse, v1.Y * inverse);
+                if (distanceOnSegment > 1)
+                {
+                    endpointIndex = 1;
+                }
+                distance = Distance(endpointIndex == 0 ? p1 : p2);
+                return false;
             }
-        }
-
-        public override int GetHashCode()
-        {
-            return
-                (
-                    (int)((X + Y) % Int32.MaxValue)
-                );
-        }
-
-        public override string ToString()
-        {
-            return this.X.ToString() + ", " + this.Y.ToString();
-        }
-
-        public static float Dot(Vector2 v1, Vector2 v2)
-        {
-            return (v1.x * v2.x) + (v1.y * v2.y);
         }
 
         public float Dot(Vector2 other)
@@ -149,56 +119,59 @@ namespace Destrospean.CmarNYCBorrowed
             return Dot(this, other);
         }
 
-        public bool DistanceFromLineRestricted(Vector2 P1, Vector2 P2, out float distance, out int endpointIndex)
-        //returns whether point project to line segment falls within endpoints, 
-        //distance = distance point to projected point or to nearest endpoint,
-        //endPontIndex = 0 if nearest endpoint is P1 or 1 if P2
+        public static float Dot(Vector2 v1, Vector2 v2)
         {
-            Vector2 tmp = this - P1;
-            Vector2 line = P2 - P1;
+            return (v1.X * v2.X) + (v1.Y * v2.Y);
+        }
 
-            float lineLenSq = (line.x * line.x) + (line.y * line.y);
-            float distanceOnSegment = Vector2.Dot(tmp, line) / lineLenSq;
+        public override bool Equals(object obj)
+        {
+            return obj is Vector2 ? (Vector2)obj == this : false;
+        }
 
-            endpointIndex = 0;
-            if (distanceOnSegment >= 0f && distanceOnSegment <= 1f)         //within segment
+        public bool Equals(Vector2 obj)
+        {
+            return obj == this;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)((X + Y) % Int32.MaxValue);
+        }
+
+        public static Vector2 Normalize(Vector2 vector)
+        {
+            if (vector.Magnitude == 0)
             {
-                Vector2 projectedPoint = P1 + (line * distanceOnSegment);
-                distance = this.Distance(projectedPoint);
-                return true;
+                throw new DivideByZeroException("Cannot normalize a vector with magnitude of zero!");
             }
             else
             {
-                if (distanceOnSegment > 1f) endpointIndex = 1;
-                distance = this.Distance(endpointIndex == 0 ? P1 : P2);
-                return false;
+                var inverse = (float)(1 / vector.Magnitude);
+                return new Vector2(vector.X * inverse, vector.Y * inverse);
             }
-        }
-
-        public float DistanceFromLine(Vector2 P1, Vector2 P2)
-        {
-            return Math.Abs(((P2.y - P1.y) * this.x) - ((P2.x - P1.x) * this.y) + (P2.x * P1.y) - (P2.y * P1.x)) / P1.Distance(P2);
-        }
-
-        public Vector2 ProjectToLine(Vector2 A, Vector2 B, out bool withinLine)
-        {
-            Vector2 AP = this - A;       //Vector from A to P   
-            Vector2 AB = B - A;       //Vector from A to B  
-
-            float magnitudeAB = (AB.x * AB.x) + (AB.y * AB.y);     //Magnitude of AB vector (its length squared)
-            float ABAPproduct = Vector2.Dot(AP, AB);    //The DOT product of a_to_p and a_to_b     
-            float distance = ABAPproduct / magnitudeAB; //The normalized "distance" from a to your closest point  
-
-            withinLine = (distance >= 0f && distance <= 1f);
-            return A + AB * distance;
         }
 
         public bool ProjectsWithinLine(Vector2 v1, Vector2 v2)
         {
-            bool tmp;
-            this.ProjectToLine(v1, v2, out tmp);
-            return tmp;
+            bool temp;
+            ProjectToLine(v1, v2, out temp);
+            return temp;
+        }
+
+        public Vector2 ProjectToLine(Vector2 a, Vector2 b, out bool withinLine)
+        {
+            Vector2 ab = b - a,
+            ap = this - a;
+            float magnitudeAB = (ab.X * ab.X) + (ab.Y * ab.Y),
+            distance = Vector2.Dot(ap, ab) / magnitudeAB;
+            withinLine = distance >= 0 && distance <= 1;
+            return a + ab * distance;
+        }
+
+        public override string ToString()
+        {
+            return X.ToString() + ", " + Y.ToString();
         }
     }
 }
-

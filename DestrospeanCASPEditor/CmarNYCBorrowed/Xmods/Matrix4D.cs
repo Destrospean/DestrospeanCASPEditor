@@ -4,16 +4,160 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public struct Matrix4D
     {
-        double[,] matrix;
+        double[,] mMatrix;
+
+        public static Matrix4D Identity
+        {
+            get
+            {
+                return new Matrix4D(new double[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            1,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            0,
+                            1
+                        }
+                    });
+            }
+        }
 
         public double[,] Matrix
         {
             get
             {
-                return new double[,] { { this.matrix[0,0], this.matrix[0,1], this.matrix[0,2], this.matrix[0,3] },
-                    { this.matrix[1,0], this.matrix[1,1], this.matrix[1,2], this.matrix[1,3] },
-                    { this.matrix[2,0], this.matrix[2,1], this.matrix[2,2], this.matrix[2,3] },
-                    { this.matrix[3,0], this.matrix[3,1], this.matrix[3,2], this.matrix[3,3] } };
+                return new double[,]
+                {
+                    {
+                        mMatrix[0, 0],
+                        mMatrix[0, 1],
+                        mMatrix[0, 2],
+                        mMatrix[0, 3]
+                    },
+                    {
+                        mMatrix[1, 0],
+                        mMatrix[1, 1],
+                        mMatrix[1, 2],
+                        mMatrix[1, 3]
+                    },
+                    {
+                        mMatrix[2, 0],
+                        mMatrix[2, 1],
+                        mMatrix[2, 2],
+                        mMatrix[2, 3]
+                    },
+                    {
+                        mMatrix[3, 0],
+                        mMatrix[3, 1],
+                        mMatrix[3, 2],
+                        mMatrix[3, 3]
+                    }
+                };
+            }
+        }
+
+        public Vector3 Offset
+        {
+            get
+            {
+                return new Vector3((float)mMatrix[0, 3], (float)mMatrix[1, 3], (float)mMatrix[2, 3]);
+            }
+        }
+
+        public static Matrix4D RotateYUpToZUp
+        {
+            get
+            {
+                return new Matrix4D(new double[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            -1,
+                            0
+                        },
+                        {
+                            0,
+                            1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            0,
+                            1
+                        }
+                    });
+            }
+        }
+
+        public static Matrix4D RotateZUpToYUp
+        {
+            get
+            {
+                return new Matrix4D(new double[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            1,
+                            0
+                        },
+                        {
+                            0,
+                            -1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            0,
+                            1
+                        }
+                    });
+            }
+        }
+
+        public Vector3 Scale
+        {
+            get
+            {
+                Vector3 scaleX = new Vector3((float)mMatrix[0, 0], (float)mMatrix[0, 1], (float)mMatrix[0, 2]),
+                scaleY = new Vector3((float)mMatrix[1, 0], (float)mMatrix[1, 1], (float)mMatrix[1, 2]),
+                scaleZ = new Vector3((float)mMatrix[2, 0], (float)mMatrix[2, 1], (float)mMatrix[2, 2]);
+                return new Vector3(scaleX.Magnitude, scaleY.Magnitude, scaleZ.Magnitude);
             }
         }
 
@@ -21,125 +165,434 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return new double[] { this.matrix[0,0], this.matrix[0,1], this.matrix[0,2], this.matrix[0,3],
-                    this.matrix[1,0], this.matrix[1,1], this.matrix[1,2], this.matrix[1,3],
-                    this.matrix[2,0], this.matrix[2,1], this.matrix[2,2], this.matrix[2,3],
-                    this.matrix[3,0], this.matrix[3,1], this.matrix[3,2], this.matrix[3,3] };
+                return new double[]
+                {
+                    mMatrix[0, 0],
+                    mMatrix[0, 1],
+                    mMatrix[0, 2],
+                    mMatrix[0, 3],
+                    mMatrix[1, 0],
+                    mMatrix[1, 1],
+                    mMatrix[1, 2],
+                    mMatrix[1, 3],
+                    mMatrix[2, 0],
+                    mMatrix[2, 1],
+                    mMatrix[2, 2],
+                    mMatrix[2, 3],
+                    mMatrix[3, 0],
+                    mMatrix[3, 1],
+                    mMatrix[3, 2],
+                    mMatrix[3, 3]
+                };
             }
-        }
-
-        public Matrix4D(double[,] array4x4)
-        {
-            this.matrix = new double[,] { { array4x4[0,0], array4x4[0,1], array4x4[0,2], array4x4[0,3] },
-                { array4x4[1,0], array4x4[1,1], array4x4[1,2], array4x4[1,3] },
-                { array4x4[2,0], array4x4[2,1], array4x4[2,2], array4x4[2,3] },
-                { array4x4[3,0], array4x4[3,1], array4x4[3,2], array4x4[3,3] } };
         }
 
         public Matrix4D(double[] array)
         {
-            this.matrix = new double[,] { { array[0], array[1], array[2], array[3] },
-                { array[4], array[5], array[6], array[7] },
-                { array[8], array[9], array[10], array[11] },
-                { array[12], array[13], array[14], array[15] } };
+            mMatrix = new double[,]
+                {
+                    {
+                        array[0],
+                        array[1],
+                        array[2],
+                        array[3]
+                    },
+                    {
+                        array[4],
+                        array[5],
+                        array[6],
+                        array[7]
+                    },
+                    {
+                        array[8],
+                        array[9],
+                        array[10],
+                        array[11]
+                    },
+                    {
+                        array[12],
+                        array[13],
+                        array[14],
+                        array[15]
+                    }
+                };
         }
 
-        public static Matrix4D Identity
+        public Matrix4D(double[,] array4x4)
         {
-            get { return new Matrix4D(new double[,] { { 1d, 0d, 0d, 0d }, { 0d, 1d, 0d, 0d }, { 0d, 0d, 1d, 0d }, { 0d, 0d, 0d, 1d } }); }
+            mMatrix = new double[,]
+                {
+                    {
+                        array4x4[0, 0],
+                        array4x4[0, 1],
+                        array4x4[0, 2],
+                        array4x4[0, 3]
+                    },
+                    {
+                        array4x4[1, 0],
+                        array4x4[1, 1], 
+                        array4x4[1, 2],
+                        array4x4[1, 3]
+                    },
+                    {
+                        array4x4[2, 0],
+                        array4x4[2, 1],
+                        array4x4[2, 2],
+                        array4x4[2, 3]
+                    },
+                    {
+                        array4x4[3, 0],
+                        array4x4[3, 1],
+                        array4x4[3, 2],
+                        array4x4[3, 3]
+                    }
+                };
+        }
+
+        public static Matrix4D operator *(Matrix4D m, float f)
+        {
+            var result = new double[4, 4];
+            for (var r = 0; r < 4; r++)
+            {
+                for (var c = 0; c < 4; c++)
+                {
+                    result[r, c] = m.mMatrix[r, c] * f;
+                }
+            }
+            return new Matrix4D(result);
+        }
+
+        public static Vector3 operator *(Matrix4D m, Vector3 v)
+        {
+            double x = 0,
+            y = 0,
+            z = 0;
+            var temp = new double[]
+                {
+                    v.X,
+                    v.Y,
+                    v.Z,
+                    1
+                };
+            for (var i = 0; i < 4; i++)
+            {
+                x += m.mMatrix[0, i] * temp[i];
+                y += m.mMatrix[1, i] * temp[i];
+                z += m.mMatrix[2, i] * temp[i];
+            }
+            return new Vector3((float)x, (float)y, (float)z);
+        }
+
+        public static Matrix4D operator *(Matrix4D m1, Matrix4D m2)
+        {
+            var v = new double[4][];
+            for (var i = 0; i < 4; i++)
+            {
+                v[i] = m1 * new double[]
+                    {
+                        m2.mMatrix[0, i],
+                        m2.mMatrix[1, i],
+                        m2.mMatrix[2, i],
+                        m2.mMatrix[3, i]
+                    };
+            }
+            return new Matrix4D(new double[,]
+                {
+                    {
+                        v[0][0],
+                        v[1][0],
+                        v[2][0],
+                        v[3][0]
+                    },
+                    {
+                        v[0][1],
+                        v[1][1],
+                        v[2][1],
+                        v[3][1]
+                    },
+                    {
+                        v[0][2],
+                        v[1][2],
+                        v[2][2],
+                        v[3][2]
+                    },
+                    {
+                        v[0][3],
+                        v[1][3],
+                        v[2][3],
+                        v[3][3]
+                    }
+                });
+        }
+
+        public static double[] operator *(Matrix4D m, double[] v)
+        {
+            var temp = new double[4];
+            for (var i = 0; i < 4; i++)
+            {
+                temp[0] += m.mMatrix[0, i] * v[i];
+                temp[1] += m.mMatrix[1, i] * v[i];
+                temp[2] += m.mMatrix[2, i] * v[i];
+                temp[3] += m.mMatrix[3, i] * v[i];
+            }
+            return temp;
+        }
+
+        /// <summary>
+        /// Rounds values close to zero
+        /// </summary>
+        public void Clean()
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                for (var j = 0; j < 4; j++)
+                {
+                    if (Math.Abs(mMatrix[i, j]) < .0000002)
+                    {
+                        mMatrix[i, j] = 0;
+                    }
+                }
+            }
+        }
+
+        public static Matrix4D FromAxisAngle(AxisAngle axisAngle)
+        {
+            axisAngle.Normalize();
+            Matrix4D matrix = new Matrix4D();
+            matrix.mMatrix = new double[,]
+                {
+                    {
+                        0,
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        0
+                    }
+                };
+            double c = Math.Cos(axisAngle.Angle),
+            s = Math.Sin(axisAngle.Angle),
+            t = 1 - c,
+            temp0 = axisAngle.X * axisAngle.Y * t,
+            temp1 = axisAngle.Z * s;
+            matrix.mMatrix[0, 0] = c + axisAngle.X * axisAngle.X * t;
+            matrix.mMatrix[1, 1] = c + axisAngle.Y * axisAngle.Y * t;
+            matrix.mMatrix[2, 2] = c + axisAngle.Z * axisAngle.Z * t;
+            matrix.mMatrix[1, 0] = temp0 + temp1;
+            matrix.mMatrix[0, 1] = temp0 - temp1;
+            temp0 = axisAngle.X * axisAngle.Z * t;
+            temp1 = axisAngle.Y * s;
+            matrix.mMatrix[2, 0] = temp0 - temp1;
+            matrix.mMatrix[0, 2] = temp0 + temp1; temp0 = axisAngle.Y * axisAngle.Z * t;
+            temp1 = axisAngle.X * s;
+            matrix.mMatrix[2, 1] = temp0 + temp1;
+            matrix.mMatrix[1, 2] = temp0 - temp1;
+            matrix.mMatrix[3, 3] = 1;
+            return matrix;
         }
 
         public static Matrix4D FromOffset(Vector3 offset)
         {
-            return new Matrix4D(new double[,] { { 1d, 0d, 0d, offset.X }, { 0d, 1d, 0d, offset.Y }, { 0d, 0d, 1d, offset.Z }, { 0d, 0d, 0d, 1d } });
+            return new Matrix4D(new double[,]
+                {
+                    {
+                        1,
+                        0,
+                        0,
+                        offset.X
+                    },
+                    {
+                        0,
+                        1,
+                        0,
+                        offset.Y
+                    },
+                    {
+                        0,
+                        0,
+                        1,
+                        offset.Z
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        1
+                    }
+                });
         }
 
         public static Matrix4D FromOffset(double[] offset)
         {
-            return new Matrix4D(new double[,] { { 1d, 0d, 0d, offset[0] }, { 0d, 1d, 0d, offset[1] }, { 0d, 0d, 1d, offset[2] }, { 0d, 0d, 0d, 1d } });
+            return new Matrix4D(new double[,]
+                {
+                    {
+                        1,
+                        0,
+                        0,
+                        offset[0]
+                    },
+                    {
+                        0,
+                        1,
+                        0,
+                        offset[1]
+                    },
+                    {
+                        0,
+                        0,
+                        1,
+                        offset[2]
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        1
+                    }
+                });
         }
 
         public static Matrix4D FromScale(Vector3 scale)
         {
-            return new Matrix4D(new double[,] { { scale.X, 0d, 0d, 0d }, { 0d, scale.Y, 0d, 0d }, { 0d, 0d, scale.Z, 0d }, { 0d, 0d, 0d, 1d } });
+            return new Matrix4D(new double[,]
+                {
+                    {
+                        scale.X,
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        scale.Y,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        scale.Z,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        1
+                    }
+                });
         }
 
         public static Matrix4D FromScale(double[] scale)
         {
-            return new Matrix4D(new double[,] { { scale[0], 0d, 0d, 0d }, { 0d, scale[1], 0d, 0d }, { 0d, 0d, scale[2], 0d }, { 0d, 0d, 0d, 1d } });
-        }
-
-        public static Matrix4D FromAxisAngle(AxisAngle aa)
-        {
-            aa.Normalize();
-            Matrix4D m = new Matrix4D();
-            m.matrix = new double[,] { { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 },
-                { 0, 0, 0, 0 } };
-            double c = Math.Cos(aa.Angle);
-            double s = Math.Sin(aa.Angle);
-            double t = 1.0 - c;
-
-            m.matrix[0, 0] = c + aa.X * aa.X * t;
-            m.matrix[1, 1] = c + aa.Y * aa.Y * t;
-            m.matrix[2, 2] = c + aa.Z * aa.Z * t;
-
-            double tmp1 = aa.X * aa.Y * t;
-            double tmp2 = aa.Z * s;
-            m.matrix[1, 0] = tmp1 + tmp2;
-            m.matrix[0, 1] = tmp1 - tmp2;
-            tmp1 = aa.X * aa.Z * t;
-            tmp2 = aa.Y * s;
-            m.matrix[2, 0] = tmp1 - tmp2;
-            m.matrix[0, 2] = tmp1 + tmp2; tmp1 = aa.Y * aa.Z * t;
-            tmp2 = aa.X * s;
-            m.matrix[2, 1] = tmp1 + tmp2;
-            m.matrix[1, 2] = tmp1 - tmp2;
-
-            m.matrix[3, 3] = 1;
-
-            return m;
-        }
-
-        public AxisAngle toAxisAngle()
-        {
-            double angle, x, y, z; // variables for result
-            double epsilon = 0.01; // margin to allow for rounding errors
-            double epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
-            // optional check that input is pure rotation, 'isRotationMatrix' is defined at:
-            // https://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/
-
-            if ((Math.Abs(this.matrix[0, 1] - this.matrix[1, 0]) < epsilon)
-                && (Math.Abs(this.matrix[0, 2] - this.matrix[2, 0]) < epsilon)
-                && (Math.Abs(this.matrix[1, 2] - this.matrix[2, 1]) < epsilon))
-            {
-                // singularity found
-                // first check for identity matrix which must have +1 for all terms
-                //  in leading diagonaland zero in other terms
-                if ((Math.Abs(this.matrix[0, 1] + this.matrix[1, 0]) < epsilon2)
-                    && (Math.Abs(this.matrix[0, 2] + this.matrix[2, 0]) < epsilon2)
-                    && (Math.Abs(this.matrix[1, 2] + this.matrix[2, 1]) < epsilon2)
-                    && (Math.Abs(this.matrix[0, 0] + this.matrix[1, 1] + this.matrix[2, 2] - 3) < epsilon2))
+            return new Matrix4D(new double[,]
                 {
-                    // this singularity is identity matrix so angle = 0
-                    return new AxisAngle(0, 1, 0, 0); // zero angle, arbitrary axis
+                    {
+                        scale[0],
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        scale[1],
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        scale[2],
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0,
+                        1
+                    }
+                });
+        }
+
+        public Matrix4D Inverse()
+        {
+            double[,] m = mMatrix, inverseMatrix = new double[4, 4];
+            double determinant = m[0, 3] * m[1, 2] * m[2, 1] * m[3, 0] - m[0, 2] * m[1, 3] * m[2, 1] * m[3, 0] - m[0, 3] * m[1, 1] * m[2, 2] * m[3, 0] + m[0, 1] * m[1, 3] * m[2, 2] * m[3, 0] + m[0, 2] * m[1, 1] * m[2, 3] * m[3, 0] - m[0, 1] * m[1, 2] * m[2, 3] * m[3, 0] - m[0, 3] * m[1, 2] * m[2, 0] * m[3, 1] + m[0, 2] * m[1, 3] * m[2, 0] * m[3, 1] + m[0, 3] * m[1, 0] * m[2, 2] * m[3, 1] - m[0, 0] * m[1, 3] * m[2, 2] * m[3, 1] - m[0, 2] * m[1, 0] * m[2, 3] * m[3, 1] + m[0, 0] * m[1, 2] * m[2, 3] * m[3, 1] + m[0, 3] * m[1, 1] * m[2, 0] * m[3, 2] - m[0, 1] * m[1, 3] * m[2, 0] * m[3, 2] - m[0, 3] * m[1, 0] * m[2, 1] * m[3, 2] + m[0, 0] * m[1, 3] * m[2, 1] * m[3, 2] + m[0, 1] * m[1, 0] * m[2, 3] * m[3, 2] - m[0, 0] * m[1, 1] * m[2, 3] * m[3, 2] - m[0, 2] * m[1, 1] * m[2, 0] * m[3, 3] + m[0, 1] * m[1, 2] * m[2, 0] * m[3, 3] + m[0, 2] * m[1, 0] * m[2, 1] * m[3, 3] - m[0, 0] * m[1, 2] * m[2, 1] * m[3, 3] - m[0, 1] * m[1, 0] * m[2, 2] * m[3, 3] + m[0, 0] * m[1, 1] * m[2, 2] * m[3, 3],
+            inverseDeterminant = 1d / determinant;
+            inverseMatrix[0, 0] = (m[1, 2] * m[2, 3] * m[3, 1] - m[1, 3] * m[2, 2] * m[3, 1] + m[1, 3] * m[2, 1] * m[3, 2] - m[1, 1] * m[2, 3] * m[3, 2] - m[1, 2] * m[2, 1] * m[3, 3] + m[1, 1] * m[2, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[0, 1] = (m[0, 3] * m[2, 2] * m[3, 1] - m[0, 2] * m[2, 3] * m[3, 1] - m[0, 3] * m[2, 1] * m[3, 2] + m[0, 1] * m[2, 3] * m[3, 2] + m[0, 2] * m[2, 1] * m[3, 3] - m[0, 1] * m[2, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[0, 2] = (m[0, 2] * m[1, 3] * m[3, 1] - m[0, 3] * m[1, 2] * m[3, 1] + m[0, 3] * m[1, 1] * m[3, 2] - m[0, 1] * m[1, 3] * m[3, 2] - m[0, 2] * m[1, 1] * m[3, 3] + m[0, 1] * m[1, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[0, 3] = (m[0, 3] * m[1, 2] * m[2, 1] - m[0, 2] * m[1, 3] * m[2, 1] - m[0, 3] * m[1, 1] * m[2, 2] + m[0, 1] * m[1, 3] * m[2, 2] + m[0, 2] * m[1, 1] * m[2, 3] - m[0, 1] * m[1, 2] * m[2, 3]) * inverseDeterminant;
+            inverseMatrix[1, 0] = (m[1, 3] * m[2, 2] * m[3, 0] - m[1, 2] * m[2, 3] * m[3, 0] - m[1, 3] * m[2, 0] * m[3, 2] + m[1, 0] * m[2, 3] * m[3, 2] + m[1, 2] * m[2, 0] * m[3, 3] - m[1, 0] * m[2, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[1, 1] = (m[0, 2] * m[2, 3] * m[3, 0] - m[0, 3] * m[2, 2] * m[3, 0] + m[0, 3] * m[2, 0] * m[3, 2] - m[0, 0] * m[2, 3] * m[3, 2] - m[0, 2] * m[2, 0] * m[3, 3] + m[0, 0] * m[2, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[1, 2] = (m[0, 3] * m[1, 2] * m[3, 0] - m[0, 2] * m[1, 3] * m[3, 0] - m[0, 3] * m[1, 0] * m[3, 2] + m[0, 0] * m[1, 3] * m[3, 2] + m[0, 2] * m[1, 0] * m[3, 3] - m[0, 0] * m[1, 2] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[1, 3] = (m[0, 2] * m[1, 3] * m[2, 0] - m[0, 3] * m[1, 2] * m[2, 0] + m[0, 3] * m[1, 0] * m[2, 2] - m[0, 0] * m[1, 3] * m[2, 2] - m[0, 2] * m[1, 0] * m[2, 3] + m[0, 0] * m[1, 2] * m[2, 3]) * inverseDeterminant;
+            inverseMatrix[2, 0] = (m[1, 1] * m[2, 3] * m[3, 0] - m[1, 3] * m[2, 1] * m[3, 0] + m[1, 3] * m[2, 0] * m[3, 1] - m[1, 0] * m[2, 3] * m[3, 1] - m[1, 1] * m[2, 0] * m[3, 3] + m[1, 0] * m[2, 1] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[2, 1] = (m[0, 3] * m[2, 1] * m[3, 0] - m[0, 1] * m[2, 3] * m[3, 0] - m[0, 3] * m[2, 0] * m[3, 1] + m[0, 0] * m[2, 3] * m[3, 1] + m[0, 1] * m[2, 0] * m[3, 3] - m[0, 0] * m[2, 1] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[2, 2] = (m[0, 1] * m[1, 3] * m[3, 0] - m[0, 3] * m[1, 1] * m[3, 0] + m[0, 3] * m[1, 0] * m[3, 1] - m[0, 0] * m[1, 3] * m[3, 1] - m[0, 1] * m[1, 0] * m[3, 3] + m[0, 0] * m[1, 1] * m[3, 3]) * inverseDeterminant;
+            inverseMatrix[2, 3] = (m[0, 3] * m[1, 1] * m[2, 0] - m[0, 1] * m[1, 3] * m[2, 0] - m[0, 3] * m[1, 0] * m[2, 1] + m[0, 0] * m[1, 3] * m[2, 1] + m[0, 1] * m[1, 0] * m[2, 3] - m[0, 0] * m[1, 1] * m[2, 3]) * inverseDeterminant;
+            inverseMatrix[3, 0] = (m[1, 2] * m[2, 1] * m[3, 0] - m[1, 1] * m[2, 2] * m[3, 0] - m[1, 2] * m[2, 0] * m[3, 1] + m[1, 0] * m[2, 2] * m[3, 1] + m[1, 1] * m[2, 0] * m[3, 2] - m[1, 0] * m[2, 1] * m[3, 2]) * inverseDeterminant;
+            inverseMatrix[3, 1] = (m[0, 1] * m[2, 2] * m[3, 0] - m[0, 2] * m[2, 1] * m[3, 0] + m[0, 2] * m[2, 0] * m[3, 1] - m[0, 0] * m[2, 2] * m[3, 1] - m[0, 1] * m[2, 0] * m[3, 2] + m[0, 0] * m[2, 1] * m[3, 2]) * inverseDeterminant;
+            inverseMatrix[3, 2] = (m[0, 2] * m[1, 1] * m[3, 0] - m[0, 1] * m[1, 2] * m[3, 0] - m[0, 2] * m[1, 0] * m[3, 1] + m[0, 0] * m[1, 2] * m[3, 1] + m[0, 1] * m[1, 0] * m[3, 2] - m[0, 0] * m[1, 1] * m[3, 2]) * inverseDeterminant;
+            inverseMatrix[3, 3] = (m[0, 1] * m[1, 2] * m[2, 0] - m[0, 2] * m[1, 1] * m[2, 0] + m[0, 2] * m[1, 0] * m[2, 1] - m[0, 0] * m[1, 2] * m[2, 1] - m[0, 1] * m[1, 0] * m[2, 2] + m[0, 0] * m[1, 1] * m[2, 2]) * inverseDeterminant;
+            return new Matrix4D(inverseMatrix);
+        }
+
+        public Matrix4D RemoveOffset()
+        {
+            var d = new double[4, 4];
+            Array.Copy(mMatrix, d, 16);
+            d[0, 3] = 0;
+            d[1, 3] = 0;
+            d[2, 3] = 0;
+            return new Matrix4D(d);
+        }
+
+        public AxisAngle ToAxisAngle()
+        {
+            double angle,
+            epsilon0 = .01,
+            epsilon1 = .1,
+            x,
+            y,
+            z;
+            if ((Math.Abs(mMatrix[0, 1] - mMatrix[1, 0]) < epsilon0) && (Math.Abs(mMatrix[0, 2] - mMatrix[2, 0]) < epsilon0) && (Math.Abs(mMatrix[1, 2] - mMatrix[2, 1]) < epsilon0))
+            {
+                if ((Math.Abs(mMatrix[0, 1] + mMatrix[1, 0]) < epsilon1) && (Math.Abs(mMatrix[0, 2] + mMatrix[2, 0]) < epsilon1) && (Math.Abs(mMatrix[1, 2] + mMatrix[2, 1]) < epsilon1) && (Math.Abs(mMatrix[0, 0] + mMatrix[1, 1] + mMatrix[2, 2] - 3) < epsilon1))
+                {
+                    return new AxisAngle(0, 1, 0, 0); 
                 }
-                // otherwise this singularity is angle = 180
                 angle = Math.PI;
-                double xx = (this.matrix[0, 0] + 1) / 2;
-                double yy = (this.matrix[1, 1] + 1) / 2;
-                double zz = (this.matrix[2, 2] + 1) / 2;
-                double xy = (this.matrix[0, 1] + this.matrix[1, 0]) / 4;
-                double xz = (this.matrix[0, 2] + this.matrix[2, 0]) / 4;
-                double yz = (this.matrix[1, 2] + this.matrix[2, 1]) / 4;
-                if ((xx > yy) && (xx > zz))
-                { // m[0][0] is the largest diagonal term
-                    if (xx < epsilon)
+                double xx = (mMatrix[0, 0] + 1) / 2,
+                xy = (mMatrix[0, 1] + mMatrix[1, 0]) / 4,
+                xz = (mMatrix[0, 2] + mMatrix[2, 0]) / 4,
+                yy = (mMatrix[1, 1] + 1) / 2,
+                yz = (mMatrix[1, 2] + mMatrix[2, 1]) / 4,
+                zz = (mMatrix[2, 2] + 1) / 2;
+                if (xx > yy && xx > zz)
+                {
+                    if (xx < epsilon0)
                     {
                         x = 0;
-                        y = 0.7071;
-                        z = 0.7071;
+                        y = .7071;
+                        z = .7071;
                     }
                     else
                     {
@@ -149,12 +602,12 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
                 else if (yy > zz)
-                { // m[1][1] is the largest diagonal term
-                    if (yy < epsilon)
+                {
+                    if (yy < epsilon0)
                     {
-                        x = 0.7071;
+                        x = .7071;
                         y = 0;
-                        z = 0.7071;
+                        z = .7071;
                     }
                     else
                     {
@@ -164,11 +617,11 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
                 else
-                { // m[2][2] is the largest diagonal term so base result on this
-                    if (zz < epsilon)
+                {
+                    if (zz < epsilon0)
                     {
-                        x = 0.7071;
-                        y = 0.7071;
+                        x = .7071;
+                        y = .7071;
                         z = 0;
                     }
                     else
@@ -178,203 +631,105 @@ namespace Destrospean.CmarNYCBorrowed
                         y = yz / z;
                     }
                 }
-                return new AxisAngle(angle, x, y, z); // return 180 deg rotation
+                return new AxisAngle(angle, x, y, z);
             }
-            // as we have reached here there are no singularities so we can handle normally
-            double s = Math.Sqrt((this.matrix[2, 1] - this.matrix[1, 2]) * (this.matrix[2, 1] - this.matrix[1, 2])
-                + (this.matrix[0, 2] - this.matrix[2, 0]) * (this.matrix[0, 2] - this.matrix[2, 0])
-                + (this.matrix[1, 0] - this.matrix[0, 1]) * (this.matrix[1, 0] - this.matrix[0, 1])); // used to normalise
-            if (Math.Abs(s) < 0.001) s = 1;
-            // prevent divide by zero, should not happen if matrix is orthogonal and should be
-            // caught by singularity test above, but I've left it in just in case
-            angle = Math.Acos((this.matrix[0, 0] + this.matrix[1, 1] + this.matrix[2, 2] - 1) / 2);
-            x = (this.matrix[2, 1] - this.matrix[1, 2]) / s;
-            y = (this.matrix[0, 2] - this.matrix[2, 0]) / s;
-            z = (this.matrix[1, 0] - this.matrix[0, 1]) / s;
+            var s = Math.Sqrt((mMatrix[2, 1] - mMatrix[1, 2]) * (mMatrix[2, 1] - mMatrix[1, 2]) + (mMatrix[0, 2] - mMatrix[2, 0]) * (mMatrix[0, 2] - mMatrix[2, 0]) + (mMatrix[1, 0] - mMatrix[0, 1]) * (mMatrix[1, 0] - mMatrix[0, 1]));
+            if (Math.Abs(s) < .001)
+            {
+                s = 1;
+            }
+            angle = Math.Acos((mMatrix[0, 0] + mMatrix[1, 1] + mMatrix[2, 2] - 1) / 2);
+            x = (mMatrix[2, 1] - mMatrix[1, 2]) / s;
+            y = (mMatrix[0, 2] - mMatrix[2, 0]) / s;
+            z = (mMatrix[1, 0] - mMatrix[0, 1]) / s;
             return new AxisAngle(angle, x, y, z);
-        }
-
-        public static Matrix4D RotateZupToYup
-        {
-            get { return new Matrix4D(new double[,] { { 1f, 0f, 0f, 0f }, { 0f, 0f, 1f, 0f }, { 0f, -1f, 0f, 0f }, { 0f, 0f, 0f, 1f } }); }
-        }
-
-        public static Matrix4D RotateYupToZup
-        {
-            get { return new Matrix4D(new double[,] { { 1f, 0f, 0f, 0f }, { 0f, 0f, -1f, 0f }, { 0f, 1f, 0f, 0f }, { 0f, 0f, 0f, 1f } }); }
         }
 
         public Matrix3D ToMatrix3D()
         {
-            return new Matrix3D(new float[,] { { (float)this.matrix[0,0], (float)this.matrix[0,1], (float)this.matrix[0,2] },
-                { (float)this.matrix[1,0], (float)this.matrix[1,1], (float)this.matrix[1,2] },
-                { (float)this.matrix[2,0], (float)this.matrix[2,1], (float)this.matrix[2,2] } });
-        }
-
-        /// <summary>
-        /// Rounds values close to zero
-        /// </summary>
-        public void Clean()
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
+            return new Matrix3D(new float[,]
                 {
-                    if (Math.Abs(this.matrix[i, j]) < .0000002d) this.matrix[i, j] = 0d;
-                }
-            }
-        }
-
-        public Vector3 Scale
-        {
-            get
-            {
-                Vector3 sx = new Vector3((float)this.matrix[0, 0], (float)this.matrix[0, 1], (float)this.matrix[0, 2]);
-                Vector3 sy = new Vector3((float)this.matrix[1, 0], (float)this.matrix[1, 1], (float)this.matrix[1, 2]);
-                Vector3 sz = new Vector3((float)this.matrix[2, 0], (float)this.matrix[2, 1], (float)this.matrix[2, 2]);
-                return new Vector3(sx.Magnitude, sy.Magnitude, sz.Magnitude);
-            }
-        }
-
-        public Vector3 Offset
-        {
-            get
-            {
-                return new Vector3((float)this.matrix[0, 3], (float)this.matrix[1, 3], (float)this.matrix[2, 3]);
-            }
-        }
-
-        public Matrix4D RemoveOffset()
-        {
-            double[,] d = new double[4, 4];
-            Array.Copy(this.matrix, d, 16);
-            d[0, 3] = 0d;
-            d[1, 3] = 0d;
-            d[2, 3] = 0d;
-            return new Matrix4D(d);
-        }
-
-        public Matrix4D Inverse()
-        {
-            double[,] m = this.matrix;
-            double det = m[0, 3] * m[1, 2] * m[2, 1] * m[3, 0] - m[0, 2] * m[1, 3] * m[2, 1] * m[3, 0] - m[0, 3] * m[1, 1] * m[2, 2] * m[3, 0] + m[0, 1] * m[1, 3] * m[2, 2] * m[3, 0] +
-                m[0, 2] * m[1, 1] * m[2, 3] * m[3, 0] - m[0, 1] * m[1, 2] * m[2, 3] * m[3, 0] - m[0, 3] * m[1, 2] * m[2, 0] * m[3, 1] + m[0, 2] * m[1, 3] * m[2, 0] * m[3, 1] +
-                m[0, 3] * m[1, 0] * m[2, 2] * m[3, 1] - m[0, 0] * m[1, 3] * m[2, 2] * m[3, 1] - m[0, 2] * m[1, 0] * m[2, 3] * m[3, 1] + m[0, 0] * m[1, 2] * m[2, 3] * m[3, 1] +
-                m[0, 3] * m[1, 1] * m[2, 0] * m[3, 2] - m[0, 1] * m[1, 3] * m[2, 0] * m[3, 2] - m[0, 3] * m[1, 0] * m[2, 1] * m[3, 2] + m[0, 0] * m[1, 3] * m[2, 1] * m[3, 2] +
-                m[0, 1] * m[1, 0] * m[2, 3] * m[3, 2] - m[0, 0] * m[1, 1] * m[2, 3] * m[3, 2] - m[0, 2] * m[1, 1] * m[2, 0] * m[3, 3] + m[0, 1] * m[1, 2] * m[2, 0] * m[3, 3] +
-                m[0, 2] * m[1, 0] * m[2, 1] * m[3, 3] - m[0, 0] * m[1, 2] * m[2, 1] * m[3, 3] - m[0, 1] * m[1, 0] * m[2, 2] * m[3, 3] + m[0, 0] * m[1, 1] * m[2, 2] * m[3, 3];
-            double invdet = 1d / det;
-
-            double[,] minv = new double[4, 4];
-            minv[0, 0] = (m[1, 2] * m[2, 3] * m[3, 1] - m[1, 3] * m[2, 2] * m[3, 1] + m[1, 3] * m[2, 1] * m[3, 2] - m[1, 1] * m[2, 3] * m[3, 2] - m[1, 2] * m[2, 1] * m[3, 3] + m[1, 1] * m[2, 2] * m[3, 3]) * invdet;
-            minv[0, 1] = (m[0, 3] * m[2, 2] * m[3, 1] - m[0, 2] * m[2, 3] * m[3, 1] - m[0, 3] * m[2, 1] * m[3, 2] + m[0, 1] * m[2, 3] * m[3, 2] + m[0, 2] * m[2, 1] * m[3, 3] - m[0, 1] * m[2, 2] * m[3, 3]) * invdet;
-            minv[0, 2] = (m[0, 2] * m[1, 3] * m[3, 1] - m[0, 3] * m[1, 2] * m[3, 1] + m[0, 3] * m[1, 1] * m[3, 2] - m[0, 1] * m[1, 3] * m[3, 2] - m[0, 2] * m[1, 1] * m[3, 3] + m[0, 1] * m[1, 2] * m[3, 3]) * invdet;
-            minv[0, 3] = (m[0, 3] * m[1, 2] * m[2, 1] - m[0, 2] * m[1, 3] * m[2, 1] - m[0, 3] * m[1, 1] * m[2, 2] + m[0, 1] * m[1, 3] * m[2, 2] + m[0, 2] * m[1, 1] * m[2, 3] - m[0, 1] * m[1, 2] * m[2, 3]) * invdet;
-            minv[1, 0] = (m[1, 3] * m[2, 2] * m[3, 0] - m[1, 2] * m[2, 3] * m[3, 0] - m[1, 3] * m[2, 0] * m[3, 2] + m[1, 0] * m[2, 3] * m[3, 2] + m[1, 2] * m[2, 0] * m[3, 3] - m[1, 0] * m[2, 2] * m[3, 3]) * invdet;
-            minv[1, 1] = (m[0, 2] * m[2, 3] * m[3, 0] - m[0, 3] * m[2, 2] * m[3, 0] + m[0, 3] * m[2, 0] * m[3, 2] - m[0, 0] * m[2, 3] * m[3, 2] - m[0, 2] * m[2, 0] * m[3, 3] + m[0, 0] * m[2, 2] * m[3, 3]) * invdet;
-            minv[1, 2] = (m[0, 3] * m[1, 2] * m[3, 0] - m[0, 2] * m[1, 3] * m[3, 0] - m[0, 3] * m[1, 0] * m[3, 2] + m[0, 0] * m[1, 3] * m[3, 2] + m[0, 2] * m[1, 0] * m[3, 3] - m[0, 0] * m[1, 2] * m[3, 3]) * invdet;
-            minv[1, 3] = (m[0, 2] * m[1, 3] * m[2, 0] - m[0, 3] * m[1, 2] * m[2, 0] + m[0, 3] * m[1, 0] * m[2, 2] - m[0, 0] * m[1, 3] * m[2, 2] - m[0, 2] * m[1, 0] * m[2, 3] + m[0, 0] * m[1, 2] * m[2, 3]) * invdet;
-            minv[2, 0] = (m[1, 1] * m[2, 3] * m[3, 0] - m[1, 3] * m[2, 1] * m[3, 0] + m[1, 3] * m[2, 0] * m[3, 1] - m[1, 0] * m[2, 3] * m[3, 1] - m[1, 1] * m[2, 0] * m[3, 3] + m[1, 0] * m[2, 1] * m[3, 3]) * invdet;
-            minv[2, 1] = (m[0, 3] * m[2, 1] * m[3, 0] - m[0, 1] * m[2, 3] * m[3, 0] - m[0, 3] * m[2, 0] * m[3, 1] + m[0, 0] * m[2, 3] * m[3, 1] + m[0, 1] * m[2, 0] * m[3, 3] - m[0, 0] * m[2, 1] * m[3, 3]) * invdet;
-            minv[2, 2] = (m[0, 1] * m[1, 3] * m[3, 0] - m[0, 3] * m[1, 1] * m[3, 0] + m[0, 3] * m[1, 0] * m[3, 1] - m[0, 0] * m[1, 3] * m[3, 1] - m[0, 1] * m[1, 0] * m[3, 3] + m[0, 0] * m[1, 1] * m[3, 3]) * invdet;
-            minv[2, 3] = (m[0, 3] * m[1, 1] * m[2, 0] - m[0, 1] * m[1, 3] * m[2, 0] - m[0, 3] * m[1, 0] * m[2, 1] + m[0, 0] * m[1, 3] * m[2, 1] + m[0, 1] * m[1, 0] * m[2, 3] - m[0, 0] * m[1, 1] * m[2, 3]) * invdet;
-            minv[3, 0] = (m[1, 2] * m[2, 1] * m[3, 0] - m[1, 1] * m[2, 2] * m[3, 0] - m[1, 2] * m[2, 0] * m[3, 1] + m[1, 0] * m[2, 2] * m[3, 1] + m[1, 1] * m[2, 0] * m[3, 2] - m[1, 0] * m[2, 1] * m[3, 2]) * invdet;
-            minv[3, 1] = (m[0, 1] * m[2, 2] * m[3, 0] - m[0, 2] * m[2, 1] * m[3, 0] + m[0, 2] * m[2, 0] * m[3, 1] - m[0, 0] * m[2, 2] * m[3, 1] - m[0, 1] * m[2, 0] * m[3, 2] + m[0, 0] * m[2, 1] * m[3, 2]) * invdet;
-            minv[3, 2] = (m[0, 2] * m[1, 1] * m[3, 0] - m[0, 1] * m[1, 2] * m[3, 0] - m[0, 2] * m[1, 0] * m[3, 1] + m[0, 0] * m[1, 2] * m[3, 1] + m[0, 1] * m[1, 0] * m[3, 2] - m[0, 0] * m[1, 1] * m[3, 2]) * invdet;
-            minv[3, 3] = (m[0, 1] * m[1, 2] * m[2, 0] - m[0, 2] * m[1, 1] * m[2, 0] + m[0, 2] * m[1, 0] * m[2, 1] - m[0, 0] * m[1, 2] * m[2, 1] - m[0, 1] * m[1, 0] * m[2, 2] + m[0, 0] * m[1, 1] * m[2, 2]) * invdet;
-
-            return new Matrix4D(minv);
-        }
-
-        public Matrix4D Transpose()
-        {
-            double[,] mt = new double[,] { { this.matrix[0,0], this.matrix[1,0], this.matrix[2,0], this.matrix[3,0] },
-                { this.matrix[0,1], this.matrix[1,1], this.matrix[2,1], this.matrix[3,1] },
-                { this.matrix[0,2], this.matrix[1,2], this.matrix[2,2], this.matrix[3,2] },
-                { this.matrix[0,3], this.matrix[1,3], this.matrix[2,3], this.matrix[3,3] } };
-            return new Matrix4D(mt);
-        }
-
-        public static Matrix4D operator *(Matrix4D m, float f)
-        {
-            double[,] res = new double[4, 4];
-            for (int r = 0; r < 4; r++)
-            {
-                for (int c = 0; c < 4; c++)
-                {
-                    res[r, c] = m.matrix[r, c] * f;
-                }
-            }
-            return new Matrix4D(res);
-        }
-
-        public static Vector3 operator *(Matrix4D m, Vector3 v)
-        {
-            double x1 = 0, y1 = 0, z1 = 0, ex = 0; ;
-            double[] tmp = new double[] { v.X, v.Y, v.Z, 1f };
-            for (int i = 0; i < 4; i++)
-            {
-                x1 += m.matrix[0, i] * tmp[i];
-                y1 += m.matrix[1, i] * tmp[i];
-                z1 += m.matrix[2, i] * tmp[i];
-                ex += m.matrix[3, i] * tmp[i];
-            }
-            return new Vector3((float)x1, (float)y1, (float)z1);
-        }
-
-        public static Matrix4D operator *(Matrix4D m1, Matrix4D m2)
-        {
-            double[][] v = new double[4][];
-
-            for (int i = 0; i < 4; i++)
-            {
-                v[i] = m1 * new double[] { m2.matrix[0, i], m2.matrix[1, i], m2.matrix[2, i], m2.matrix[3, i] };
-            }
-            return new Matrix4D(new double[,] { { v[0][0], v[1][0], v[2][0], v[3][0] },
-                { v[0][1], v[1][1], v[2][1], v[3][1] },
-                { v[0][2], v[1][2], v[2][2], v[3][2] },
-                { v[0][3], v[1][3], v[2][3], v[3][3] } });
-        }
-
-        public static double[] operator *(Matrix4D m, double[] v)
-        {
-            double[] tmp = new double[4];
-            for (int i = 0; i < 4; i++)
-            {
-                tmp[0] += m.matrix[0, i] * v[i];
-                tmp[1] += m.matrix[1, i] * v[i];
-                tmp[2] += m.matrix[2, i] * v[i];
-                tmp[3] += m.matrix[3, i] * v[i];
-            }
-            return tmp;
+                    {
+                        (float)mMatrix[0, 0],
+                        (float)mMatrix[0, 1],
+                        (float)mMatrix[0, 2]
+                    },
+                    {
+                        (float)mMatrix[1, 0],
+                        (float)mMatrix[1, 1],
+                        (float)mMatrix[1, 2]
+                    },
+                    {
+                        (float)mMatrix[2, 0],
+                        (float)mMatrix[2, 1],
+                        (float)mMatrix[2, 2]
+                    }
+                });
         }
 
         public override string ToString()
         {
-            string str = "";
-            for (int r = 0; r < 4; r++)
+            var text = "";
+            for (var r = 0; r < 4; r++)
             {
-                for (int c = 0; c < 4; c++)
+                for (var c = 0; c < 4; c++)
                 {
-                    str += this.matrix[r, c].ToString("G7");
-                    if (c != 3 || r != 3) str += ", ";
+                    text += mMatrix[r, c].ToString("G7");
+                    if (c != 3 || r != 3)
+                    {
+                        text += ", ";
+                    }
                 }
-                if (r < 4) str += Environment.NewLine;
+                if (r < 4)
+                {
+                    text += Environment.NewLine;
+                }
             }
-            return str;
+            return text;
         }
 
         public string ToUnpunctuatedString()
         {
-            string str = "";
-            for (int r = 0; r < 4; r++)
+            var text = "";
+            for (var r = 0; r < 4; r++)
             {
-                for (int c = 0; c < 4; c++)
+                for (var c = 0; c < 4; c++)
                 {
-                    str += this.matrix[r, c].ToString("G7", System.Globalization.CultureInfo.InvariantCulture) + " ";
+                    text += mMatrix[r, c].ToString("G7", System.Globalization.CultureInfo.InvariantCulture) + " ";
                 }
             }
-            return str;
+            return text;
+        }
+
+        public Matrix4D Transpose()
+        {
+            return new Matrix4D(new double[,]
+                {
+                    {
+                        mMatrix[0, 0],
+                        mMatrix[1, 0],
+                        mMatrix[2, 0],
+                        mMatrix[3, 0]
+                    },
+                    {
+                        mMatrix[0, 1],
+                        mMatrix[1, 1],
+                        mMatrix[2, 1],
+                        mMatrix[3, 1]
+                    },
+                    {
+                        mMatrix[0, 2],
+                        mMatrix[1, 2],
+                        mMatrix[2, 2],
+                        mMatrix[3, 2]
+                    },
+                    {
+                        mMatrix[0, 3],
+                        mMatrix[1, 3],
+                        mMatrix[2, 3],
+                        mMatrix[3, 3]
+                    }
+                });
         }
     }
 }

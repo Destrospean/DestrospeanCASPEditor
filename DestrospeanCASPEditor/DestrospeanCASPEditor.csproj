@@ -230,6 +230,7 @@
     <Compile Include="CmarNYCBorrowed\Xmods\Vector2.cs" />
     <Compile Include="CmarNYCBorrowed\Xmods\Vector3.cs" />
     <Compile Include="CmarNYCBorrowed\Xmods\VPXY.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Euler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

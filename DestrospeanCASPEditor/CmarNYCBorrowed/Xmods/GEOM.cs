@@ -1356,44 +1356,44 @@ namespace Destrospean.CmarNYCBorrowed
         internal void InsertFormatDescriptor(MeshFormatFlag flag)
         {
             if (Array.IndexOf(this.vertexFormatList, (int)flag) >= 0) return;
-            MeshFormatDatatype datatype = 0;
+            MeshFormatDataType datatype = 0;
             byte byteLength = 0;
             switch (flag)
             {
                 case MeshFormatFlag.Position:
-                    datatype = MeshFormatDatatype.Float;
+                    datatype = MeshFormatDataType.Float;
                     byteLength = 12;
                     break;
                 case MeshFormatFlag.Normals:
-                    datatype = MeshFormatDatatype.Float;
+                    datatype = MeshFormatDataType.Float;
                     byteLength = 12;
                     break;
                 case MeshFormatFlag.UV:
-                    datatype = MeshFormatDatatype.Float;
+                    datatype = MeshFormatDataType.Float;
                     byteLength = 8;
                     break;
                 case MeshFormatFlag.BoneIndices:
-                    datatype = MeshFormatDatatype.Byte4;
+                    datatype = MeshFormatDataType.Byte4;
                     byteLength = 4;
                     break;
                 case MeshFormatFlag.BoneWeights:
-                    datatype = MeshFormatDatatype.Byte4;
+                    datatype = MeshFormatDataType.Byte4;
                     byteLength = 4;
                     break;
                 case MeshFormatFlag.Tangents:
-                    datatype = MeshFormatDatatype.Float;
+                    datatype = MeshFormatDataType.Float;
                     byteLength = 12;
                     break;
                 case MeshFormatFlag.Color:
-                    datatype = MeshFormatDatatype.Color;
+                    datatype = MeshFormatDataType.Color;
                     byteLength = 4;
                     break;
                 case MeshFormatFlag.VertexID:
-                    datatype = MeshFormatDatatype.Uint;
+                    datatype = MeshFormatDataType.Uint;
                     byteLength = 4;
                     break;
                 default:
-                    datatype = MeshFormatDatatype.Float;
+                    datatype = MeshFormatDataType.Float;
                     byteLength = 12;
                     break;
             }
@@ -1550,7 +1550,7 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 for (int j = 0; j < geom2.numVerts; j++)
                 {
-                    if (new Vector3(geom1.GetPosition(i)).positionMatches(geom2.GetPosition(j)))
+                    if (new Vector3(geom1.GetPosition(i)).PositionMatches(geom2.GetPosition(j)))
                     {
                         byte[] sourceBones = geom1.getBones(i);
                         byte[] targetBones = new byte[sourceBones.Length];
@@ -1624,7 +1624,7 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 for (int j = 0; j < geom.numVerts; j++)
                 {
-                    if (new Vector3(geom.GetPosition(i)).positionMatches(geom.GetPosition(j)))
+                    if (new Vector3(geom.GetPosition(i)).PositionMatches(geom.GetPosition(j)))
                     {
                         if (i == j) continue;
                         byte[] sourceBones = geom.getBones(i);
@@ -2244,7 +2244,7 @@ namespace Destrospean.CmarNYCBorrowed
                 Vector3 iPos = new Vector3(this.GetPosition(i));
                 for (int j = 0; j < head.numVerts; j++)
                 {
-                    if (iPos.positionClose(head.GetPosition(j)))
+                    if (iPos.PositionClose(head.GetPosition(j)))
                     {
                         this.SetPosition(i, head.GetPosition(j));
                         this.SetNormal(i, head.GetNormal(j));
@@ -2263,10 +2263,10 @@ namespace Destrospean.CmarNYCBorrowed
                 Vector3 iNorm = new Vector3(this.GetNormal(i));
                 for (int j = i + 1; j < this.numVerts; j++)
                 {
-                    if (iPos.positionMatches(this.GetPosition(j)))
+                    if (iPos.PositionMatches(this.GetPosition(j)))
                     {
                         this.SetPosition(j, iPos.Coordinates);
-                        if (iNorm.positionMatches(this.GetNormal(j))) this.SetNormal(j, iNorm.Coordinates);
+                        if (iNorm.PositionMatches(this.GetNormal(j))) this.SetNormal(j, iNorm.Coordinates);
                     }
                 }
             }
@@ -2393,7 +2393,7 @@ namespace Destrospean.CmarNYCBorrowed
                 List<Vector2> iStitches = new List<Vector2>();
                 for (int j = 0; j < this.numVerts; j++)
                 {
-                    if (iPos.positionMatches(this.GetPosition(j)))
+                    if (iPos.PositionMatches(this.GetPosition(j)))
                     {
                         float[] tmpUV = this.GetUV(j, 1);
                         tmpUV[0] = Math.Abs(tmpUV[0]);
@@ -2417,7 +2417,7 @@ namespace Destrospean.CmarNYCBorrowed
                     Vector3[] verts = GetSeamVertexPositions(species, age, gender, lod, seam);
                     for (int v = 0; v < verts.Length; v++)
                     {
-                        if (verts[v].positionMatches(this.vPositions[i].Coordinates))
+                        if (verts[v].PositionMatches(this.vPositions[i].Coordinates))
                         {
                             ss.Add(new SeamStitch(i, seam, v, this.vUVs[0]));
                         }

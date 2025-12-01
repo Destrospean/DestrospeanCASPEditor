@@ -1,69 +1,567 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Destrospean.CmarNYCBorrowed
 {
     public class RIG
     {
-        int version;
-        int minorVersion;
-        int boneCount;
-        Bone[] bones;
-        string rigName;
-        int IKchainCount;
-        IKchain[] IKchains;
+        Bone[] mBones;
 
-        Quaternion rootRotation = Quaternion.Identity;
+        int mBoneCount, mIKChainCount, mMinorVersion, mVersion;
 
-        public int BoneCount { get { return this.boneCount; } }
+        IKChain[] mIKChains;
 
-        public string ListBonesByFlags(uint flag)
+        string mRigName;
+
+        Quaternion mRootRotation = Quaternion.Identity;
+
+        public int BoneCount
         {
-            string s = "";
-            foreach (Bone b in this.bones)
+            get
             {
-                if (b.flags == flag) s += b.BoneName + Environment.NewLine;
+                return mBoneCount;
             }
-            return s;
         }
 
-        public Bone[] Bones { get { return this.bones; } }
+        public Bone[] Bones
+        {
+            get
+            {
+                return mBones;
+            }
+        }
 
         public Quaternion RootBindRotation
         {
-            get { return this.rootRotation; }
-            set { this.rootRotation = value; }
-        }
-
-        public int GetIndex(uint boneHash)
-        {
-            for (int i = 0; i < this.BoneCount; i++)
+            get
             {
-                if (boneHash == this.bones[i].BoneHash) return i;
+                return mRootRotation;
             }
-            return -1;
+            set
+            {
+                mRootRotation = value;
+            }
         }
 
-        public RIG.Bone GetBone(uint boneHash)
+        public class Bone
         {
-            foreach (Bone b in bones)
+            uint mBoneHash;
+
+            string mBoneName;
+
+            Quaternion mGlobalRotation, mLocalRotation;
+
+            Matrix4D mGlobalTransform, mLocalTransform;
+
+            int mIndex, mOpposingBoneIndex, mParentBoneIndex;
+
+            float[] mOrientation = new float[4],
+            mPosition = new float[3],
+            mScaling = new float[3];
+
+            RIG mRig;
+
+            Vector3 mWorldPosition;
+
+            public uint BoneHash
             {
-                if (boneHash == b.BoneHash)
+                get
                 {
-                    return b;
+                    return mBoneHash;
+                }
+            }
+
+            public string BoneName
+            {
+                get
+                {
+                    return mBoneName;
+                }
+            }
+
+            public uint Flags;
+
+            public Quaternion GlobalRotation
+            {
+                get
+                {
+                    return new Quaternion(mGlobalRotation.Coordinates);
+                }
+            }
+
+            public Matrix4D GlobalTransform
+            {
+                get
+                {
+                    return new Matrix4D(mGlobalTransform.Matrix);
+                }
+            }
+
+            public Quaternion LocalRotation
+            {
+                get
+                {
+                    return new Quaternion(mOrientation);
+                }
+                set
+                {
+                    mOrientation = value.Coordinates;
+                }
+            }
+
+            public Matrix4D LocalTransform
+            {
+                get
+                {
+                    return new Matrix4D(mLocalTransform.Matrix);
+                }
+            }
+
+            public Quaternion MorphRotation
+            {
+                get
+                {
+                    return mParentBoneIndex >= 0 ? new Quaternion(mRig.mBones[mParentBoneIndex].mGlobalRotation.Coordinates) : mGlobalRotation;
+                }
+            }
+
+            public string OpposingBoneName
+            {
+                get
+                {
+                    if (mOpposingBoneIndex != mIndex)
+                    {
+                        return mRig.mBones[mOpposingBoneIndex].mBoneName;
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                }
+            }
+
+            public Bone ParentBone
+            {
+                get
+                {
+                    if (mParentBoneIndex >= 0)
+                    {
+                        return mRig.mBones[mParentBoneIndex];
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            public int ParentBoneIndex
+            {
+                get
+                {
+                    return mParentBoneIndex;
+                }
+
+            }
+
+            public string ParentName
+            {
+                get
+                {
+                    if (mParentBoneIndex >= 0)
+                    {
+                        return mRig.mBones[mParentBoneIndex].mBoneName;
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Returns position relative to parent bone
+            /// </summary>
+            public Vector3 PositionVector
+            {
+                get
+                {
+                    return new Vector3(mPosition);
+                }
+                set
+                {
+                    mPosition = value.Coordinates;
+                }
+            }
+
+            public Vector3 ScalingVector
+            {
+                get
+                {
+                    return new Vector3(mScaling);
+                }
+                set
+                {
+                    mScaling = value.Coordinates;
+                }
+            }
+
+            public Vector3 WorldPosition
+            {
+                get
+                {
+                    return mWorldPosition;
+                }
+                set
+                {
+                    mWorldPosition = new Vector3(value);
+                }
+            }
+
+            public RIG Rig
+            {
+                get
+                {
+                    return mRig;
+                }
+            }
+
+            public Bone(Bone other, RIG rig)
+            {
+                mIndex = other.mIndex;
+                mPosition = new float[]
+                    {
+                        other.mPosition[0],
+                        other.mPosition[1],
+                        other.mPosition[2]
+                    };
+                mOrientation = new float[]
+                    {
+                        other.mOrientation[0],
+                        other.mOrientation[1],
+                        other.mOrientation[2],
+                        other.mOrientation[3]
+                    };
+                mScaling = new float[]
+                    {
+                        other.mScaling[0],
+                        other.mScaling[1],
+                        other.mScaling[2]
+                    };
+                mBoneName = other.mBoneName;
+                mOpposingBoneIndex = other.mOpposingBoneIndex;
+                mParentBoneIndex = other.mParentBoneIndex;
+                mBoneHash = other.mBoneHash;
+                Flags = other.Flags;
+                mRig = rig;
+                mLocalRotation = new Quaternion(other.mLocalRotation.Coordinates);
+                mGlobalRotation = new Quaternion(other.mGlobalRotation.Coordinates);
+                mLocalTransform = new Matrix4D(other.mLocalTransform.Matrix);
+                mGlobalTransform = new Matrix4D(other.mGlobalTransform.Matrix);
+                mWorldPosition = new Vector3(other.mWorldPosition);
+            }
+
+            public Bone(BinaryReader reader, RIG rig, int index)
+            {
+                mRig = rig;
+                mIndex = index;
+                for (var i = 0; i < 3; i++)
+                {
+                    mPosition[i] = reader.ReadSingle();
+                }
+                for (var i = 0; i < 4; i++)
+                {
+                    mOrientation[i] = reader.ReadSingle();
+                }
+                for (var i = 0; i < 3; i++)
+                {
+                    mScaling[i] = reader.ReadSingle();
+                }
+                char[] temp = reader.ReadChars(reader.ReadInt32());
+                mBoneName = new string(temp);
+                mOpposingBoneIndex = reader.ReadInt32();
+                mParentBoneIndex = reader.ReadInt32();
+                mBoneHash = reader.ReadUInt32();
+                Flags = reader.ReadUInt32();
+                CalculateTransforms();
+            }
+
+            public void BoneMover(Vector3 scale, Vector3 offset, Quaternion rotation, float weight)
+            {
+                Vector3 bonePosition = WorldPosition, weightedOffset = offset * weight,
+                weightedScale = (scale * weight) + new Vector3(1, 1, 1);
+                var weightedRotation = rotation * weight;
+                var transform = weightedRotation.ToMatrix4D(weightedOffset, weightedScale);
+                if (ParentBone != null)
+                {
+                    bonePosition -= ParentBone.WorldPosition;
+                }
+                bonePosition = transform * bonePosition;
+                if (ParentBone != null)
+                {
+                    bonePosition += ParentBone.WorldPosition;
+                }
+                WorldPosition = bonePosition;
+                var childBones = mRig.GetChildren(mBoneHash);
+                foreach (var child in childBones)
+                {
+                    child.BoneMover(scale, offset, rotation, weight);
+                }
+            }
+
+            public void CalculateTransforms()
+            {
+                mLocalRotation = new Quaternion(mOrientation);
+                if (mLocalRotation.IsEmpty)
+                {
+                    mLocalRotation = Quaternion.Identity;
+                }
+                if (!mLocalRotation.IsNormalized)
+                {
+                    mLocalRotation.Balance();
+                }
+                mLocalTransform = mLocalRotation.ToMatrix4D(new Vector3(mPosition), new Vector3(mScaling));
+                if (mBoneName.Contains("ROOT_bind"))
+                {
+                    mRig.mRootRotation = mLocalRotation;
+                }
+                if (mParentBoneIndex >= 0 && mParentBoneIndex < mRig.BoneCount)
+                {
+                    mGlobalTransform = mRig.mBones[mParentBoneIndex].mGlobalTransform * mLocalTransform;
+                    mGlobalRotation = mRig.mBones[mParentBoneIndex].mGlobalRotation * mLocalRotation;
+                }
+                else
+                {
+                    mGlobalTransform = mLocalTransform;
+                    mGlobalRotation = mLocalRotation;
+                }
+                mWorldPosition = mGlobalTransform * new Vector3();
+            }
+
+            public void ScaleBone(Vector3 scale, float weight)
+            {
+                Vector3 position = new Vector3(mPosition),
+                temp = position.Scale((scale * weight) + new Vector3(1, 1, 1));  
+                mPosition = temp.Coordinates;
+            }
+
+            public override string ToString()
+            {
+                var text = "Position: " + mPosition[0].ToString() + "," + mPosition[1].ToString() + "," + mPosition[2].ToString() + Environment.NewLine;
+                text += "Rotation: " + mOrientation[0].ToString() + "," + mOrientation[1].ToString() + "," + mOrientation[2].ToString() + Environment.NewLine;
+                text += "Scaling: " + mScaling[0].ToString() + "," + mScaling[1].ToString() + "," + mScaling[2].ToString() + Environment.NewLine;
+                text += "Bone Name: " + mBoneName + Environment.NewLine;
+                text += "Opposing Bone Index: " + mOpposingBoneIndex.ToString() + " (" + mRig.mBones[mOpposingBoneIndex].mBoneName + ")" + Environment.NewLine;
+                text += "Parent Bone Index: " + mParentBoneIndex.ToString() + ((mParentBoneIndex >= 0 && mParentBoneIndex < mRig.mBoneCount) ? " (" + mRig.mBones[mParentBoneIndex].mBoneName + ")" : "") + Environment.NewLine;
+                text += "Bone Hash : " + mBoneHash.ToString("X8") + Environment.NewLine;
+                text += "Flags : " + Flags.ToString("X8");
+                return text;
+            }
+
+            public void UpdateLocalData(float weight, Vector3 morphOffset, Quaternion morphRotation, Vector3 morphScale)
+            {
+                var weightedOffset = morphOffset * weight;
+                var weightedRotation = morphRotation * weight;
+                mPosition = (PositionVector + weightedOffset).Coordinates;
+                mOrientation = (mLocalRotation * weightedRotation).Coordinates;
+            }
+        }
+
+        public class IKChain
+        {
+            int[] mBoneIndex, mInfoNode;
+
+            int mBoneListLength, mPoleVectorIndex, mSlotInfo, mSlotOffsetIndex, mRootIndex;              
+
+            RIG mRig;
+
+            public IKChain(IKChain other, RIG rig)
+            {
+                mBoneListLength = other.mBoneListLength;
+                mBoneIndex = new int[mBoneListLength];
+                Array.Copy(other.mBoneIndex, mBoneIndex, mBoneListLength);
+                mInfoNode = new int[11];
+                Array.Copy(other.mInfoNode, mInfoNode, 11);
+                mPoleVectorIndex = other.mPoleVectorIndex;
+                mSlotInfo = other.mSlotInfo;
+                mSlotOffsetIndex = other.mSlotOffsetIndex;
+                mRootIndex = other.mRootIndex;
+                mRig = rig;
+            }
+
+            public IKChain(BinaryReader reader, RIG rig)
+            {
+                mBoneListLength = reader.ReadInt32();
+                mBoneIndex = new int[mBoneListLength];
+                for (var i = 0; i < mBoneListLength; i++)
+                {
+                    mBoneIndex[i] = reader.ReadInt32();
+                }
+                mInfoNode = new int[11];
+                for (var i = 0; i < 11; i++)
+                {
+                    mInfoNode[i] = reader.ReadInt32();
+                }
+                mPoleVectorIndex = reader.ReadInt32();
+                mSlotInfo = reader.ReadInt32();
+                mSlotOffsetIndex = reader.ReadInt32();
+                mRootIndex = reader.ReadInt32();
+                mRig = rig;
+            }
+
+            public override string ToString()
+            {
+                var text = "Bones: ";
+                for (var i = 0; i < mBoneListLength; i++)
+                {
+                    text += mRig.mBones[mBoneIndex[i]].BoneName + " ";
+                }
+                text += Environment.NewLine + "PoleVectorIndex: " + mPoleVectorIndex.ToString() + Environment.NewLine;
+                text += "SlotOffsetIndex: " + mSlotOffsetIndex.ToString() + Environment.NewLine;
+                text += "RootIndex: " + mRootIndex.ToString();
+                return text;
+            }
+        }
+
+        public RIG(RIG other)
+        {
+            mVersion = other.mVersion;
+            mMinorVersion = other.mMinorVersion;
+            mBoneCount = other.mBoneCount;
+            mBones = new Bone[mBoneCount];
+            for (var i = 0; i < mBoneCount; i++)
+            {
+                mBones[i] = new Bone(other.mBones[i], this);
+            }
+            mIKChainCount = other.mIKChainCount;
+            mIKChains = new IKChain[mIKChainCount];
+            for (var i = 0; i < mIKChainCount; i++)
+            {
+                mIKChains[i] = new IKChain(other.mIKChains[i], this);
+            }
+        }
+
+        public RIG(BinaryReader reader)
+        {
+            reader.BaseStream.Position = 0;
+            mVersion = reader.ReadInt32();
+            mMinorVersion = reader.ReadInt32();
+            mBoneCount = reader.ReadInt32();
+            mBones = new Bone[mBoneCount];
+            for (var i = 0; i < mBoneCount; i++)
+            {
+                mBones[i] = new Bone(reader, this, i);
+            }
+            mRigName = new String(reader.ReadChars(reader.ReadInt32()));
+            if (mVersion >= 4)
+            {
+                mIKChainCount = reader.ReadInt32();
+                mIKChains = new IKChain[mIKChainCount];
+                for (var i = 0; i < mIKChainCount; i++)
+                {
+                    mIKChains[i] = new IKChain(reader, this);
+                }
+            }
+        }
+
+        public void BoneMorpher(Bone bone, float weight, Vector3 scale, Vector3 offset, Quaternion rotation)
+        {
+            bone.UpdateLocalData(weight, offset, rotation, scale);
+            ScaleBone(bone.BoneHash, scale, weight);
+            for (var i = GetIndex(bone.BoneHash); i < mBones.Length; i++)
+            {
+                mBones[i].CalculateTransforms();
+            }
+        }
+
+        public void BoneMorpher2(Bone bone, float weight, Vector3 scale, Vector3 offset, Quaternion rotation)
+        {
+            bone.UpdateLocalData(weight, offset, rotation, scale);
+            var childBones = GetChildren(bone.BoneHash);
+            foreach (var child in childBones)
+            {
+                child.ScaleBone(scale, weight);
+                ScaleBone(child.BoneHash, scale, weight);
+            }
+        }
+
+        public Bone GetBone(uint boneHash)
+        {
+            foreach (var bone in mBones)
+            {
+                if (boneHash == bone.BoneHash)
+                {
+                    return bone;
                 }
             }
             return null;
         }
 
+        public int[] GetChildIndices(int index)
+        {
+            var childList = new List<int>();
+            if (index >= 0 && index < BoneCount)
+            {
+                for (var i = 0; i < BoneCount; i++)
+                {
+                    if (mBones[i].ParentBoneIndex == index)
+                    {
+                        childList.Add(i);
+                    }
+                }
+            }
+            return childList.ToArray();
+        }
+
+        public Bone[] GetChildren(uint boneHash)
+        {
+            var index = GetIndex(boneHash);
+            if (index < 0)
+            {
+                return null;
+            }
+            var childBones = new List<Bone>();
+            foreach (var i in GetChildIndices(index))
+            {
+                childBones.Add(mBones[i]);
+            }
+            return childBones.ToArray();
+        }
+
+        public void GetDescendants(uint boneHash, ref List<uint> allBones)
+        {
+            var index = GetIndex(boneHash);
+            if (index < 0)
+            {
+                return;
+            }
+            allBones.Add(boneHash);
+            foreach (var i in GetChildIndices(index))
+            {
+                GetDescendants(mBones[i].BoneHash, ref allBones);
+            }
+        }
+
+        public int GetIndex(uint boneHash)
+        {
+            for (var i = 0; i < BoneCount; i++)
+            {
+                if (boneHash == mBones[i].BoneHash)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         public bool GetPosition(uint boneHash, out Vector3 position)
         {
-            foreach (Bone b in bones)
+            foreach (var bone in mBones)
             {
-                if (boneHash == b.BoneHash)
+                if (boneHash == bone.BoneHash)
                 {
-                    position = b.PositionVector;
+                    position = bone.PositionVector;
                     return true;
                 }
             }
@@ -73,9 +571,9 @@ namespace Destrospean.CmarNYCBorrowed
 
         public bool GetPosition(int index, out Vector3 position)
         {
-            if (index >= 0 && index < this.BoneCount)
+            if (index >= 0 && index < BoneCount)
             {
-                position = bones[index].PositionVector;
+                position = mBones[index].PositionVector;
                 return true;
             }
             position = new Vector3();
@@ -84,11 +582,11 @@ namespace Destrospean.CmarNYCBorrowed
 
         public bool GetWorldPosition(uint boneHash, out Vector3 position)
         {
-            foreach (Bone b in bones)
+            foreach (var bone in mBones)
             {
-                if (boneHash == b.BoneHash)
+                if (boneHash == bone.BoneHash)
                 {
-                    position = b.WorldPosition;
+                    position = bone.WorldPosition;
                     return true;
                 }
             }
@@ -98,151 +596,45 @@ namespace Destrospean.CmarNYCBorrowed
 
         public bool GetWorldPosition(int index, out Vector3 position)
         {
-            if (index >= 0 && index < this.BoneCount)
+            if (index >= 0 && index < BoneCount)
             {
-                position = bones[index].WorldPosition;
+                position = mBones[index].WorldPosition;
                 return true;
             }
             position = new Vector3();
             return false;
         }
 
-        public void GetDescendants(uint boneHash, ref List<uint> allBones)
+        public int[] GetParentIndices(int index)
         {
-            int index = this.GetIndex(boneHash);
-            if (index < 0) return;
-            allBones.Add(boneHash);
-            int[] childIndexes = this.GetChildIndexes(index);
-            foreach (int i in childIndexes)
+            var parentList = new List<int>();
+            var i = index;
+            while (mBones[i].ParentBoneIndex >= 0 && mBones[i].ParentBoneIndex < BoneCount)
             {
-                GetDescendants(this.bones[i].BoneHash, ref allBones);
-            }
-        }
-
-        public Bone[] GetChildren(uint boneHash)
-        {
-            int index = this.GetIndex(boneHash);
-            if (index < 0) return null;
-            int[] childIndexes = this.GetChildIndexes(index);
-            List<Bone> childBones = new List<Bone>();
-            foreach (int i in childIndexes)
-            {
-                childBones.Add(this.bones[i]);
-            }
-            return childBones.ToArray();
-        }
-
-        public int[] GetChildIndexes(int index)
-        {
-            List<int> childList = new List<int>();
-            if (index >= 0 && index < this.BoneCount)
-            {
-                for (int i = 0; i < this.BoneCount; i++)
-                {
-                    if (bones[i].ParentBoneIndex == index) childList.Add(i);
-                }
-            }
-            return childList.ToArray();
-        }
-
-        public int[] GetParentIndexes(int index)
-        {
-            List<int> parentList = new List<int>();
-            int i = index;
-            while (this.bones[i].ParentBoneIndex >= 0 && this.bones[i].ParentBoneIndex < this.BoneCount)
-            {
-                parentList.Add(this.bones[i].ParentBoneIndex);
-                i = this.bones[i].ParentBoneIndex;
+                parentList.Add(mBones[i].ParentBoneIndex);
+                i = mBones[i].ParentBoneIndex;
             }
             parentList.Reverse();
             return parentList.ToArray();
         }
 
-        public RIG(BinaryReader br)
+        public string ListBonesByFlags(uint flag)
         {
-            br.BaseStream.Position = 0;
-            version = br.ReadInt32();
-            minorVersion = br.ReadInt32();
-            boneCount = br.ReadInt32();
-            bones = new Bone[boneCount];
-            for (int i = 0; i < boneCount; i++)
+            var text = "";
+            foreach (var bone in mBones)
             {
-                bones[i] = new Bone(br, this, i);
-            }
-            rigName = new String(br.ReadChars(br.ReadInt32()));
-            if (version >= 4)
-            {
-                IKchainCount = br.ReadInt32();
-                IKchains = new IKchain[IKchainCount];
-                for (int i = 0; i < IKchainCount; i++)
+                if (bone.Flags == flag)
                 {
-                    IKchains[i] = new IKchain(br, this);
+                    text += bone.BoneName + Environment.NewLine;
                 }
             }
+            return text;
         }
 
-        public RIG(RIG other)
+        public void ScaleBone(uint boneHash, Vector3 scale, float weight)
         {
-            this.version = other.version;
-            this.minorVersion = other.minorVersion;
-            this.boneCount = other.boneCount;
-            this.bones = new Bone[boneCount];
-            for (int i = 0; i < boneCount; i++)
-            {
-                bones[i] = new Bone(other.bones[i], this);
-            }
-            IKchainCount = other.IKchainCount;
-            IKchains = new IKchain[IKchainCount];
-            for (int i = 0; i < IKchainCount; i++)
-            {
-                IKchains[i] = new IKchain(other.IKchains[i], this);
-            }
-        }
-
-        //internal void BoneMorpher(Bone bone, float weight, Vector3 localScale, Vector3 localOffset, Quaternion localRotation)
-        //{
-        //    Vector3 weightedScale = (localScale * weight) + new Vector3(1f, 1f, 1f);
-        //    Vector3 weightedOffset = localOffset * weight;
-        //    Quaternion weightedRotation = localRotation * weight;
-        //    bone.PositionVector = bone.PositionVector + weightedOffset;
-        //    bone.LocalRotation = bone.LocalRotation * weightedRotation;
-        //    for (int i = GetIndex(bone.BoneHash); i < this.bones.Length; i++)
-        //    {
-        //        this.bones[i].PositionVector = this.bones[i].PositionVector.Scale(weightedScale);
-        //        this.bones[i].CalculateTransforms();
-        //    }
-        //}
-
-        internal void BoneMorpher2(Bone bone, float weight, Vector3 scale, Vector3 offset, Quaternion rotation)
-        {
-            bone.UpdateLocalData(weight, offset, rotation, scale);
-            RIG.Bone[] childBones = this.GetChildren(bone.BoneHash);
-            foreach (RIG.Bone child in childBones)
-            {
-                child.ScaleBone(scale, weight);
-                ScaleBone(child.BoneHash, scale, weight);
-            }
-            //  ScaleBone(bone.BoneHash, scale, weight);
-            //for (int i = GetIndex(bone.BoneHash); i < this.bones.Length; i++)
-            //{
-            //    this.bones[i].CalculateTransforms();
-            //}
-        }
-
-        internal void BoneMorpher(Bone bone, float weight, Vector3 scale, Vector3 offset, Quaternion rotation)
-        {
-            bone.UpdateLocalData(weight, offset, rotation, scale);
-            ScaleBone(bone.BoneHash, scale, weight);
-            for (int i = GetIndex(bone.BoneHash); i < this.bones.Length; i++)
-            {
-                this.bones[i].CalculateTransforms();
-            }
-        }
-
-        internal void ScaleBone(uint boneHash, Vector3 scale, float weight)
-        {
-            RIG.Bone[] childBones = this.GetChildren(boneHash);
-            foreach (RIG.Bone child in childBones)
+            var childBones = GetChildren(boneHash);
+            foreach (var child in childBones)
             {
                 child.ScaleBone(scale, weight);
                 ScaleBone(child.BoneHash, scale, weight);
@@ -251,262 +643,19 @@ namespace Destrospean.CmarNYCBorrowed
 
         public override string ToString()
         {
-            string tmp = "Version: " + version.ToString() + ", Minor Version: " + minorVersion.ToString() + Environment.NewLine;
-            tmp += boneCount.ToString() + " Bones:" + Environment.NewLine + Environment.NewLine;
-            for (int i = 0; i < boneCount; i++)
+            var text = "Version: " + mVersion.ToString() + ", Minor Version: " + mMinorVersion.ToString() + Environment.NewLine;
+            text += mBoneCount.ToString() + " Bones:" + Environment.NewLine + Environment.NewLine;
+            for (var i = 0; i < mBoneCount; i++)
             {
-                tmp += bones[i].ToString() + Environment.NewLine + Environment.NewLine;
+                text += mBones[i].ToString() + Environment.NewLine + Environment.NewLine;
             }
-            tmp += rigName + Environment.NewLine + Environment.NewLine;
-            tmp += IKchainCount.ToString() + " IK Chains:" + Environment.NewLine + Environment.NewLine;
-            for (int i = 0; i < IKchainCount; i++)
+            text += mRigName + Environment.NewLine + Environment.NewLine;
+            text += mIKChainCount.ToString() + " IK Chains:" + Environment.NewLine + Environment.NewLine;
+            for (var i = 0; i < mIKChainCount; i++)
             {
-                tmp += IKchains[i].ToString() + Environment.NewLine + Environment.NewLine;
+                text += mIKChains[i].ToString() + Environment.NewLine + Environment.NewLine;
             }
-            return tmp;
-        }
-
-        public class Bone
-        {
-            float[] position = new float[3];            //relative to parent
-            float[] orientation = new float[4];         //Quaternion 
-            float[] scaling = new float[3];
-            string boneName;
-            int opposingBoneIndex;      // Same as the bone's index except in the case of Left/Right mirrored bones it is the index of its opposite
-            int parentBoneIndex;
-            uint boneHash;
-            internal uint flags;
-
-            RIG rig;
-            int index;
-            Quaternion localRotation;
-            Quaternion globalRotation;
-            Matrix4D localTransform;
-            Matrix4D globalTransform;
-            Vector3 worldPosition;
-
-            public string BoneName { get { return this.boneName; } }
-            public int ParentBoneIndex { get { return this.parentBoneIndex; } }
-            public RIG.Bone ParentBone { get { if (this.parentBoneIndex >= 0) { return this.rig.bones[parentBoneIndex]; } else { return null; } } }
-            public string ParentName { get { if (this.parentBoneIndex >= 0) { return rig.bones[this.parentBoneIndex].boneName; } else { return ""; } } }
-            public string OpposingBoneName
-            {
-                get
-                {
-                    if (this.opposingBoneIndex != this.index) { return rig.bones[this.opposingBoneIndex].boneName; }
-                    else { return ""; }
-                }
-            }
-            public uint BoneHash { get { return this.boneHash; } }
-            /// <summary>
-            /// Returns position relative to parent bone
-            /// </summary>
-            public Vector3 PositionVector { get { return new Vector3(this.position); } set { this.position = value.Coordinates; } }
-            public Vector3 ScalingVector { get { return new Vector3(this.scaling); } set { this.scaling = value.Coordinates; } }
-            public Quaternion LocalRotation { get { return new Quaternion(this.orientation); } set { this.orientation = value.Coordinates; } }
-            public Quaternion GlobalRotation { get { return new Quaternion(this.globalRotation.Coordinates); } }
-            public Vector3 WorldPosition
-            {
-                get { return this.worldPosition; }
-                set { this.worldPosition = new Vector3(value); }
-            }
-            public Quaternion MorphRotation
-            {
-                get
-                {
-                    return (parentBoneIndex >= 0) ? new Quaternion(this.rig.bones[parentBoneIndex].globalRotation.Coordinates) : this.globalRotation;
-                }
-            }
-            // public Quaternion GlobalRotation { get { return new Quaternion(this.globalRotation.Coordinates); } }
-
-            public Matrix4D GlobalTransform { get { return new Matrix4D(this.globalTransform.Matrix); } }
-            public Matrix4D LocalTransform { get { return new Matrix4D(this.localTransform.Matrix); } }
-            public RIG Rig { get { return this.rig; } }
-
-            internal Bone(BinaryReader br, RIG r, int index)
-            {
-                this.rig = r;
-                this.index = index;
-                for (int i = 0; i < 3; i++)
-                {
-                    position[i] = br.ReadSingle();
-                }
-                for (int i = 0; i < 4; i++)
-                {
-                    orientation[i] = br.ReadSingle();
-                }
-                for (int i = 0; i < 3; i++)
-                {
-                    scaling[i] = br.ReadSingle();
-                }
-                int boneNameLength = br.ReadInt32();
-                char[] tmp = br.ReadChars(boneNameLength);
-                boneName = new string(tmp);
-                opposingBoneIndex = br.ReadInt32();
-                parentBoneIndex = br.ReadInt32();
-                boneHash = br.ReadUInt32();
-                flags = br.ReadUInt32();
-                CalculateTransforms();
-            }
-
-            internal void CalculateTransforms()
-            {
-                this.localRotation = new Quaternion(this.orientation);
-                if (this.localRotation.IsEmpty) localRotation = Quaternion.Identity;
-                if (!this.localRotation.IsNormalized) this.localRotation.Balance();
-                localTransform = this.localRotation.ToMatrix4D(new Vector3(position), new Vector3(scaling));
-                if (this.boneName.Contains("ROOT_bind")) rig.rootRotation = this.localRotation;
-
-                if (this.parentBoneIndex >= 0 && this.parentBoneIndex < rig.BoneCount)
-                {
-                    this.globalTransform = rig.bones[this.parentBoneIndex].globalTransform * localTransform;
-                    this.globalRotation = rig.bones[this.parentBoneIndex].globalRotation * this.localRotation;
-                }
-                else    //no parents
-                {
-                    this.globalTransform = localTransform;
-                    this.globalRotation = localRotation;
-                }
-                this.worldPosition = this.globalTransform * new Vector3();
-            }
-
-            internal void UpdateLocalData(float weight, Vector3 morphOffset, Quaternion morphRotation, Vector3 morphScale)
-            {
-                //  Vector3 weightedScale = (morphScale * weight) + new Vector3(1f, 1f, 1f);
-                Vector3 weightedOffset = morphOffset * weight;
-                Quaternion weightedRotation = morphRotation * weight;
-
-                this.position = (this.PositionVector + weightedOffset).Coordinates;
-                this.orientation = (this.localRotation * weightedRotation).Coordinates;
-                //  this.scaling = this.ScalingVector.Scale(weightedScale).Coordinates;
-            }
-
-            internal void ScaleBone(Vector3 scale, float weight)
-            {
-                Vector3 pos = new Vector3(this.position);
-                Vector3 tmp = pos.Scale((scale * weight) + new Vector3(1f, 1f, 1f));  
-                // Vector3 diff = tmp - pos;
-                this.position = tmp.Coordinates;
-            }
-
-            internal Bone(Bone other, RIG r)
-            {
-                this.index = other.index;
-                position = new float[] { other.position[0], other.position[1], other.position[2] };
-                orientation = new float[] { other.orientation[0], other.orientation[1], other.orientation[2], other.orientation[3] };
-                scaling = new float[] { other.scaling[0], other.scaling[1], other.scaling[2] };
-                boneName = other.boneName;
-                opposingBoneIndex = other.opposingBoneIndex;
-                parentBoneIndex = other.parentBoneIndex;
-                boneHash = other.boneHash;
-                flags = other.flags;
-
-                rig = r;
-                localRotation = new Quaternion(other.localRotation.Coordinates);
-                globalRotation = new Quaternion(other.globalRotation.Coordinates);
-                localTransform = new Matrix4D(other.localTransform.Matrix);
-                globalTransform = new Matrix4D(other.globalTransform.Matrix);
-                worldPosition = new Vector3(other.worldPosition);
-            }
-
-            public override string ToString()
-            {
-                string tmp = "Position: " + position[0].ToString() + "," + position[1].ToString() + "," + position[2].ToString() + Environment.NewLine;
-                tmp += "Rotation: " + orientation[0].ToString() + "," + orientation[1].ToString() + "," + orientation[2].ToString() + Environment.NewLine;
-                tmp += "Scaling: " + scaling[0].ToString() + "," + scaling[1].ToString() + "," + scaling[2].ToString() + Environment.NewLine;
-                tmp += "Bone Name: " + boneName + Environment.NewLine;
-                tmp += "Opposing Bone Index: " + opposingBoneIndex.ToString() + " (" + rig.bones[opposingBoneIndex].boneName + ")" + Environment.NewLine;
-                tmp += "Parent Bone Index: " + parentBoneIndex.ToString() + ((parentBoneIndex >= 0 && parentBoneIndex < rig.boneCount) ? " (" + rig.bones[parentBoneIndex].boneName + ")" : "") + Environment.NewLine;
-                tmp += "Bone Hash : " + boneHash.ToString("X8") + Environment.NewLine;
-                tmp += "Flags : " + flags.ToString("X8");
-                return tmp;
-            }
-
-            /// <summary>
-            /// Moves a bone when its parent bone is scaled, moved, and/or rotated
-            /// </summary>
-            /// <param name="parentPosition">Point of origin for scaling and rotation</param>
-            /// <param name="scale">Scale vector of parent</param>
-            /// <param name="offset">Offset of parent</param>
-            /// <param name="rotation">Rotation of parent</param>
-            /// <returns>Offset vector from old position to new position</returns>
-            internal void BoneMover(Vector3 scale, Vector3 offset, Quaternion rotation, float weight)
-            {
-                Vector3 weightedScale = (scale * weight) + new Vector3(1f, 1f, 1f);
-                Vector3 weightedOffset = offset * weight;
-                Quaternion weightedRotation = rotation * weight;
-                Matrix4D transform = weightedRotation.ToMatrix4D(weightedOffset, weightedScale);
-                Vector3 bonePos = this.WorldPosition;
-                if (this.ParentBone != null) bonePos -= this.ParentBone.WorldPosition;
-                bonePos = transform * bonePos;
-                if (this.ParentBone != null) bonePos += this.ParentBone.WorldPosition;
-                this.WorldPosition = bonePos;
-
-                RIG.Bone[] childBones = rig.GetChildren(this.boneHash);
-                foreach (RIG.Bone child in childBones)
-                {
-                    child.BoneMover(scale, offset, rotation, weight);
-                }
-            }
-        }
-
-        internal class IKchain
-        {
-            int boneListLength;
-            int[] boneIndex;            //bone index, boneListLength times
-            int[] infoNode;             //11 elements
-            int poleVectorIndex;        
-            int slotInfo;
-            int slotOffsetIndex;        
-            int rootIndex;              
-            RIG rig;
-
-            internal IKchain(BinaryReader br, RIG r)
-            {
-                boneListLength = br.ReadInt32();
-                boneIndex = new int[boneListLength];
-                for (int i = 0; i < boneListLength; i++)
-                {
-                    boneIndex[i] = br.ReadInt32();
-                }
-                infoNode = new int[11];
-                for (int i = 0; i < 11; i++)
-                {
-                    infoNode[i] = br.ReadInt32();
-                }
-                poleVectorIndex = br.ReadInt32();
-                slotInfo = br.ReadInt32();
-                slotOffsetIndex = br.ReadInt32();
-                rootIndex = br.ReadInt32();
-                this.rig = r;
-            }
-
-            public IKchain(IKchain other, RIG r)
-            {
-                this.boneListLength = other.boneListLength;
-                this.boneIndex = new int[boneListLength];
-                Array.Copy(other.boneIndex, this.boneIndex, boneListLength);
-                this.infoNode = new int[11];
-                Array.Copy(other.infoNode, this.infoNode, 11);
-                this.poleVectorIndex = other.poleVectorIndex;
-                this.slotInfo = other.slotInfo;
-                this.slotOffsetIndex = other.slotOffsetIndex;
-                this.rootIndex = other.rootIndex;
-                this.rig = r;
-            }
-
-            public override string ToString()
-            {
-                string tmp = "Bones: ";
-                for (int i = 0; i < boneListLength; i++)
-                {
-                    tmp += rig.bones[boneIndex[i]].BoneName + " ";
-                }
-                tmp += Environment.NewLine + "PoleVectorIndex: " + poleVectorIndex.ToString() + Environment.NewLine;
-                tmp += "SlotOffsetIndex: " + slotOffsetIndex.ToString() + Environment.NewLine;
-                tmp += "RootIndex: " + rootIndex.ToString();
-                return tmp;
-            }
+            return text;
         }
     }
 }

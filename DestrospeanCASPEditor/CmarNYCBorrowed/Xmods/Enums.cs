@@ -16,52 +16,43 @@
         Unisex = 0x3000
     }
 
-    public enum CASregions
+    public enum CASRegions
     {
-        Undefined = 0,
-        Body = 1024,
-        Brow = 256,
-        Ears = 16,
-        Eyelashes = 2048,
-        Eyes = 1,
-        Face = 64,
-        Head = 128,
-        Jaw = 512,
+        Undefined,
+        Eyes,
+        Nose,
         Mouth = 4,
-        Nose = 2,
-        TranslateEyes = 32,
-        TranslateMouth = 8
+        TranslateMouth = 8,
+        Ears = 0x10,
+        TranslateEyes = 0x20,
+        Face = 0x40,
+        Head = 0x80,
+        Brow = 0x100,
+        Jaw = 0x200,
+        Body = 0x400,
+        Eyelashes = 0x800
     }
 
-    public enum MeshFormat
+    public enum MeshFormatDataType
     {
-        None = 0,
-        OBJ = 1,
-        DAE = 2,
-        MS3D = 3,
-        GEOM = 4,
+        Float = 1,
+        Byte4,
+        Color,
+        Uint
     }
 
     public enum MeshFormatFlag
     {
         Position = 1,
-        Normals = 2,
-        UV = 3,
-        BoneIndices = 4,
-        BoneWeights = 5,
-        Tangents = 6,
-        Color = 7,
-        Binormal = 8,
-        WeightMap = 9,
-        VertexID = 10
-    }
-
-    public enum MeshFormatDatatype
-    {
-        Float = 1,
-        Byte4 = 2,
-        Color = 3,
-        Uint = 4
+        Normals,
+        UV,
+        BoneIndices,
+        BoneWeights,
+        Tangents,
+        Color,
+        Binormal,
+        WeightMap,
+        VertexID
     }
 
     public enum Shader : uint

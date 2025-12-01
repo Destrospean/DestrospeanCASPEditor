@@ -4,157 +4,310 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public class Matrix3D
     {
-        float[,] matrix;
+        float[,] mMatrix;
+
+        public static Matrix3D Identity
+        {
+            get
+            {
+                return new Matrix3D(new float[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            1,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            1
+                        }
+                    });
+            }
+        }
 
         public float[,] Matrix
         {
             get
             {
-                return new float[,] { { this.matrix[0,0], this.matrix[0,1], this.matrix[0,2] },
-                    { this.matrix[1,0], this.matrix[1,1], this.matrix[1,2] },
-                    { this.matrix[2,0], this.matrix[2,1], this.matrix[2,2] } };
-            }
-        }
-
-        public Matrix3D()
-        {
-            this.matrix = new float[,] { { 0, 0, 0 },
-                { 0, 0, 0 },
-                { 0, 0, 0 } };
-        }
-
-        public Matrix3D(float[,] matrix)
-        {
-            this.matrix = new float[,] { { matrix[0,0], matrix[0,1], matrix[0,2] },
-                { matrix[1,0], matrix[1,1], matrix[1,2] },
-                { matrix[2,0], matrix[2,1], matrix[2,2] } };
-        }
-
-        public static Vector3 operator *(Matrix3D m, Vector3 v)
-        {
-            float x1 = 0, y1 = 0, z1 = 0;
-            for (int i = 0; i < 3; i++)
-            {
-                x1 += m.matrix[0, i] * v.Coordinates[i];
-                y1 += m.matrix[1, i] * v.Coordinates[i];
-                z1 += m.matrix[2, i] * v.Coordinates[i];
-            }
-            return new Vector3(x1, y1, z1);
-        }
-
-        public static Matrix3D operator *(Matrix3D m, float f)
-        {
-            float[,] res = new float[3, 3];
-            for (int r = 0; r < 3; r++)
-            {
-                for (int c = 0; c < 3; c++)
+                return new float[,]
                 {
-                    res[r, c] = m.matrix[r, c] * f;
-                }
+                    {
+                        mMatrix[0, 0],
+                        mMatrix[0, 1],
+                        mMatrix[0, 2]
+                    },
+                    {
+                        mMatrix[1, 0],
+                        mMatrix[1, 1],
+                        mMatrix[1, 2]
+                    },
+                    {
+                        mMatrix[2, 0],
+                        mMatrix[2, 1],
+                        mMatrix[2, 2]
+                    }
+                };
             }
-            return new Matrix3D(res);
-        }
-
-        public static float[] operator *(Matrix3D m, float[] v)
-        {
-            float[] tmp = new float[3];
-            for (int i = 0; i < 3; i++)
-            {
-                tmp[0] += m.matrix[0, i] * v[i];
-                tmp[1] += m.matrix[1, i] * v[i];
-                tmp[2] += m.matrix[2, i] * v[i];
-            }
-            return tmp;
-        }
-
-        public static Matrix3D operator *(Matrix3D m1, Matrix3D m2)
-        {
-            float[][] v = new float[3][];
-
-            for (int i = 0; i < 3; i++)
-            {
-                v[i] = m1 * new float[] { m2.matrix[0, i], m2.matrix[1, i], m2.matrix[2, i] };
-            }
-            return new Matrix3D(new float[,] { { v[0][0], v[1][0], v[2][0] },
-                { v[0][1], v[1][1], v[2][1] },
-                { v[0][2], v[1][2], v[2][2] } });
-        }
-
-        public static Matrix3D Identity
-        {
-            get { return new Matrix3D(new float[,] { { 1f, 0f, 0f }, { 0f, 1f, 0f }, { 0f, 0f, 1f } }); }
-        }
-
-        public static Matrix3D FromScale(Vector3 scale)
-        {
-            return new Matrix3D(new float[,] { { scale.X, 0f, 0f }, { 0f, scale.Y, 0f }, { 0f, 0f, scale.Z } });
         }
 
         public Vector3 Scale
         {
             get
             {
-                Vector3 sx = new Vector3((float)this.matrix[0, 0], (float)this.matrix[0, 1], (float)this.matrix[0, 2]);
-                Vector3 sy = new Vector3((float)this.matrix[1, 0], (float)this.matrix[1, 1], (float)this.matrix[1, 2]);
-                Vector3 sz = new Vector3((float)this.matrix[2, 0], (float)this.matrix[2, 1], (float)this.matrix[2, 2]);
-                return new Vector3(sx.Magnitude, sy.Magnitude, sz.Magnitude);
+                Vector3 scaleX = new Vector3(mMatrix[0, 0], mMatrix[0, 1], mMatrix[0, 2]),
+                scaleY = new Vector3(mMatrix[1, 0], mMatrix[1, 1], mMatrix[1, 2]),
+                scaleZ = new Vector3(mMatrix[2, 0], mMatrix[2, 1], mMatrix[2, 2]);
+                return new Vector3(scaleX.Magnitude, scaleY.Magnitude, scaleZ.Magnitude);
             }
         }
 
-        public static Matrix3D RotateZupToYup
+        public static Matrix3D RotateYUpToZUp
         {
-            get { return new Matrix3D(new float[,] { { 1f, 0f, 0f }, { 0f, 0f, 1f }, { 0f, -1f, 0f } }); }
+            get
+            {
+                return new Matrix3D(new float[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            -1
+                        },
+                        {
+                            0,
+                            1,
+                            0
+                        }
+                    });
+            }
         }
 
-        public static Matrix3D RotateYupToZup
+        public static Matrix3D RotateZUpToYUp
         {
-            get { return new Matrix3D(new float[,] { { 1f, 0f, 0f }, { 0f, 0f, -1f }, { 0f, 1f, 0f } }); }
+            get
+            {
+                return new Matrix3D(new float[,]
+                    {
+                        {
+                            1,
+                            0,
+                            0
+                        },
+                        {
+                            0,
+                            0,
+                            1
+                        },
+                        {
+                            0,
+                            -1,
+                            0
+                        }
+                    });
+            }
+        }
+
+        public Matrix3D()
+        {
+            mMatrix = new float[,]
+                {
+                    {
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        0
+                    }
+                };
+        }
+
+        public Matrix3D(float[,] matrix)
+        {
+            mMatrix = new float[,]
+                {
+                    {
+                        matrix[0, 0],
+                        matrix[0, 1],
+                        matrix[0, 2]
+                    },
+                    {
+                        matrix[1, 0],
+                        matrix[1, 1],
+                        matrix[1, 2]
+                    },
+                    {
+                        matrix[2, 0],
+                        matrix[2, 1],
+                        matrix[2, 2]
+                    }
+                };
+        }
+
+        public static Vector3 operator *(Matrix3D m, Vector3 v)
+        {
+            float x = 0,
+            y = 0,
+            z = 0;
+            for (var i = 0; i < 3; i++)
+            {
+                x += m.mMatrix[0, i] * v.Coordinates[i];
+                y += m.mMatrix[1, i] * v.Coordinates[i];
+                z += m.mMatrix[2, i] * v.Coordinates[i];
+            }
+            return new Vector3(x, y, z);
+        }
+
+        public static Matrix3D operator *(Matrix3D m, float f)
+        {
+            var result = new float[3, 3];
+            for (var r = 0; r < 3; r++)
+            {
+                for (var c = 0; c < 3; c++)
+                {
+                    result[r, c] = m.mMatrix[r, c] * f;
+                }
+            }
+            return new Matrix3D(result);
+        }
+
+        public static float[] operator *(Matrix3D m, float[] v)
+        {
+            var temp = new float[3];
+            for (var i = 0; i < 3; i++)
+            {
+                temp[0] += m.mMatrix[0, i] * v[i];
+                temp[1] += m.mMatrix[1, i] * v[i];
+                temp[2] += m.mMatrix[2, i] * v[i];
+            }
+            return temp;
+        }
+
+        public static Matrix3D operator *(Matrix3D m1, Matrix3D m2)
+        {
+            var v = new float[3][];
+            for (var i = 0; i < 3; i++)
+            {
+                v[i] = m1 * new float[]
+                    {
+                        m2.mMatrix[0, i],
+                        m2.mMatrix[1, i],
+                        m2.mMatrix[2, i]
+                    };
+            }
+            return new Matrix3D(new float[,] {
+                {
+                    v[0][0],
+                    v[1][0],
+                    v[2][0]
+                },
+                {
+                    v[0][1],
+                    v[1][1],
+                    v[2][1]
+                },
+                {
+                    v[0][2],
+                    v[1][2],
+                    v[2][2]
+                }
+            });
+        }
+
+        public static Matrix3D FromScale(Vector3 scale)
+        {
+            return new Matrix3D(new float[,]
+                {
+                    {
+                        scale.X,
+                        0,
+                        0
+                    },
+                    {
+                        0,
+                        scale.Y,
+                        0
+                    },
+                    {
+                        0,
+                        0,
+                        scale.Z
+                    }
+                });
         }
 
         public Matrix3D Inverse()
         {
-            // computes the inverse of a matrix
-            float det = this.matrix[0, 0] * (this.matrix[1, 1] * this.matrix[2, 2] - this.matrix[2, 1] * this.matrix[1, 2]) -
-                this.matrix[0, 1] * (this.matrix[1, 0] * this.matrix[2, 2] - this.matrix[1, 2] * this.matrix[2, 0]) +
-                this.matrix[0, 2] * (this.matrix[1, 0] * this.matrix[2, 1] - this.matrix[1, 1] * this.matrix[2, 0]);
-
-            float invdet = 1f / det;
-
-            float[,] minv = new float[3, 3];
-            minv[0, 0] = (this.matrix[1, 1] * this.matrix[2, 2] - this.matrix[2, 1] * this.matrix[1, 2]) * invdet;
-            minv[0, 1] = (this.matrix[0, 2] * this.matrix[2, 1] - this.matrix[0, 1] * this.matrix[2, 2]) * invdet;
-            minv[0, 2] = (this.matrix[0, 1] * this.matrix[1, 2] - this.matrix[0, 2] * this.matrix[1, 1]) * invdet;
-            minv[1, 0] = (this.matrix[1, 2] * this.matrix[2, 0] - this.matrix[1, 0] * this.matrix[2, 2]) * invdet;
-            minv[1, 1] = (this.matrix[0, 0] * this.matrix[2, 2] - this.matrix[0, 2] * this.matrix[2, 0]) * invdet;
-            minv[1, 2] = (this.matrix[1, 0] * this.matrix[0, 2] - this.matrix[0, 0] * this.matrix[1, 2]) * invdet;
-            minv[2, 0] = (this.matrix[1, 0] * this.matrix[2, 1] - this.matrix[2, 0] * this.matrix[1, 1]) * invdet;
-            minv[2, 1] = (this.matrix[2, 0] * this.matrix[0, 1] - this.matrix[0, 0] * this.matrix[2, 1]) * invdet;
-            minv[2, 2] = (this.matrix[0, 0] * this.matrix[1, 1] - this.matrix[1, 0] * this.matrix[0, 1]) * invdet;
-
-            return new Matrix3D(minv);
-        }
-
-        public Matrix3D Transpose()
-        {
-            float[,] mt = new float[,] { { this.matrix[0,0], this.matrix[1,0], this.matrix[2,0] },
-                { this.matrix[0,1], this.matrix[1,1], this.matrix[2,1] },
-                { this.matrix[0,2], this.matrix[1,2], this.matrix[2,2] } };
-            return new Matrix3D(mt);
+            float determinant = mMatrix[0, 0] * (mMatrix[1, 1] * mMatrix[2, 2] - mMatrix[2, 1] * mMatrix[1, 2]) - mMatrix[0, 1] * (mMatrix[1, 0] * mMatrix[2, 2] - mMatrix[1, 2] * mMatrix[2, 0]) + mMatrix[0, 2] * (mMatrix[1, 0] * mMatrix[2, 1] - mMatrix[1, 1] * mMatrix[2, 0]),
+            inverseDeterminant = 1 / determinant;
+            var inverseMatrix = new float[3, 3];
+            inverseMatrix[0, 0] = (mMatrix[1, 1] * mMatrix[2, 2] - mMatrix[2, 1] * mMatrix[1, 2]) * inverseDeterminant;
+            inverseMatrix[0, 1] = (mMatrix[0, 2] * mMatrix[2, 1] - mMatrix[0, 1] * mMatrix[2, 2]) * inverseDeterminant;
+            inverseMatrix[0, 2] = (mMatrix[0, 1] * mMatrix[1, 2] - mMatrix[0, 2] * mMatrix[1, 1]) * inverseDeterminant;
+            inverseMatrix[1, 0] = (mMatrix[1, 2] * mMatrix[2, 0] - mMatrix[1, 0] * mMatrix[2, 2]) * inverseDeterminant;
+            inverseMatrix[1, 1] = (mMatrix[0, 0] * mMatrix[2, 2] - mMatrix[0, 2] * mMatrix[2, 0]) * inverseDeterminant;
+            inverseMatrix[1, 2] = (mMatrix[1, 0] * mMatrix[0, 2] - mMatrix[0, 0] * mMatrix[1, 2]) * inverseDeterminant;
+            inverseMatrix[2, 0] = (mMatrix[1, 0] * mMatrix[2, 1] - mMatrix[2, 0] * mMatrix[1, 1]) * inverseDeterminant;
+            inverseMatrix[2, 1] = (mMatrix[2, 0] * mMatrix[0, 1] - mMatrix[0, 0] * mMatrix[2, 1]) * inverseDeterminant;
+            inverseMatrix[2, 2] = (mMatrix[0, 0] * mMatrix[1, 1] - mMatrix[1, 0] * mMatrix[0, 1]) * inverseDeterminant;
+            return new Matrix3D(inverseMatrix);
         }
 
         public override string ToString()
         {
-            string str = "";
-            for (int r = 0; r < 3; r++)
+            var text = "";
+            for (var r = 0; r < 3; r++)
             {
-                for (int c = 0; c < 3; c++)
+                for (var c = 0; c < 3; c++)
                 {
-                    str += this.matrix[r, c].ToString();
-                    if (c != 2 || r != 2) str += ", ";
+                    text += mMatrix[r, c].ToString();
+                    if (c != 2 || r != 2)
+                    {
+                        text += ", ";
+                    }
                 }
-                str += Environment.NewLine;
+                text += Environment.NewLine;
             }
-            return str;
+            return text;
+        }
+
+        public Matrix3D Transpose()
+        {
+            return new Matrix3D(new float[,]
+                {
+                    {
+                        mMatrix[0, 0],
+                        mMatrix[1, 0],
+                        mMatrix[2, 0]
+                    },
+                    {
+                        mMatrix[0, 1],
+                        mMatrix[1, 1],
+                        mMatrix[2, 1]
+                    },
+                    {
+                        mMatrix[0, 2],
+                        mMatrix[1, 2],
+                        mMatrix[2, 2]
+                    }
+                });
         }
     }
 }

@@ -5,53 +5,62 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public class TGI
     {
-        uint type;
-        uint group;
-        ulong instance;
+        public uint Group, Type;
 
-        public uint Type
-        {
-            get { return this.type; }
-            set { this.type = value; }
-        }
+        public ulong Instance;
 
-        public uint Group
+        public enum TGISequence
         {
-            get { return this.group; }
-            set { this.group = value; }
-        }
-
-        public ulong Instance
-        {
-            get { return this.instance; }
-            set { this.instance = value; }
+            TGI, ITG, IGT
         }
 
         public TGI()
         {
-            type = 0U;
-            group = 0U;
-            instance = 0UL;
+            Group = 0;
+            Instance = 0;
+            Type = 0;
         }
 
-        public TGI(uint typeID, uint groupID, ulong instanceID)
+        public TGI(BinaryReader reader)
         {
-            type = typeID;
-            group = groupID;
-            instance = instanceID;
+            Type = reader.ReadUInt32();
+            Group = reader.ReadUInt32();
+            Instance = reader.ReadUInt64();
+        }
+
+        public TGI(BinaryReader reader, TGISequence sequence)
+        {
+            if (sequence == TGISequence.TGI)
+            {
+                Type = reader.ReadUInt32();
+                Group = reader.ReadUInt32();
+                Instance = reader.ReadUInt64();
+            }
+            if (sequence == TGISequence.IGT)
+            {
+                Instance = reader.ReadUInt64();
+                Group = reader.ReadUInt32();
+                Type = reader.ReadUInt32();
+            }
+            if (sequence == TGISequence.ITG)
+            {
+                Instance = reader.ReadUInt64();
+                Type = reader.ReadUInt32();
+                Group = reader.ReadUInt32();
+            }
         }
 
         public TGI(string tgi)
         {
             if (String.CompareOrdinal(tgi, " ") <= 0)
             {
-                type = 0U;
-                group = 0U;
-                instance = 0LU;
+                Group = 0;
+                Instance = 0;
+                Type = 0;
                 return;
             }
-            string[] myTGI = tgi.Split('-', ':', '.', ' ', '_');
-            for (int i = 0; i < myTGI.Length; i++)
+            var myTGI = tgi.Split('-', ':', '.', ' ', '_');
+            for (var i = 0; i < myTGI.Length; i++)
             {
                 if (String.CompareOrdinal(myTGI[i].Substring(0, 2), "0x") == 0)
                 {
@@ -60,9 +69,9 @@ namespace Destrospean.CmarNYCBorrowed
             }
             try
             {
-                type = UInt32.Parse(myTGI[0], System.Globalization.NumberStyles.HexNumber);
-                group = UInt32.Parse(myTGI[1], System.Globalization.NumberStyles.HexNumber);
-                instance = UInt64.Parse(myTGI[2], System.Globalization.NumberStyles.HexNumber);
+                Group = UInt32.Parse(myTGI[1], System.Globalization.NumberStyles.HexNumber);
+                Instance = UInt64.Parse(myTGI[2], System.Globalization.NumberStyles.HexNumber);
+                Type = UInt32.Parse(myTGI[0], System.Globalization.NumberStyles.HexNumber);
             }
             catch
             {
@@ -72,113 +81,78 @@ namespace Destrospean.CmarNYCBorrowed
 
         public TGI(TGI tgi)
         {
-            this.type = tgi.Type;
-            this.group = tgi.Group;
-            this.instance = tgi.Instance;
+            Group = tgi.Group;
+            Instance = tgi.Instance;
+            Type = tgi.Type;
         }
 
-        public TGI(BinaryReader br)
+        public TGI(uint type, uint group, ulong instance)
         {
-            this.type = br.ReadUInt32();
-            this.group = br.ReadUInt32();
-            this.instance = br.ReadUInt64();
+            Group = group;
+            Instance = instance;
+            Type = type;
         }
 
-        public TGI(BinaryReader br, TGIsequence sequence)
+        public static TGI[] CopyTGIArray(TGI[] source)
         {
-            if (sequence == TGIsequence.TGI)
-            {
-                this.type = br.ReadUInt32();
-                this.group = br.ReadUInt32();
-                this.instance = br.ReadUInt64();
-            }
-            if (sequence == TGIsequence.IGT)
-            {
-                this.instance = br.ReadUInt64();
-                this.group = br.ReadUInt32();
-                this.type = br.ReadUInt32();
-            }
-            if (sequence == TGIsequence.ITG)
-            {
-                this.instance = br.ReadUInt64();
-                this.type = br.ReadUInt32();
-                this.group = br.ReadUInt32();
-            }
-        }
-
-        public void Write(BinaryWriter bw)
-        {
-            bw.Write(this.type);
-            bw.Write(this.group);
-            bw.Write(this.instance);
-        }
-
-        public void Write(BinaryWriter bw, TGIsequence sequence)
-        {
-            if (sequence == TGIsequence.TGI)
-            {
-                bw.Write(this.type);
-                bw.Write(this.group);
-                bw.Write(this.instance);
-            }
-            if (sequence == TGIsequence.IGT)
-            {
-                bw.Write(this.instance);
-                bw.Write(this.group);
-                bw.Write(this.type);
-            }
-            if (sequence == TGIsequence.ITG)
-            {
-                bw.Write(this.instance);
-                bw.Write(this.type);
-                bw.Write(this.group);
-            }
-        }
-
-        public bool Equals(TGI tgi)
-        {
-            return (this.type == tgi.type & this.group == tgi.group & this.instance == tgi.instance);
-        }
-
-        public bool Equals(string tgi)
-        {
-            TGI tmp = new TGI(tgi);
-            return (this.type == tmp.type & this.group == tmp.group & this.instance == tmp.instance);
+            var temp = new TGI[source.Length];
+            Array.Copy(source, temp, source.Length);
+            return temp;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is TGI)
-            {
-                return this.Equals((TGI)obj);
-            }
-            else
-            {
-                return false;
-            }
+            return Equals(obj as TGI);
+        }
+
+        public bool Equals(string tgi)
+        {
+            var temp = new TGI(tgi);
+            return (Type == temp.Type & Group == temp.Group & Instance == temp.Instance);
+        }
+
+        public bool Equals(TGI tgi)
+        {
+            return (Type == tgi.Type & Group == tgi.Group & Instance == tgi.Instance);
         }
 
         public override int GetHashCode()
         {
-            return this.type.GetHashCode() + this.group.GetHashCode() + this.instance.GetHashCode();
+            return Type.GetHashCode() + Group.GetHashCode() + Instance.GetHashCode();
         }
 
         public override string ToString()
         {
-            return "0x" + this.type.ToString("X8") + "-" + "0x" + this.group.ToString("X8") + "-" + "0x" + this.instance.ToString("X16");
+            return "0x" + Type.ToString("X8") + "-" + "0x" + Group.ToString("X8") + "-" + "0x" + Instance.ToString("X16");
         }
 
-        public enum TGIsequence
+        public void Write(BinaryWriter writer)
         {
-            TGI, ITG, IGT
+            writer.Write(Type);
+            writer.Write(Group);
+            writer.Write(Instance);
         }
 
-        internal static TGI[] CopyTGIArray(TGI[] source)
+        public void Write(BinaryWriter writer, TGISequence sequence)
         {
-            TGI[] tmp = new TGI[source.Length];
-            Array.Copy(source, tmp, source.Length);
-            return tmp;
+            if (sequence == TGISequence.TGI)
+            {
+                writer.Write(Type);
+                writer.Write(Group);
+                writer.Write(Instance);
+            }
+            if (sequence == TGISequence.IGT)
+            {
+                writer.Write(Instance);
+                writer.Write(Group);
+                writer.Write(Type);
+            }
+            if (sequence == TGISequence.ITG)
+            {
+                writer.Write(Instance);
+                writer.Write(Type);
+                writer.Write(Group);
+            }
         }
     }
 }
-
