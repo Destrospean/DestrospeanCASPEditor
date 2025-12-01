@@ -337,19 +337,19 @@ public partial class MainWindow : Window
             geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
             geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.fatness.png")
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fatness.png")
                 {
                     HeightRequest = WidgetUtils.SmallImageSize,
                     WidthRequest = WidgetUtils.SmallImageSize
                 }, false, true, 4);
             geomPageButtonHBox.PackStart(fatnessHScale, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.fitness.png")
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fitness.png")
                 {
                     HeightRequest = WidgetUtils.SmallImageSize,
                     WidthRequest = WidgetUtils.SmallImageSize
                 }, false, true, 4);
             geomPageButtonHBox.PackStart(fitnessHScale, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.babybump.png")
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.BabyBump.png")
                 {
                     HeightRequest = WidgetUtils.SmallImageSize,
                     WidthRequest = WidgetUtils.SmallImageSize

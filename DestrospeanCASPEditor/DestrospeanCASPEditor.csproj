@@ -186,9 +186,9 @@
     <EmbeddedResource Include="gtk-gui\gui.stetic">
       <LogicalName>gui.stetic</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="babybump.png" />
-    <EmbeddedResource Include="fatness.png" />
-    <EmbeddedResource Include="fitness.png" />
+    <EmbeddedResource Include="Icons\BabyBump.png" />
+    <EmbeddedResource Include="Icons\Fatness.png" />
+    <EmbeddedResource Include="Icons\Fitness.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -242,6 +242,7 @@
     <Folder Include="OpenGL\" />
     <Folder Include="CmarNYCBorrowed\" />
     <Folder Include="CmarNYCBorrowed\Xmods\" />
+    <Folder Include="Icons\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
