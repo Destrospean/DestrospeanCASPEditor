@@ -92,7 +92,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             Vector3[] normals = new Vector3[VertexCount],
             vertices = Vertices;
             var indices = GetIndices();
-            for (int i = 0; i < IndexCount; i += 3)
+            for (var i = 0; i < IndexCount; i += 3)
             {
                 Vector3 a = vertices[indices[i]],
                 b = vertices[indices[i + 1]],
@@ -101,7 +101,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
                 normals[indices[i + 1]] += Vector3.Cross(b - a, c - a);
                 normals[indices[i + 2]] += Vector3.Cross(b - a, c - a);
             }
-            for (int i = 0; i < NormalCount; i++)
+            for (var i = 0; i < NormalCount; i++)
             {
                 normals[i].Normalize();
             }
