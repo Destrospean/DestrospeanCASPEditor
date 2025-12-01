@@ -401,6 +401,10 @@ public partial class MainWindow : Window
     void LoadGEOMs(CASPart casPart)
     {
         mObjects.Clear();
+        if (!CASParts.ContainsValue(casPart))
+        {
+            return;
+        }
         var lod = new List<int>(casPart.LODs.Keys)[ResourcePropertyNotebook.CurrentPage];
         foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
