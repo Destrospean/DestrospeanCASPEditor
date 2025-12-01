@@ -186,6 +186,9 @@
     <EmbeddedResource Include="gtk-gui\gui.stetic">
       <LogicalName>gui.stetic</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="babybump.png" />
+    <EmbeddedResource Include="fatness.png" />
+    <EmbeddedResource Include="fitness.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />

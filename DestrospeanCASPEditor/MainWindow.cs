@@ -275,19 +275,19 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
-            HScale fatnessSlider = new HScale(-1, 1, 0.01)
+            HScale fatnessHScale = new HScale(-1, 1, 0.01)
                 {
                     Value = mFat - mThin
                 },
-            fitnessSlider = new HScale(0, 1, 0.01)
+            fitnessHScale = new HScale(0, 1, 0.01)
                 {
                     Value = mFit
                 },
-            specialSlider = new HScale(0, 1, 0.01)
+            specialHScale = new HScale(0, 1, 0.01)
                 {
                     Value = mSpecial
                 };
-            System.Action changeOtherSliders = () =>
+            System.Action changeOtherSlidersAndUpdateModels = () =>
                 {
                     for (var i = 0; i < casPart.LODs.Count; i++)
                     {
@@ -306,7 +306,7 @@ public partial class MainWindow : Window
                                     var hScale = hBoxChild as HScale;
                                     if (hScale != null)
                                     {
-                                        hScale.Value = hScaleIndex == 0 ? fatnessSlider.Value : hScaleIndex == 1 ? fitnessSlider.Value : specialSlider.Value;
+                                        hScale.Value = hScaleIndex == 0 ? fatnessHScale.Value : hScaleIndex == 1 ? fitnessHScale.Value : specialHScale.Value;
                                         hScaleIndex++;
                                     }
                                 }
@@ -314,51 +314,47 @@ public partial class MainWindow : Window
                             }
                         }
                     }
-                };
-            fatnessSlider.ValueChanged += (sender, e) =>
-                {
-                    mFat = fatnessSlider.Value > 0 ? (float)fatnessSlider.Value : 0;
-                    mThin = fatnessSlider.Value < 0 ? (float)-fatnessSlider.Value : 0;
-                    changeOtherSliders();
                     ModelsNeedUpdated = true;
                 };
-            fitnessSlider.ValueChanged += (sender, e) =>
+            fatnessHScale.ValueChanged += (sender, e) =>
                 {
-                    mFit = (float)fitnessSlider.Value;
-                    changeOtherSliders();
-                    ModelsNeedUpdated = true;
+                    mFat = fatnessHScale.Value > 0 ? (float)fatnessHScale.Value : 0;
+                    mThin = fatnessHScale.Value < 0 ? (float)-fatnessHScale.Value : 0;
+                    changeOtherSlidersAndUpdateModels();
                 };
-            specialSlider.ValueChanged += (sender, e) =>
+            fitnessHScale.ValueChanged += (sender, e) =>
                 {
-                    mSpecial = (float)specialSlider.Value;
-                    changeOtherSliders();
-                    ModelsNeedUpdated = true;
+                    mFit = (float)fitnessHScale.Value;
+                    changeOtherSlidersAndUpdateModels();
+                };
+            specialHScale.ValueChanged += (sender, e) =>
+                {
+                    mSpecial = (float)specialHScale.Value;
+                    changeOtherSlidersAndUpdateModels();
                 };
             var geomPageButtonHBox = new HBox(false, 0);
             geomPageButtonHBox.PackEnd(menuBar, true, true, 4);
             geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
             geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
-            geomPageButtonHBox.PackStart(new Image
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.fatness.png")
                 {
-                    File = string.Format("{0}{1}Icons{1}fatness.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
-                    HeightRequest = 32,
-                    WidthRequest = 32
+                    HeightRequest = WidgetUtils.SmallImageSize,
+                    WidthRequest = WidgetUtils.SmallImageSize
                 }, false, true, 4);
-            geomPageButtonHBox.PackStart(fatnessSlider, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image
+            geomPageButtonHBox.PackStart(fatnessHScale, true, true, 4);
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.fitness.png")
                 {
-                    File = string.Format("{0}{1}Icons{1}fitness.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
-                    HeightRequest = 32,
-                    WidthRequest = 32
+                    HeightRequest = WidgetUtils.SmallImageSize,
+                    WidthRequest = WidgetUtils.SmallImageSize
                 }, false, true, 4);
-            geomPageButtonHBox.PackStart(fitnessSlider, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image
+            geomPageButtonHBox.PackStart(fitnessHScale, true, true, 4);
+            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.babybump.png")
                 {
-                    File = string.Format("{0}{1}Icons{1}babybump.png", AppDomain.CurrentDomain.BaseDirectory, System.IO.Path.DirectorySeparatorChar),
-                    HeightRequest = 32,
-                    WidthRequest = 32
+                    HeightRequest = WidgetUtils.SmallImageSize,
+                    WidthRequest = WidgetUtils.SmallImageSize
                 }, false, true, 4);
-            geomPageButtonHBox.PackStart(specialSlider, true, true, 4);
+            geomPageButtonHBox.PackStart(specialHScale, true, true, 4);
             geomPageButtonHBox.ShowAll();
             var lodPageVBox = new VBox(false, 0);
             lodPageVBox.PackStart(geomPageButtonHBox, false, true, 0);
