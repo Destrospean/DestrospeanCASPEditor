@@ -7,8 +7,6 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
     public abstract class AVolume
     {
-        public int TextureID;
-
         public virtual Vector3[] ColorData
         {
             get;
@@ -84,6 +82,8 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             get;
             set;
         }
+
+        public int TextureID;
 
         public abstract void CalculateModelMatrix();
 
