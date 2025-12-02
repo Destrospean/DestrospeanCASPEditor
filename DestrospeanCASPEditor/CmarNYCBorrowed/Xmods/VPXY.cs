@@ -10,11 +10,11 @@ namespace Destrospean.CmarNYCBorrowed
 
         byte mCount, mFlag;
 
-        int mExtCount, mIntCount, mTGICount, mTGISize, mVersion;
+        int mExternalCount, mInternalCount, mTGICount, mTGISize, mVersion;
 
         Entry[] mEntries;
 
-        TGI[] mExtITG, mIntITG, mTGIList;
+        TGI[] mExternalITG, mInternalITG, mTGIList;
 
         public TGI[] AllLinks
         {
@@ -187,24 +187,24 @@ namespace Destrospean.CmarNYCBorrowed
             reader.ReadInt32();
             reader.ReadInt32();
             reader.ReadInt32();
-            mExtCount = reader.ReadInt32();
-            mIntCount = reader.ReadInt32();
-            if (mIntCount > 0)
+            mExternalCount = reader.ReadInt32();
+            mInternalCount = reader.ReadInt32();
+            if (mInternalCount > 0)
             {
-                mIntITG = new TGI[mIntCount];
+                mInternalITG = new TGI[mInternalCount];
             }
-            for (var i = 0; i < mIntCount; i++)
+            for (var i = 0; i < mInternalCount; i++)
             {
                 var instance = reader.ReadUInt64();
                 uint type = reader.ReadUInt32(), group = reader.ReadUInt32();
-                mIntITG[i] = new TGI(type, group, instance);
+                mInternalITG[i] = new TGI(type, group, instance);
             }
-            if (mExtCount > 0) mExtITG = new TGI[mExtCount];
-            for (var i = 0; i < mExtCount; i++)
+            if (mExternalCount > 0) mExternalITG = new TGI[mExternalCount];
+            for (var i = 0; i < mExternalCount; i++)
             {
                 var instance = reader.ReadUInt64();
                 uint type = reader.ReadUInt32(), group = reader.ReadUInt32();
-                mExtITG[i] = new TGI(type, group, instance);
+                mExternalITG[i] = new TGI(type, group, instance);
             }
             reader.ReadInt32();
             reader.ReadInt32();

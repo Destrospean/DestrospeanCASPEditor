@@ -9,12 +9,10 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
     {
         public int TextureID;
 
-        public virtual int NormalCount
+        public virtual Vector3[] ColorData
         {
-            get
-            {
-                return Normals.Length;
-            }
+            get;
+            set;
         }
 
         public virtual int ColorDataCount
@@ -25,11 +23,41 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             }
         }
 
+        public virtual List<Tuple<int, int, int>> Faces
+        {
+            get;
+            set;
+        }
+
         public virtual int IndexCount
         {
             get;
             set;
         }
+
+        public bool IsTextured = false;
+
+        public Matrix4 ModelMatrix = Matrix4.Identity,
+        ModelViewProjectionMatrix = Matrix4.Identity,
+        ViewProjectionMatrix = Matrix4.Identity;
+
+        public virtual int NormalCount
+        {
+            get
+            {
+                return Normals.Length;
+            }
+        }
+
+        public virtual Vector3[] Normals
+        {
+            get;
+            set;
+        }
+
+        public Vector3 Position = Vector3.Zero,
+        Rotation = Vector3.Zero,
+        Scale = Vector3.One;
 
         public virtual int TextureCoordinateCount
         {
@@ -45,39 +73,11 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             }
         }
 
-        public virtual Vector3[] ColorData
-        {
-            get;
-            set;
-        }
-
-        public virtual Vector3[] Normals
-        {
-            get;
-            set;
-        }
-
         public virtual Vector3[] Vertices
         {
             get;
             set;
         }
-
-        public virtual List<Tuple<int, int, int>> Faces
-        {
-            get;
-            set;
-        }
-
-        public bool IsTextured = false;
-
-        public Matrix4 ModelMatrix = Matrix4.Identity,
-        ModelViewProjectionMatrix = Matrix4.Identity,
-        ViewProjectionMatrix = Matrix4.Identity;
-
-        public Vector3 Position = Vector3.Zero,
-        Rotation = Vector3.Zero,
-        Scale = Vector3.One;
 
         public virtual Vector2[] TextureCoordinates
         {

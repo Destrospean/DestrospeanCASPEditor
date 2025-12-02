@@ -6,10 +6,10 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
     public class Shader
     {
         public int AttributeCount = 0,
-        FShaderID = -1,
+        FragmentShaderID = -1,
         ProgramID = -1,
         UniformCount = 0,
-        VShaderID = -1;
+        VertexShaderID = -1;
 
         public readonly Dictionary<string, AttributeInfo> Attributes = new Dictionary<string, AttributeInfo>();
 
@@ -65,7 +65,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             GL.ShaderSource(address, code);
             GL.CompileShader(address);
             GL.AttachShader(ProgramID, address);
-            System.Console.WriteLine(GL.GetShaderInfoLog(address));
+            //System.Console.WriteLine(GL.GetShaderInfoLog(address));
         }
 
         public void DisableVertexAttribArrays()
@@ -139,7 +139,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         public void Link()
         {
             GL.LinkProgram(ProgramID);
-            System.Console.WriteLine(GL.GetProgramInfoLog(ProgramID));
+            //System.Console.WriteLine(GL.GetProgramInfoLog(ProgramID));
             GL.GetProgram(ProgramID, ProgramParameter.ActiveAttributes, out AttributeCount);
             GL.GetProgram(ProgramID, ProgramParameter.ActiveUniforms, out UniformCount);
             for (var i = 0; i < AttributeCount; i++)
@@ -164,11 +164,11 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             {
                 if (type == ShaderType.VertexShader)
                 {
-                    LoadShader(streamReader.ReadToEnd(), type, out VShaderID);
+                    LoadShader(streamReader.ReadToEnd(), type, out VertexShaderID);
                 }
                 else if (type == ShaderType.FragmentShader)
                 {
-                    LoadShader(streamReader.ReadToEnd(), type, out FShaderID);
+                    LoadShader(streamReader.ReadToEnd(), type, out FragmentShaderID);
                 }
             }
         }
@@ -177,11 +177,11 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         {
             if (type == ShaderType.VertexShader)
             {
-                LoadShader(code, type, out VShaderID);
+                LoadShader(code, type, out VertexShaderID);
             }
             else if (type == ShaderType.FragmentShader)
             {
-                LoadShader(code, type, out FShaderID);
+                LoadShader(code, type, out FragmentShaderID);
             }
         }
     }

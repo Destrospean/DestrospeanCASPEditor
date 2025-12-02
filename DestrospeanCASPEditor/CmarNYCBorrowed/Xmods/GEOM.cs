@@ -21,7 +21,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         char[] mMagic;
 
-        MTNF mMeshMTNF;
+        MTNF mMTNF;
 
         Normal[] mNormals = null;
 
@@ -363,7 +363,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return mMeshMTNF;
+                return mMTNF;
             }
         }
 
@@ -2213,7 +2213,7 @@ namespace Destrospean.CmarNYCBorrowed
             mMTNFSize = source.mMTNFSize;
             if (mShaderHash > 0)
             {
-                mMeshMTNF = new MTNF(source.mMeshMTNF);
+                mMTNF = new MTNF(source.mMTNF);
             }
             mMergeGroup = source.mMergeGroup;
             mSortOrder = source.mSortOrder;
@@ -3692,7 +3692,7 @@ namespace Destrospean.CmarNYCBorrowed
             if (mShaderHash != 0)
             {
                 mMTNFSize = reader.ReadInt32();
-                mMeshMTNF = new MTNF(reader);
+                mMTNF = new MTNF(reader);
             }
             mMergeGroup = reader.ReadInt32();
             mSortOrder = reader.ReadInt32();
@@ -3916,7 +3916,7 @@ namespace Destrospean.CmarNYCBorrowed
         public void SetShader(uint shaderHash, MTNF shader)
         {
             mShaderHash = shaderHash;
-            mMeshMTNF = shader;
+            mMTNF = shader;
         }
 
         public void SetTagValue(int vertexSequenceNumber, uint newTag)
@@ -7147,9 +7147,9 @@ namespace Destrospean.CmarNYCBorrowed
         public void WriteFile(BinaryWriter writer)
         {
             var temp = 0;
-            if (mMeshMTNF != null)
+            if (mMTNF != null)
             {
-                mMTNFSize = mMeshMTNF.ChunkSize;
+                mMTNFSize = mMTNF.ChunkSize;
             }
             else
             {
@@ -7190,7 +7190,7 @@ namespace Destrospean.CmarNYCBorrowed
             if (mShaderHash != 0)
             {
                 writer.Write(mMTNFSize);
-                mMeshMTNF.Write(writer);
+                mMTNF.Write(writer);
             }
             writer.Write(mMergeGroup);
             writer.Write(mSortOrder);

@@ -408,7 +408,7 @@ public partial class MainWindow : Window
         ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
         ResourceTreeView.Selection.Changed += (sender, e) => 
             {
-                mObjects.Clear();
+                mMeshes.Clear();
                 mGLWidget.Hide();
                 Image.Clear();
                 foreach (var child in ResourcePropertyTable.Children)
@@ -463,7 +463,7 @@ public partial class MainWindow : Window
 
     public void ClearTemporaryData()
     {
-        mObjects.Clear();
+        mMeshes.Clear();
         CASParts.Clear();
         GeometryResources.Clear();
         Materials.Clear();

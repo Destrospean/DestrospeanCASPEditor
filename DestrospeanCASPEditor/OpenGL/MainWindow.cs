@@ -30,6 +30,15 @@ public partial class MainWindow : Window
 
     bool mGLInitialized = false;
 
+    float mFOV = MathHelper.DegreesToRadians(30),
+    mFat = 0,
+    mFit = 0,
+    mMouseX,
+    mMouseY,
+    mSpecial = 0,
+    mThin = 0,
+    mTime = 0;
+
     GLWidget mGLWidget;
 
     int mIBOElements;
@@ -42,18 +51,9 @@ public partial class MainWindow : Window
 
     List<Light> mLights = new List<Light>();
 
+    readonly List<Volume> mMeshes = new List<Volume>();
+
     MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
-
-    float mFOV = MathHelper.DegreesToRadians(30),
-    mFat = 0,
-    mFit = 0,
-    mMouseX,
-    mMouseY,
-    mSpecial = 0,
-    mThin = 0,
-    mTime = 0;
-
-    readonly List<Volume> mObjects = new List<Volume>();
 
     readonly Dictionary<string, Shader> mShaders = new Dictionary<string, Shader>();
 
@@ -400,7 +400,7 @@ public partial class MainWindow : Window
 
     void LoadGEOMs(CASPart casPart)
     {
-        mObjects.Clear();
+        mMeshes.Clear();
         if (!CASParts.ContainsValue(casPart))
         {
             return;
@@ -609,7 +609,7 @@ public partial class MainWindow : Window
             {
                 LoadTexture(currentPreset.SpecularMap);
             }
-            mObjects.Add(new Volume
+            mMeshes.Add(new Volume
                 {
                     ColorData = colors.ToArray(),
                     Faces = faces,
@@ -806,10 +806,10 @@ public partial class MainWindow : Window
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         mShaders[mActiveShader].EnableVertexAttribArrays();
         var indexAt = 0;
-        foreach (var volume in mObjects)
+        foreach (var mesh in mMeshes)
         {
-            GL.BindTexture(TextureTarget.Texture2D, volume.TextureID);
-            GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref volume.ModelViewProjectionMatrix);
+            GL.BindTexture(TextureTarget.Texture2D, mesh.TextureID);
+            GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref mesh.ModelViewProjectionMatrix);
             if (mShaders[mActiveShader].GetUniform("light_ambientIntensity") != -1)
             {
                 GL.Uniform1(mShaders[mActiveShader].GetUniform("light_ambientIntensity"), mLights[0].AmbientIntensity);
@@ -867,7 +867,7 @@ public partial class MainWindow : Window
             }
             if (mShaders[mActiveShader].GetAttribute("maintexture") != -1)
             {
-                GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), volume.TextureID);
+                GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), mesh.TextureID);
             }
             if (mShaders[mActiveShader].GetUniform("map_specular") != -1)
             {
@@ -897,30 +897,30 @@ public partial class MainWindow : Window
             }
             if (mShaders[mActiveShader].GetUniform("material_ambient") != -1)
             {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_ambient"), ref volume.Material.AmbientColor);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_ambient"), ref mesh.Material.AmbientColor);
             }
             if (mShaders[mActiveShader].GetUniform("material_diffuse") != -1)
             {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_diffuse"), ref volume.Material.DiffuseColor);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_diffuse"), ref mesh.Material.DiffuseColor);
             }
             if (mShaders[mActiveShader].GetUniform("material_specExponent") != -1)
             {
-                GL.Uniform1(mShaders[mActiveShader].GetUniform("material_specExponent"), volume.Material.SpecularExponent);
+                GL.Uniform1(mShaders[mActiveShader].GetUniform("material_specExponent"), mesh.Material.SpecularExponent);
             }
             if (mShaders[mActiveShader].GetUniform("material_specular") != -1)
             {
-                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_specular"), ref volume.Material.SpecularColor);
+                GL.Uniform3(mShaders[mActiveShader].GetUniform("material_specular"), ref mesh.Material.SpecularColor);
             }
             if (mShaders[mActiveShader].GetUniform("model") != -1)
             {
-                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("model"), false, ref volume.ModelMatrix);
+                GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("model"), false, ref mesh.ModelMatrix);
             }
             if (mShaders[mActiveShader].GetUniform("view") != -1)
             {
                 GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("view"), false, ref mViewMatrix);
             }
-            GL.DrawElements(BeginMode.Triangles, volume.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
-            indexAt += volume.IndexCount;
+            GL.DrawElements(BeginMode.Triangles, mesh.IndexCount, DrawElementsType.UnsignedInt, indexAt * sizeof(uint));
+            indexAt += mesh.IndexCount;
         }
         mShaders[mActiveShader].DisableVertexAttribArrays();
         GL.Flush();
@@ -936,14 +936,14 @@ public partial class MainWindow : Window
         var indices = new List<int>();
         var textureCoordinates = new List<Vector2>();
         var vertexCount = 0;
-        foreach (var volume in mObjects)
+        foreach (var mesh in mMeshes)
         {
-            colors.AddRange(volume.ColorData);
-            indices.AddRange(volume.GetIndices(vertexCount));
-            normals.AddRange(volume.Normals);
-            textureCoordinates.AddRange(volume.TextureCoordinates);
-            vertices.AddRange(volume.Vertices);
-            vertexCount += volume.VertexCount;
+            colors.AddRange(mesh.ColorData);
+            indices.AddRange(mesh.GetIndices(vertexCount));
+            normals.AddRange(mesh.Normals);
+            textureCoordinates.AddRange(mesh.TextureCoordinates);
+            vertices.AddRange(mesh.Vertices);
+            vertexCount += mesh.VertexCount;
         }
         mColorData = colors.ToArray();
         mIndexData = indices.ToArray();
@@ -971,12 +971,12 @@ public partial class MainWindow : Window
             GL.BufferData<Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mNormalData.Length * Vector3.SizeInBytes), mNormalData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(mShaders[mActiveShader].GetAttribute("vNormal"), 3, VertexAttribPointerType.Float, true, 0, 0);
         }
-        foreach (var volume in mObjects)
+        foreach (var mesh in mMeshes)
         {
-            volume.Rotation = mCurrentRotation;
-            volume.CalculateModelMatrix();
-            volume.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(mFOV, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
-            volume.ModelViewProjectionMatrix = volume.ModelMatrix * volume.ViewProjectionMatrix;
+            mesh.Rotation = mCurrentRotation;
+            mesh.CalculateModelMatrix();
+            mesh.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(mFOV, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
+            mesh.ModelViewProjectionMatrix = mesh.ModelMatrix * mesh.ViewProjectionMatrix;
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
