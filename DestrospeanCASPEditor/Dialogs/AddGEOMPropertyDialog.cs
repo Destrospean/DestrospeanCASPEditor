@@ -94,7 +94,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
         }
 
-        protected AddGEOMPropertyDialog(string title, Window parent, bool IsCleanSlate) : base(title, parent, DialogFlags.Modal)
+        protected AddGEOMPropertyDialog(string title, Window parent, bool isCleanSlate) : base(title, parent, DialogFlags.Modal)
         {
         }
     }
