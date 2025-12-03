@@ -99,6 +99,14 @@
         <property name="StockId">gtk-delete</property>
         <signal name="Activated" handler="OnDeleteResourceActionActivated" />
       </action>
+      <action id="UseAdvancedShadersAction">
+        <property name="Type">Toggle</property>
+        <property name="Label" translatable="yes">Use Advanced Shaders</property>
+        <property name="ShortLabel" translatable="yes">Use Advanced Shaders</property>
+        <property name="DrawAsRadio">False</property>
+        <property name="Active">False</property>
+        <signal name="Toggled" handler="OnUseAdvancedShadersActionToggled" />
+      </action>
     </action-group>
     <property name="MemberName" />
     <property name="WidthRequest">1080</property>
@@ -139,6 +147,7 @@
                   </node>
                   <node type="Menu" action="SettingsAction">
                     <node type="Menuitem" action="GameFoldersAction" />
+                    <node type="Menuitem" action="UseAdvancedShadersAction" />
                   </node>
                 </node>
               </widget>

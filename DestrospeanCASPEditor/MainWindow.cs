@@ -80,6 +80,7 @@ public partial class MainWindow : Window
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
+        UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
         MainTable.Attach(new Gtk.Image
             {
@@ -784,5 +785,11 @@ public partial class MainWindow : Window
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)
     {
+    }
+
+    protected void OnUseAdvancedShadersActionToggled(object sender, EventArgs e)
+    {
+        ApplicationSpecificSettings.UseAdvancedOpenGLShaders = UseAdvancedShadersAction.Active;
+        mActiveShader = UseAdvancedShadersAction.Active ? "lit_advanced" : "textured";
     }
 }

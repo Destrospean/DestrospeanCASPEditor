@@ -14,7 +14,7 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public class CASPart
     {
-        RIG mCurrentRig = null;
+        RIG mCurrentRig;
 
         public AgeGender AdjustedAge
         {

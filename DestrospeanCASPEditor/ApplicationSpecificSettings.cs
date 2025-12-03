@@ -6,17 +6,35 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ApplicationSpecificSettings
     {
-        public static readonly string SettingsFilePath = string.Format("{0}{1}Destrospean{1}UserSettings.json", System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), Path.DirectorySeparatorChar);
-
-        public static Dictionary<string, Dictionary<string, string>> Settings
+        public static Dictionary<string, object> Settings
         {
             get;
             private set;
         }
 
+        public static readonly string SettingsFilePath = string.Format("{0}{1}Destrospean{1}UserSettings.json", System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), Path.DirectorySeparatorChar);
+
+        public static bool UseAdvancedOpenGLShaders
+        {
+            get
+            {
+                return Settings != null && Settings.ContainsKey(JSONNodeNames.UseAdvancedOpenGLShaders) ? (bool)Settings[JSONNodeNames.UseAdvancedOpenGLShaders] : !Platform.IsWindows || System.Environment.OSVersion.Version.Major > 5;
+            }
+            set
+            {
+                if (Settings == null)
+                {
+                    Settings = new Dictionary<string, object>();
+                }
+                Settings[JSONNodeNames.UseAdvancedOpenGLShaders] = value;
+                SaveSettings();
+            }
+        }
+
         public static class JSONNodeNames
         {
-            public const string GameFolders = "The Sims 3 Installation Directories";
+            public const string GameFolders = "The Sims 3 Installation Directories",
+            UseAdvancedOpenGLShaders = "Use Advanced OpenGL Shaders";
         }
 
         public static void LoadSettings()
@@ -26,16 +44,20 @@ namespace Destrospean.DestrospeanCASPEditor
                 var installDirs = "";
                 using (var stream = File.OpenText(SettingsFilePath))
                 {
-                    Settings = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(stream.ReadToEnd());
-                    foreach (var installDirectoryKvp in Settings[JSONNodeNames.GameFolders])
+                    Settings = JsonConvert.DeserializeObject<Dictionary<string, object>>(stream.ReadToEnd());
+                    object installDirectories;
+                    if (Settings.TryGetValue(JSONNodeNames.GameFolders, out installDirectories))
                     {
-                        installDirs += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
+                        foreach (var installDirectoryKvp in (Newtonsoft.Json.Linq.JObject)installDirectories)
+                        {
+                            installDirs += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
+                        }
                     }
                 }
                 s3pi.Filetable.GameFolders.InstallDirs = installDirs.Substring(1);
                 return;
             }
-            Settings = new Dictionary<string, Dictionary<string, string>>();
+            Settings = new Dictionary<string, object>();
         }
 
         public static void SaveSettings()

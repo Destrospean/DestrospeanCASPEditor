@@ -31,6 +31,8 @@ public partial class MainWindow
 	
 	private global::Gtk.Action DeleteResourceAction;
 	
+	private global::Gtk.ToggleAction UseAdvancedShadersAction;
+	
 	private global::Gtk.HPaned MainPane;
 	
 	private global::Gtk.VBox MainVBox;
@@ -100,6 +102,9 @@ public partial class MainWindow
 		this.DeleteResourceAction = new global::Gtk.Action ("DeleteResourceAction", global::Mono.Unix.Catalog.GetString ("Delete"), null, "gtk-delete");
 		this.DeleteResourceAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Delete");
 		w1.Add (this.DeleteResourceAction, null);
+		this.UseAdvancedShadersAction = new global::Gtk.ToggleAction ("UseAdvancedShadersAction", global::Mono.Unix.Catalog.GetString ("Use Advanced Shaders"), null, null);
+		this.UseAdvancedShadersAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Use Advanced Shaders");
+		w1.Add (this.UseAdvancedShadersAction, null);
 		this.UIManager.InsertActionGroup (w1, 0);
 		this.AddAccelGroup (this.UIManager.AccelGroup);
 		this.WidthRequest = 1080;
@@ -119,7 +124,7 @@ public partial class MainWindow
 		this.MainVBox.Name = "MainVBox";
 		this.MainVBox.Spacing = 6;
 		// Container child MainVBox.Gtk.Box+BoxChild
-		this.UIManager.AddUiFromString ("<ui><menubar name='MainMenuBar'><menu name='FileAction' action='FileAction'><menuitem name='NewAction' action='NewAction'/><menuitem name='OpenAction' action='OpenAction'/><menuitem name='SaveAction' action='SaveAction'/><menuitem name='SaveAsAction' action='SaveAsAction'/><menuitem name='CloseAction' action='CloseAction'/><menuitem name='QuitAction' action='QuitAction'/></menu><menu name='ResourceAction' action='ResourceAction'><menuitem name='ImportResourceAction' action='ImportResourceAction'/><menuitem name='ReplaceResourceAction' action='ReplaceResourceAction'/><menuitem name='DeleteResourceAction' action='DeleteResourceAction'/></menu><menu name='SettingsAction' action='SettingsAction'><menuitem name='GameFoldersAction' action='GameFoldersAction'/></menu></menubar></ui>");
+		this.UIManager.AddUiFromString ("<ui><menubar name='MainMenuBar'><menu name='FileAction' action='FileAction'><menuitem name='NewAction' action='NewAction'/><menuitem name='OpenAction' action='OpenAction'/><menuitem name='SaveAction' action='SaveAction'/><menuitem name='SaveAsAction' action='SaveAsAction'/><menuitem name='CloseAction' action='CloseAction'/><menuitem name='QuitAction' action='QuitAction'/></menu><menu name='ResourceAction' action='ResourceAction'><menuitem name='ImportResourceAction' action='ImportResourceAction'/><menuitem name='ReplaceResourceAction' action='ReplaceResourceAction'/><menuitem name='DeleteResourceAction' action='DeleteResourceAction'/></menu><menu name='SettingsAction' action='SettingsAction'><menuitem name='GameFoldersAction' action='GameFoldersAction'/><menuitem name='UseAdvancedShadersAction' action='UseAdvancedShadersAction'/></menu></menubar></ui>");
 		this.MainMenuBar = ((global::Gtk.MenuBar)(this.UIManager.GetWidget ("/MainMenuBar")));
 		this.MainMenuBar.Name = "MainMenuBar";
 		this.MainVBox.Add (this.MainMenuBar);
@@ -208,5 +213,6 @@ public partial class MainWindow
 		this.ImportResourceAction.Activated += new global::System.EventHandler (this.OnImportResourceActionActivated);
 		this.ReplaceResourceAction.Activated += new global::System.EventHandler (this.OnReplaceResourceActionActivated);
 		this.DeleteResourceAction.Activated += new global::System.EventHandler (this.OnDeleteResourceActionActivated);
+		this.UseAdvancedShadersAction.Toggled += new global::System.EventHandler (this.OnUseAdvancedShadersActionToggled);
 	}
 }

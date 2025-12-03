@@ -385,7 +385,7 @@ public partial class MainWindow : Window
                     gl_FragColor = gl_FragColor + lightcolor * 1.0 / (1.0 + distancefactor * lights[i].linearAttenuation + distancefactor * distancefactor * lights[i].quadraticAttenuation);
                 }}
             }}", backportedFunctions)));
-        mActiveShader = Platform.IsWindows && Environment.OSVersion.Version.Major == 5 ? "textured" : "lit_advanced";
+        mActiveShader = ApplicationSpecificSettings.UseAdvancedOpenGLShaders ? "lit_advanced" : "textured";
         mLights.Add(new Light(new Vector3(0, 1, 3), Vector3.One)
             {
                 QuadraticAttenuation = .05f
