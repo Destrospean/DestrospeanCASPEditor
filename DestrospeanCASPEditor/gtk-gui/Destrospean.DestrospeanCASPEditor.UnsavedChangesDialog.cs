@@ -24,9 +24,8 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.HeightRequest = 120;
 			this.Name = "Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog";
 			this.Title = global::Mono.Unix.Catalog.GetString ("Unsaved Changes");
-			this.TypeHint = ((global::Gdk.WindowTypeHint)(1));
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
-			this.AllowGrow = false;
+			this.Resizable = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;
 			w1.Name = "MainVBox";

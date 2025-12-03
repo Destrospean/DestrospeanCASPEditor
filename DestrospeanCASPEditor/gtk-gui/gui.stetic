@@ -491,9 +491,8 @@
     <property name="WidthRequest">270</property>
     <property name="HeightRequest">120</property>
     <property name="Title" translatable="yes">Unsaved Changes</property>
-    <property name="TypeHint">Dialog</property>
     <property name="WindowPosition">CenterOnParent</property>
-    <property name="AllowGrow">False</property>
+    <property name="Resizable">False</property>
     <property name="Buttons">3</property>
     <property name="HelpButton">False</property>
     <child internal-child="VBox">
