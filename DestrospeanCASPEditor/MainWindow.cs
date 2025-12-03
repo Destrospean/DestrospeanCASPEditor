@@ -22,6 +22,8 @@ public partial class MainWindow : Window
 {
     PresetNotebook mPresetNotebook;
 
+    string mSaveAsPath;
+
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
     public IPackage CurrentPackage;
@@ -464,6 +466,7 @@ public partial class MainWindow : Window
 
     public void ClearTemporaryData()
     {
+        mSaveAsPath = null;
         mMeshes.Clear();
         CASParts.Clear();
         GeometryResources.Clear();
@@ -568,8 +571,12 @@ public partial class MainWindow : Window
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
     }
 
-    public void SavePackage()
+    public void SavePackage(string path = null)
     {
+        if (string.IsNullOrEmpty(mSaveAsPath))
+        {
+            mSaveAsPath = path;
+        }
         foreach (var casPartKvp in CASParts)
         {
             casPartKvp.Value.SavePresets();
@@ -583,7 +590,14 @@ public partial class MainWindow : Window
         {
             CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
         }
-        CurrentPackage.SavePackage();
+        if (string.IsNullOrEmpty(mSaveAsPath))
+        {
+            CurrentPackage.SavePackage();
+        }
+        else
+        {
+            CurrentPackage.SaveAs(mSaveAsPath);
+        }
         NextState = NextStateOptions.NoUnsavedChanges;
     }
 
@@ -595,8 +609,6 @@ public partial class MainWindow : Window
             {
                 case ResponseType.Cancel:
                     return;
-                case ResponseType.No:
-                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
@@ -618,8 +630,6 @@ public partial class MainWindow : Window
                 case ResponseType.Cancel:
                     a.RetVal = true;
                     return;
-                case ResponseType.No:
-                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
@@ -676,8 +686,6 @@ public partial class MainWindow : Window
             {
                 case ResponseType.Cancel:
                     return;
-                case ResponseType.No:
-                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
@@ -717,8 +725,6 @@ public partial class MainWindow : Window
             {
                 case ResponseType.Cancel:
                     return;
-                case ResponseType.No:
-                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
@@ -785,6 +791,18 @@ public partial class MainWindow : Window
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)
     {
+        var fileChooserDialog = new FileChooserDialog("Save Package As", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+        var fileFilter = new FileFilter
+            {
+                Name = "The Sims 3 DBPF Packages"
+            };
+        fileFilter.AddPattern("*.package");
+        fileChooserDialog.AddFilter(fileFilter);
+        if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+        {
+            SavePackage(fileChooserDialog.Filename);
+        }
+        fileChooserDialog.Destroy();
     }
 
     protected void OnUseAdvancedShadersActionToggled(object sender, EventArgs e)
