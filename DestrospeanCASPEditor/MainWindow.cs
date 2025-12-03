@@ -615,6 +615,7 @@ public partial class MainWindow : Window
             switch (GetUnsavedChangesDialogResponseType())
             {
                 case ResponseType.Cancel:
+                    a.RetVal = true;
                     return;
                 case ResponseType.No:
                     break;
@@ -624,7 +625,6 @@ public partial class MainWindow : Window
             }
         }
         Application.Quit();
-        a.RetVal = true;
     }
 
     protected void OnDeleteResourceActionActivated(object sender, EventArgs e)
