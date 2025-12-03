@@ -234,6 +234,8 @@
     <Compile Include="CmarNYCBorrowed\Xmods\Vector3.cs" />
     <Compile Include="CmarNYCBorrowed\Xmods\VPXY.cs" />
     <Compile Include="CmarNYCBorrowed\Xmods\Euler.cs" />
+    <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

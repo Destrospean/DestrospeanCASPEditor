@@ -22,17 +22,17 @@ public partial class MainWindow : Window
 {
     PresetNotebook mPresetNotebook;
 
-    public IPackage CurrentPackage;
-
     public readonly Dictionary<IResourceIndexEntry, CASPart> CASParts = new Dictionary<IResourceIndexEntry, CASPart>();
 
-    public readonly Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
+    public IPackage CurrentPackage;
 
-    public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
+    public readonly Dictionary<IResourceIndexEntry, GeometryResource> GeometryResources = new Dictionary<IResourceIndexEntry, GeometryResource>();
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
+
+    public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
 
     public bool HasUnsavedChanges
     {
@@ -475,6 +475,14 @@ public partial class MainWindow : Window
         ImageUtils.PreloadedImages.Clear();
     }
 
+    public ResponseType GetUnsavedChangesDialogResponseType()
+    {
+        var unsavedChangesDialog = new UnsavedChangesDialog(this);
+        var responseType = (ResponseType)unsavedChangesDialog.Run();
+        unsavedChangesDialog.Destroy();
+        return responseType;
+    }
+
     public void RefreshWidgets(bool clearTemporaryData = true)
     {
         if (clearTemporaryData)
@@ -559,8 +567,40 @@ public partial class MainWindow : Window
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
     }
 
+    public void SavePackage()
+    {
+        foreach (var casPartKvp in CASParts)
+        {
+            casPartKvp.Value.SavePresets();
+            CurrentPackage.ReplaceResource(casPartKvp.Key, casPartKvp.Value.CASPartResource);
+        }
+        foreach (var geometryResourceKvp in GeometryResources)
+        {
+            CurrentPackage.ReplaceResource(geometryResourceKvp.Key, geometryResourceKvp.Value);
+        }
+        foreach (var vpxyResourceKvp in VPXYResources)
+        {
+            CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
+        }
+        CurrentPackage.SavePackage();
+        NextState = NextStateOptions.NoUnsavedChanges;
+    }
+
     protected void OnCloseActionActivated(object sender, EventArgs e)
     {
+        if (HasUnsavedChanges)
+        {
+            switch (GetUnsavedChangesDialogResponseType())
+            {
+                case ResponseType.Cancel:
+                    return;
+                case ResponseType.No:
+                    break;
+                case ResponseType.Yes:
+                    SavePackage();
+                    break;
+            }
+        }
         s3pi.Package.Package.ClosePackage(0, CurrentPackage);
         CurrentPackage = null;
         ResourceUtils.MissingResourceKeys.Clear();
@@ -570,6 +610,19 @@ public partial class MainWindow : Window
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
     {
+        if (HasUnsavedChanges)
+        {
+            switch (GetUnsavedChangesDialogResponseType())
+            {
+                case ResponseType.Cancel:
+                    return;
+                case ResponseType.No:
+                    break;
+                case ResponseType.Yes:
+                    SavePackage();
+                    break;
+            }
+        }
         Application.Quit();
         a.RetVal = true;
     }
@@ -644,6 +697,19 @@ public partial class MainWindow : Window
 
     protected void OnQuitActionActivated(object sender, EventArgs e)
     {
+        if (HasUnsavedChanges)
+        {
+            switch (GetUnsavedChangesDialogResponseType())
+            {
+                case ResponseType.Cancel:
+                    return;
+                case ResponseType.No:
+                    break;
+                case ResponseType.Yes:
+                    SavePackage();
+                    break;
+            }
+        }
         Application.Quit();
     }
 
@@ -700,21 +766,7 @@ public partial class MainWindow : Window
 
     protected void OnSaveActionActivated(object sender, EventArgs e)
     {
-        foreach (var casPartKvp in CASParts)
-        {
-            casPartKvp.Value.SavePresets();
-            CurrentPackage.ReplaceResource(casPartKvp.Key, casPartKvp.Value.CASPartResource);
-        }
-        foreach (var geometryResourceKvp in GeometryResources)
-        {
-            CurrentPackage.ReplaceResource(geometryResourceKvp.Key, geometryResourceKvp.Value);
-        }
-        foreach (var vpxyResourceKvp in VPXYResources)
-        {
-            CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
-        }
-        CurrentPackage.SavePackage();
-        NextState = NextStateOptions.NoUnsavedChanges;
+        SavePackage();
     }
 
     protected void OnSaveAsActionActivated(object sender, EventArgs e)

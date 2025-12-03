@@ -486,4 +486,113 @@
       </widget>
     </child>
   </widget>
+  <widget class="Gtk.Dialog" id="Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog" design-size="270 120">
+    <property name="MemberName" />
+    <property name="WidthRequest">270</property>
+    <property name="HeightRequest">120</property>
+    <property name="Title" translatable="yes">Unsaved Changes</property>
+    <property name="TypeHint">Dialog</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <property name="AllowGrow">False</property>
+    <property name="Buttons">3</property>
+    <property name="HelpButton">False</property>
+    <child internal-child="VBox">
+      <widget class="Gtk.VBox" id="MainVBox">
+        <property name="MemberName" />
+        <property name="BorderWidth">2</property>
+        <child>
+          <widget class="Gtk.HBox" id="WarningAreaHBox">
+            <property name="MemberName" />
+            <property name="Spacing">6</property>
+            <child>
+              <widget class="Gtk.Image" id="WarningImage">
+                <property name="MemberName" />
+                <property name="Pixbuf">stock:gtk-dialog-warning Dialog</property>
+              </widget>
+              <packing>
+                <property name="Position">0</property>
+                <property name="AutoSize">False</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.Label" id="WarningLabel">
+                <property name="MemberName" />
+                <property name="LabelProp" translatable="yes">The current package has unsaved changes.</property>
+                <property name="Wrap">True</property>
+                <property name="Justify">Center</property>
+              </widget>
+              <packing>
+                <property name="Position">1</property>
+                <property name="AutoSize">False</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">0</property>
+            <property name="AutoSize">False</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+    <child internal-child="ActionArea">
+      <widget class="Gtk.HButtonBox" id="ActionArea">
+        <property name="MemberName" />
+        <property name="Spacing">10</property>
+        <property name="BorderWidth">5</property>
+        <property name="Size">3</property>
+        <property name="LayoutStyle">Spread</property>
+        <child>
+          <widget class="Gtk.Button" id="CancelButton">
+            <property name="MemberName" />
+            <property name="CanDefault">True</property>
+            <property name="CanFocus">True</property>
+            <property name="UseStock">True</property>
+            <property name="Type">StockItem</property>
+            <property name="StockId">gtk-cancel</property>
+            <property name="ResponseId">-6</property>
+            <property name="label">gtk-cancel</property>
+          </widget>
+          <packing>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Button" id="NoSaveButton">
+            <property name="MemberName" />
+            <property name="CanFocus">True</property>
+            <property name="Type">TextAndIcon</property>
+            <property name="Icon">stock:gtk-no Menu</property>
+            <property name="Label" translatable="yes">Don't Save</property>
+            <property name="UseUnderline">True</property>
+            <property name="ResponseId">-9</property>
+          </widget>
+          <packing>
+            <property name="Position">1</property>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Button" id="SaveButton">
+            <property name="MemberName" />
+            <property name="CanDefault">True</property>
+            <property name="CanFocus">True</property>
+            <property name="Type">TextAndIcon</property>
+            <property name="Icon">stock:gtk-save Menu</property>
+            <property name="Label" translatable="yes">Save</property>
+            <property name="UseUnderline">True</property>
+            <property name="ResponseId">-8</property>
+          </widget>
+          <packing>
+            <property name="Position">2</property>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
 </stetic-interface>
