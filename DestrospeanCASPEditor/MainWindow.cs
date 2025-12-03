@@ -669,6 +669,19 @@ public partial class MainWindow : Window
 
     protected void OnOpenActionActivated(object sender, EventArgs e)
     {
+        if (HasUnsavedChanges)
+        {
+            switch (GetUnsavedChangesDialogResponseType())
+            {
+                case ResponseType.Cancel:
+                    return;
+                case ResponseType.No:
+                    break;
+                case ResponseType.Yes:
+                    SavePackage();
+                    break;
+            }
+        }
         var fileChooserDialog = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
         var fileFilter = new FileFilter
             {
