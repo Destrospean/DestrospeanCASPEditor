@@ -181,6 +181,9 @@
     <Reference Include="OpenTK">
       <HintPath>..\libs\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="XmodsDataLib">
+      <HintPath>..\libs\XmodsDataLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">

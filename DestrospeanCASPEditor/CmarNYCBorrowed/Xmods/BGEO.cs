@@ -34,6 +34,26 @@ namespace Destrospean.CmarNYCBorrowed
 
         public float Weight;
 
+        [Serializable]
+        public class BlendException : ApplicationException
+        {
+            public BlendException()
+            {
+            }
+
+            public BlendException(string message) : base(message)
+            {
+            }
+
+            public BlendException(string message, Exception inner) : base(message, inner)
+            {
+            }
+
+            protected BlendException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
+            {
+            }
+        }
+
         public class Section1
         {
             uint mAgeGenderSpecies, mRegion;
@@ -293,26 +313,6 @@ namespace Destrospean.CmarNYCBorrowed
                 VertexID = id;
                 Position = new Vector3(position);
                 Normals = new Vector3(normals);
-            }
-        }
-
-        [Serializable]
-        public class BlendException : ApplicationException
-        {
-            public BlendException()
-            {
-            }
-
-            public BlendException(string message) : base(message)
-            {
-            }
-
-            public BlendException(string message, Exception inner) : base(message, inner)
-            {
-            }
-
-            protected BlendException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context)
-            {
             }
         }
 
