@@ -65,7 +65,7 @@ namespace Destrospean.CmarNYCBorrowed
                 get
                 {
                     var temp = mAgeGenderSpecies;
-                    if ((temp & 0x0F00) == 0)
+                    if ((temp & 0xF00) == 0)
                     {
                         temp = temp | (uint)Species.Human;
                     }
@@ -157,11 +157,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public override string ToString()
             {
-                return ((Species)mAgeGenderSpecies).ToString() + ((AgeGender)mAgeGenderSpecies).ToString() + Environment.NewLine +
-                    "LOD 0: First vertex " + mFirstVertexID[0].ToString() + ", Number vertices " + mVertexIDCount[0].ToString() + ", Number entries " + mEntryCount[0] + Environment.NewLine +
-                    "LOD 1: First vertex " + mFirstVertexID[1].ToString() + ", Number vertices " + mVertexIDCount[1].ToString() + ", Number entries " + mEntryCount[1] + Environment.NewLine +
-                    "LOD 2: First vertex " + mFirstVertexID[2].ToString() + ", Number vertices " + mVertexIDCount[2].ToString() + ", Number entries " + mEntryCount[2] + Environment.NewLine +
-                    "LOD 3: First vertex " + mFirstVertexID[3].ToString() + ", Number vertices " + mVertexIDCount[3].ToString() + ", Number entries " + mEntryCount[3];
+                return ((Species)mAgeGenderSpecies).ToString() + ((AgeGender)mAgeGenderSpecies).ToString() + Environment.NewLine + "LOD 0: First vertex " + mFirstVertexID[0].ToString() + ", Number vertices " + mVertexIDCount[0].ToString() + ", Number entries " + mEntryCount[0] + Environment.NewLine + "LOD 1: First vertex " + mFirstVertexID[1].ToString() + ", Number vertices " + mVertexIDCount[1].ToString() + ", Number entries " + mEntryCount[1] + Environment.NewLine + "LOD 2: First vertex " + mFirstVertexID[2].ToString() + ", Number vertices " + mVertexIDCount[2].ToString() + ", Number entries " + mEntryCount[2] + Environment.NewLine + "LOD 3: First vertex " + mFirstVertexID[3].ToString() + ", Number vertices " + mVertexIDCount[3].ToString() + ", Number entries " + mEntryCount[3];
             }
 
             public void Write(BinaryWriter writer, int section1LODCount)
