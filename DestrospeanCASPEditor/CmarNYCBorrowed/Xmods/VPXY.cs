@@ -10,9 +10,9 @@ namespace Destrospean.CmarNYCBorrowed
 
         byte mCount, mFlag;
 
-        int mExternalCount, mInternalCount, mTGICount, mTGISize, mVersion;
-
         Entry[] mEntries;
+
+        int mExternalCount, mInternalCount, mTGICount, mTGISize, mVersion;
 
         TGI[] mExternalITG, mInternalITG, mTGIList;
 
