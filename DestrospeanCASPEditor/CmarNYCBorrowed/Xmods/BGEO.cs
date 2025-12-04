@@ -433,7 +433,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             for (var i = 0; i < mSection1Count; i++)
             {
-                if (((mSection1[i].AgeGenderSpecies & (uint)species) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)age) > 0) && ((mSection1[i].AgeGenderSpecies & (uint)gender) > 0))
+                if ((mSection1[i].AgeGenderSpecies & (uint)species) > 0 && (mSection1[i].AgeGenderSpecies & (uint)age) > 0 && (mSection1[i].AgeGenderSpecies & (uint)gender) > 0)
                 {
                     return i;
                 }
