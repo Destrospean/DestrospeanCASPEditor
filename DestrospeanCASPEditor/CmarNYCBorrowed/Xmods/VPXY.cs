@@ -53,15 +53,13 @@ namespace Destrospean.CmarNYCBorrowed
 
         public enum EntryType : byte
         {
-            MeshEntry = 0,
-            BoneEntry = 1
+            MeshEntry,
+            BoneEntry
         }
 
         public class Entry
         {
-            byte mLOD;
-
-            byte mRefCount;
+            byte mLOD, mRefCount;
 
             int[] mTGIRefs;
 
@@ -79,11 +77,11 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 get
                 {
-                    return mType == EntryType.MeshEntry & mTGIRefs.Length > 0 ? (int)mLOD : -1;
+                    return mType == EntryType.MeshEntry && mTGIRefs.Length > 0 ? (int)mLOD : -1;
                 }
                 set
                 {
-                    if (mType == EntryType.MeshEntry & mTGIRefs.Length > 0)
+                    if (mType == EntryType.MeshEntry && mTGIRefs.Length > 0)
                     {
                         mLOD = (byte)value;
                     }
@@ -195,16 +193,15 @@ namespace Destrospean.CmarNYCBorrowed
             }
             for (var i = 0; i < mInternalCount; i++)
             {
-                var instance = reader.ReadUInt64();
-                uint type = reader.ReadUInt32(), group = reader.ReadUInt32();
-                mInternalITG[i] = new TGI(type, group, instance);
+                mInternalITG[i] = new TGI(reader, TGI.TGISequence.ITG);
             }
-            if (mExternalCount > 0) mExternalITG = new TGI[mExternalCount];
+            if (mExternalCount > 0)
+            {
+                mExternalITG = new TGI[mExternalCount];
+            }
             for (var i = 0; i < mExternalCount; i++)
             {
-                var instance = reader.ReadUInt64();
-                uint type = reader.ReadUInt32(), group = reader.ReadUInt32();
-                mExternalITG[i] = new TGI(type, group, instance);
+                mExternalITG[i] = new TGI(reader, TGI.TGISequence.ITG);
             }
             reader.ReadInt32();
             reader.ReadInt32();
