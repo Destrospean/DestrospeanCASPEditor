@@ -416,7 +416,7 @@ public partial class MainWindow : Window
                     casPart.CASPartResource.BlendInfoThinIndex,
                     casPart.CASPartResource.BlendInfoSpecialIndex
                 };
-            float[] scales =
+            float[] morphs =
                 {
                     mFat,
                     mFit,
@@ -456,7 +456,7 @@ public partial class MainWindow : Window
                     {
                         if (bgeo != null)
                         {
-                            bgeo.Weight = scales[i] * geomMorph.Amount;
+                            bgeo.Weight = morphs[i] * geomMorph.Amount;
                             geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
                         }
                         else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
@@ -492,7 +492,7 @@ public partial class MainWindow : Window
                                         deltas.Add(delta);
                                     }
                                 }
-                                geom = geom.LoadGEOMMorph(deltas.ToArray(), scales[i]);
+                                geom = geom.LoadGEOMMorph(deltas.ToArray(), morphs[i]);
                             }
                         }
                     }
@@ -526,7 +526,7 @@ public partial class MainWindow : Window
                             }
                             if (bond != null)
                             {
-                                bond.Weight = scales[i] * boneMorph.Amount;
+                                bond.Weight = morphs[i] * boneMorph.Amount;
                                 geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
                             }
                         }
