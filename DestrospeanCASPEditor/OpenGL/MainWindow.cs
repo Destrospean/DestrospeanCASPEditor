@@ -738,9 +738,9 @@ public partial class MainWindow : Window
 
     public void DeleteTextures()
     {
-        foreach (var textureId in TextureIDs.Values)
+        foreach (var textureID in TextureIDs.Values)
         {
-            GL.DeleteTexture(textureId);
+            GL.DeleteTexture(textureID);
         }
         TextureIDs.Clear();
     }
@@ -880,11 +880,11 @@ public partial class MainWindow : Window
                 }
                 if (currentPreset != null && currentPreset.SpecularMap != null)
                 {
-                    int textureId;
-                    if (TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureId))
+                    int textureID;
+                    if (TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureID))
                     {
                         GL.ActiveTexture(TextureUnit.Texture1);
-                        GL.BindTexture(TextureTarget.Texture2D, textureId);
+                        GL.BindTexture(TextureTarget.Texture2D, textureID);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
                         GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 1);
                         GL.ActiveTexture(TextureUnit.Texture0);
