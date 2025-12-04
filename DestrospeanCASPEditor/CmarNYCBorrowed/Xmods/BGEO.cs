@@ -57,6 +57,7 @@ namespace Destrospean.CmarNYCBorrowed
         public class Section1
         {
             uint mAgeGenderSpecies, mRegion;
+
             int[] mEntryCount, mFirstVertexID, mOriginalEntryCount, mVertexIDCount;
 
             public uint AgeGenderSpecies
