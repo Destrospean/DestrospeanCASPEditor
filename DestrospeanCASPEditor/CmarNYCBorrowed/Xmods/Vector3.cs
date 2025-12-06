@@ -194,6 +194,85 @@ namespace Destrospean.CmarNYCBorrowed
             return obj == this;
         }
 
+        public int[] GetFaceReferenceMeshPoints(Vector3[] refMeshPositions, int[][] refMeshFaces, int[][] refFaceRefs, Triangle[] currentVertFaces, int numberOfPoints)
+        {
+            var indices = new int[numberOfPoints];
+            for (var i = 0; i < numberOfPoints; i++)
+            {
+                indices[i] = -1;
+            }
+            float[] distance = new float[numberOfPoints],
+            refMeshDistances = new float[refMeshPositions.Length];
+            for (var i = 0; i < refMeshPositions.Length; i++)
+            {
+                refMeshDistances[i] = Distance(refMeshPositions[i]);
+            }
+            var closestVertex = ArrayMinimumIndex(refMeshDistances);
+            var closestDistance = refMeshDistances[closestVertex];
+            var duplicateVertices = new List<int>();
+            for (var i = 0; i < refMeshPositions.Length; i++)
+            {
+                if (refMeshPositions[i] == refMeshPositions[closestVertex])
+                {
+                    duplicateVertices.Add(i);
+                }
+            }
+            if (duplicateVertices.Count > 1)
+            {
+                var centroid = default(Vector3);
+                for (var i = 0; i < currentVertFaces.Length; i++)
+                {
+                    var triangle = currentVertFaces[i];
+                    centroid += triangle.Centroid();
+                }
+                centroid /= (float)currentVertFaces.Length;
+                var refCentroid = new Vector3[duplicateVertices.Count];
+                var centroidDistance = new float[duplicateVertices.Count];
+                for (var i = 0; i < duplicateVertices.Count; i++)
+                {
+                    var faces = refFaceRefs[duplicateVertices[i]];
+                    for (var j = 0; j < faces.Length; j++)
+                    {
+                        refCentroid[i] += Vector3.Centroid(refMeshPositions[refMeshFaces[faces[j]][0]], refMeshPositions[refMeshFaces[faces[j]][1]], refMeshPositions[refMeshFaces[faces[j]][2]]);
+                    }
+                    refCentroid[i] /= (float)refFaceRefs[duplicateVertices[i]].Length;
+                    centroidDistance[i] = centroid.Distance(refCentroid[i]);
+                }
+                closestVertex = duplicateVertices[ArrayMinimumIndex(centroidDistance)];
+            }
+            indices[0] = closestVertex;
+            distance[0] = closestDistance;
+            var verticesLinkedByFaces = new List<int>();
+            var linkedFaces = refFaceRefs[closestVertex];
+            foreach (var i in linkedFaces)
+            {
+                foreach (var j in refMeshFaces[i])
+                {
+                    if (!verticesLinkedByFaces.Contains(j))
+                    {
+                        verticesLinkedByFaces.Add(j);
+                    }
+                }
+            }
+            foreach (var i in verticesLinkedByFaces)
+            {
+                for (var j = 0; j < numberOfPoints; j++)
+                {
+                    if (refMeshDistances[i] <= distance[j])
+                    {
+                        for (var k = j; k < numberOfPoints - 1; k++)
+                        {
+                            indices[k + 1] = indices[k];
+                            distance[k + 1] = distance[k];
+                        }
+                        indices[j] = i;
+                        distance[j] = refMeshDistances[i];
+                    }
+                }
+            }
+            return indices;
+        }
+
         public override int GetHashCode()
         {
             return (int)((X + Y + Z) % Int32.MaxValue);
@@ -227,6 +306,169 @@ namespace Destrospean.CmarNYCBorrowed
                 weights[i] = d[i] / dt;
             }
             return weights;
+        }
+
+        public int[] GetReferenceMeshPoints(Vector3[] refMeshPositions, int[][] refMeshFaces, bool interpolate, bool restrictToNearestFace, int numberOfPoints = 3)
+        {
+            if (restrictToNearestFace)
+            {
+                var distance = 99999999f;
+                var indices = new List<int>(1);
+                for (var i = 0; i < refMeshPositions.Length; i++)
+                {
+                    var temp = Distance(refMeshPositions[i]);
+                    if (temp < distance)
+                    {
+                        distance = temp;
+                        indices.Clear();
+                        indices.Add(i);
+                    }
+                    else if (temp == distance)
+                    {
+                        indices.Add(i);
+                    }
+                }
+                if (indices.Count == 0)
+                {
+                    throw new ApplicationException("No vertices in reference mesh!");
+                }
+                if (interpolate)
+                {
+                    var faceDistance = 99999999f;
+                    var found = false;
+                    var refFace = 0;
+                    foreach (var i in indices)
+                    {
+                        for (var j = 0; j < refMeshFaces.GetLength(0); j++)
+                        {
+                            var foundTemp = false;
+                            for (var k = 0; k < 3; k++)
+                            {
+                                if (refMeshFaces[j][k] == i)
+                                {
+                                    foundTemp = true;
+                                    continue;
+                                }
+                            }
+                            if (foundTemp)
+                            {
+                                var tempTriangle = new Triangle(refMeshPositions[refMeshFaces[j][0]], refMeshPositions[refMeshFaces[j][1]], refMeshPositions[refMeshFaces[j][2]]);
+                                var tempPlane = new Plane(tempTriangle);
+                                if (tempTriangle.PointInside(ProjectToPlane(tempPlane)) && Distance(ProjectToPlane(tempPlane)) < faceDistance)
+                                {
+                                    found = true;
+                                    refFace = j;
+                                    faceDistance = Distance(ProjectToPlane(tempPlane));
+                                }
+                            }
+                        }
+                    }
+                    if (found)
+                    {
+                        return refMeshFaces[refFace];
+                    }
+                    else
+                    {
+                        int index0 = indices[0],
+                        index1 = indices[0];
+                        foreach (var i in indices)
+                        {
+                            var refVertex = new Vector3(refMeshPositions[i]);
+                            var lineDistance = 99999999f;
+                            for (var j = 0; j < refMeshFaces.GetLength(0); j++)
+                            {
+                                for (var k = 0; k < 3; k++)
+                                {
+                                    if (refMeshFaces[j][k] == i)
+                                    {
+                                        for (var l = 0; l < 3; l++)
+                                        {
+                                            if (k != l)
+                                            {
+                                                var temp = new Vector3(refMeshPositions[refMeshFaces[j][l]]);
+                                                try
+                                                {
+                                                    if (ProjectToLine(refVertex, temp).Between(refVertex, temp) && Distance(ProjectToLine(refVertex, temp)) < lineDistance)
+                                                    {
+                                                        index0 = i;
+                                                        index1 = refMeshFaces[j][l];
+                                                        lineDistance = Distance(ProjectToLine(refVertex, temp));
+                                                    }
+                                                }
+                                                catch
+                                                {
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                        if (index0 != index1)
+                        {
+                            return new int[]
+                            {
+                                index0,
+                                index1
+                            };
+                        }
+                        else
+                        {
+                            return new int[]
+                            {
+                                indices[0]
+                            };
+                        }
+                    }
+                }
+                else
+                {
+                    return new int[]
+                    {
+                        indices[0]
+                    };
+                }
+            }
+            else
+            {
+                var indices = new int[numberOfPoints];
+                var distance = new float[numberOfPoints];
+                var position = new Vector3[numberOfPoints];
+                for (var i = 0; i < numberOfPoints; i++)
+                {
+                    distance[i] = 999999f;
+                }
+                for (var i = 0; i < refMeshPositions.Length; i++)
+                {
+                    if (this == refMeshPositions[i])
+                    {
+                        return new int[]
+                        {
+                            i
+                        };
+                    }
+                    var temp = Distance(refMeshPositions[i]);
+                    for (var j = 0; j < numberOfPoints; j++)
+                    {
+                        if (temp <= distance[j] && position[j] != refMeshPositions[i])
+                        {
+                            for (var k = numberOfPoints-2; k >= j; k--)
+                            {
+                                indices[k + 1] = indices[k];
+                                distance[k + 1] = distance[k];
+                                position[k + 1] = position[k];
+                            }
+                            indices[j] = i;
+                            distance[j] = temp;
+                            position[j] = refMeshPositions[i];
+                            break;
+                        }
+                    }
+                }
+                return indices;
+            }
         }
 
         public Vector3 NearestPoint(Vector3 thisFacesCentroid, Vector3[] refPointsArray, Vector3[] refPointsFacesCentroids)
@@ -356,6 +598,12 @@ namespace Destrospean.CmarNYCBorrowed
             temp1 = this - p1;
             temp0.Normalize();
             return new Vector3(p1 + Vector3.Dot(temp0, temp1) * temp0);
+        }
+
+        public Vector3 ProjectToPlane(Plane plane)
+        {
+            var num = (plane.A + X + plane.B * Y + plane.C * Z + plane.D) / (plane.A * plane.A + plane.B * plane.B + plane.C * plane.C);
+            return new Vector3(X + plane.A * num, Y + plane.B * num, Z + plane.C * num);
         }
 
         public Vector3 Scale(Vector3 other)

@@ -183,6 +183,7 @@
     </Reference>
     <Reference Include="XmodsDataLib">
       <HintPath>..\libs\XmodsDataLib.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -239,6 +240,11 @@
     <Compile Include="CmarNYCBorrowed\Xmods\Euler.cs" />
     <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\WSO.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\OBJ.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Triangle.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Seams.cs" />
+    <Compile Include="CmarNYCBorrowed\Xmods\Plane.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
