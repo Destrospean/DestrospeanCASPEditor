@@ -310,7 +310,7 @@ namespace Destrospean.DestrospeanCASPEditor
             table.NRows++;
         }
 
-        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, object propertyHolder, params string[] propertyPathComponents)
+        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, System.Action additionalToggleAction, object propertyHolder, params string[] propertyPathComponents)
         {
             var property = propertyHolder;
             var propertyInfo = property.GetType().GetProperty(propertyPathComponents[0]);
@@ -403,15 +403,18 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             propertyInfo.SetValue(property, value, null);
                         }
-                        foreach (var casPart in MainWindow.Singleton.CASParts.Values)
-                        {
-                            casPart.ClearCurrentRig();
-                        }
-                        MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                        additionalToggleAction();
                     };
                 vBox.PackStart(checkButton, false, false, 0);
             }
             return frame;
+        }
+
+        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, object propertyHolder, params string[] propertyPathComponents)
+        {
+            return GetEnumPropertyCheckButtonsInNewFrame(label, () =>
+                {
+                }, propertyHolder, propertyPathComponents);
         }
 
         public static void RescaleAndReposition(this Gtk.Window self, Gtk.Window parent)

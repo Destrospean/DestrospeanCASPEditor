@@ -124,7 +124,7 @@ public partial class MainWindow : Window
             }),
         prevButton = new Button(new Arrow(ArrowType.Left, ShadowType.None)
             {
-                Xalign = .5f,
+                Xalign = .5f
             }),
         resetViewButton = new Button("Reset View");
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
@@ -149,13 +149,18 @@ public partial class MainWindow : Window
         flagPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
         flagPageButtonHBox.PackEnd(resetViewButton, false, true, 0);
         buttonHBox.PackStart(flagPageButtonHBox, false, true, 0);
-        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Category", casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Type", casPart.CASPartResource, "Clothing"), 1, 2, 0, 2);
-        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Data Type", casPart.CASPartResource, "DataType"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Age", casPart.CASPartResource.AgeGender, "Age"), 0, 1, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Gender", casPart.CASPartResource.AgeGender, "Gender"), 1, 2, 0, 1);
-        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Species", casPart.CASPartResource.AgeGender, "Species"), 2, 3, 0, 2);
-        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Handedness", casPart.CASPartResource.AgeGender, "Handedness"), 1, 2, 1, 2);
+        System.Action additionalToggleAction = delegate
+            {
+                casPart.ClearCurrentRig();
+                MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+            };
+        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Category", additionalToggleAction, casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Type", additionalToggleAction, casPart.CASPartResource, "Clothing"), 1, 2, 0, 2);
+        flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Data Type", additionalToggleAction, casPart.CASPartResource, "DataType"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Age", additionalToggleAction, casPart.CASPartResource.AgeGender, "Age"), 0, 1, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Gender", additionalToggleAction, casPart.CASPartResource.AgeGender, "Gender"), 1, 2, 0, 1);
+        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Species", additionalToggleAction, casPart.CASPartResource.AgeGender, "Species"), 2, 3, 0, 2);
+        flagTables[1].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Handedness", additionalToggleAction, casPart.CASPartResource.AgeGender, "Handedness"), 1, 2, 1, 2);
         flagTables[0].ShowAll();
         flagTables[1].ShowAll();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
@@ -182,9 +187,9 @@ public partial class MainWindow : Window
                     ShowTabs = false
                 };
             var actionGroup = new ActionGroup("Default");
-            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.Directory),
-            exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.Directory),
-            exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.Directory),
+            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.SaveAs),
+            exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.SaveAs),
+            exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.SaveAs),
             importGEOMAction = new Gtk.Action("ImportGEOMAction", "Import GEOM", null, Stock.Directory),
             importOBJAction = new Gtk.Action("ImportOBJAction", "Import OBJ", null, Stock.Directory),
             importWSOAction = new Gtk.Action("ImportWSOAction", "Import WSO", null, Stock.Directory);
@@ -290,7 +295,7 @@ public partial class MainWindow : Window
                 {
                     Value = mSpecial
                 };
-            System.Action changeOtherSlidersAndUpdateModels = () =>
+            System.Action changeOtherSlidersAndUpdateModels = delegate
                 {
                     for (var i = 0; i < casPart.LODs.Count; i++)
                     {

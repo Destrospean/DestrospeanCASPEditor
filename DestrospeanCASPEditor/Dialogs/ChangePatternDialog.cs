@@ -79,7 +79,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
             }
-            System.Action setPatternKeysAndPaths = () =>
+            System.Action setPatternKeysAndPaths = delegate
                 {
                     patternKeys.Clear();
                     patternPaths.Clear();
