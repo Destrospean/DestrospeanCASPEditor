@@ -295,25 +295,22 @@ public partial class MainWindow : Window
                                 casPart.CASPartResource.BlendInfoThinIndex,
                                 casPart.CASPartResource.BlendInfoSpecialIndex
                             };
-                        var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
-                        foreach (var bblnIndex in bblnIndices)
+                        var morphs = new Destrospean.CmarNYCBorrowed.GEOM[4];
+                        for (var i = 0; i < bblnIndices.Length; i++)
                         {
                             BBLN bbln;
                             ResourceUtils.EvaluatedResourceKey evaluated;
                             try
                             {
-                                evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndex].ReverseEvaluateResourceKey());
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
                                 bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                             }
                             catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                             {
-                                bbln = null;
-                            }
-                            if (bbln == null)
-                            {
+                                morphs[i] = null;
                                 continue;
                             }
-                            BGEO bgeo;
+                            BGEO bgeo = null;
                             try
                             {
                                 evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
@@ -321,7 +318,6 @@ public partial class MainWindow : Window
                             }
                             catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                             {
-                                bgeo = null;
                             }
                             foreach (var entry in bbln.Entries)
                             {
@@ -329,39 +325,30 @@ public partial class MainWindow : Window
                                 {
                                     if (bgeo != null)
                                     {
-                                        morphs.Add(new Destrospean.CmarNYCBorrowed.GEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key));
+                                        morphs[i] = new Destrospean.CmarNYCBorrowed.GEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key);
                                     }
                                     else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                                     {
-                                        Destrospean.CmarNYCBorrowed.VPXY vpxy;
                                         try
                                         {
-                                            var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                                            vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
-                                        }
-                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                                        {
-                                            vpxy = null;
-                                        }
-                                        if (vpxy != null)
-                                        {
+                                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                            var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                                             foreach (var link in vpxy.MeshLinks(lodKvp.Key))
                                             {
-                                                Destrospean.CmarNYCBorrowed.GEOM delta;
                                                 try
                                                 {
-                                                    var deltaEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
-                                                    delta = ((GeometryResource)WrapperDealer.GetResource(0, deltaEvaluated.Package, deltaEvaluated.ResourceIndexEntry)).ToGEOM();
+                                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                                    morphs[i] = ((GeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToGEOM();
                                                 }
                                                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                                 {
-                                                    delta = null;
-                                                }
-                                                if (delta != null)
-                                                {
-                                                    morphs.Add(delta);
+                                                    morphs[i] = null;
                                                 }
                                             }
+                                        }
+                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                        {
+                                            morphs[i] = null;
                                         }
                                     }
                                 }
@@ -372,13 +359,13 @@ public partial class MainWindow : Window
                             case MeshExportFileType.OBJ:
                                 using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".obj") ? "" : ".obj")))
                                 {
-                                    new OBJ(geom, morphs.ToArray()).Write(new StreamWriter(fileStream));
+                                    new OBJ(geom, morphs).Write(new StreamWriter(fileStream));
                                 }
                                 break;
                             case MeshExportFileType.WSO:
                                 using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".wso") ? "" : ".wso")))
                                 {
-                                    new WSO(geom, morphs.ToArray()).Write(new BinaryWriter(fileStream));
+                                    new WSO(geom, morphs).Write(new BinaryWriter(fileStream));
                                 }
                                 break;
                         }

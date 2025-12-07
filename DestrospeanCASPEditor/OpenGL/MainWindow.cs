@@ -416,7 +416,7 @@ public partial class MainWindow : Window
                     casPart.CASPartResource.BlendInfoThinIndex,
                     casPart.CASPartResource.BlendInfoSpecialIndex
                 };
-            float[] morphs =
+            float[] weights =
                 {
                     mFat,
                     mFit,
@@ -434,13 +434,9 @@ public partial class MainWindow : Window
                 }
                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                 {
-                    bbln = null;
-                }
-                if (bbln == null)
-                {
                     continue;
                 }
-                BGEO bgeo;
+                BGEO bgeo = null;
                 try
                 {
                     evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
@@ -448,7 +444,6 @@ public partial class MainWindow : Window
                 }
                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                 {
-                    bgeo = null;
                 }
                 foreach (var entry in bbln.Entries)
                 {
@@ -456,78 +451,56 @@ public partial class MainWindow : Window
                     {
                         if (bgeo != null)
                         {
-                            bgeo.Weight = morphs[i] * geomMorph.Amount;
+                            bgeo.Weight = weights[i] * geomMorph.Amount;
                             geom = geom.ToGEOM(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
                         }
                         else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                         {
-                            Destrospean.CmarNYCBorrowed.VPXY vpxy;
                             try
                             {
-                                var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                                vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
-                            }
-                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                            {
-                                vpxy = null;
-                            }
-                            if (vpxy != null)
-                            {
-                                var deltas = new List<Destrospean.CmarNYCBorrowed.GEOM>();
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
                                 foreach (var link in vpxy.MeshLinks(lod))
                                 {
-                                    Destrospean.CmarNYCBorrowed.GEOM delta;
                                     try
                                     {
-                                        var deltaEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
-                                        delta = ((GeometryResource)WrapperDealer.GetResource(0, deltaEvaluated.Package, deltaEvaluated.ResourceIndexEntry)).ToGEOM();
+                                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                        morphs.Add(((GeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToGEOM());
                                     }
                                     catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                     {
-                                        delta = null;
-                                    }
-                                    if (delta != null)
-                                    {
-                                        deltas.Add(delta);
                                     }
                                 }
-                                geom = geom.LoadGEOMMorph(deltas.ToArray(), morphs[i]);
+                                geom = geom.LoadGEOMMorph(morphs.ToArray(), weights[i]);
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
                             }
                         }
                     }
                     foreach (var boneMorph in entry.BoneMorphs)
                     {
-                        Destrospean.CmarNYCBorrowed.VPXY vpxy;
                         try
                         {   
-                            var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                            vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
+                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                            var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                            foreach (var link in vpxy.AllLinks)
+                            {
+                                try
+                                {   
+                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                    var bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                    bond.Weight = weights[i] * boneMorph.Amount;
+                                    geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
+                                }
+                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                {
+                                }
+                            }
                         }
                         catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                         {
-                            vpxy = null;
-                        }
-                        if (vpxy == null)
-                        {
-                            continue;
-                        }
-                        foreach (var link in vpxy.AllLinks)
-                        {
-                            BOND bond;
-                            try
-                            {   
-                                var bondEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
-                                bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, bondEvaluated.Package, bondEvaluated.ResourceIndexEntry).Stream));
-                            }
-                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                            {
-                                bond = null;
-                            }
-                            if (bond != null)
-                            {
-                                bond.Weight = morphs[i] * boneMorph.Amount;
-                                geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
-                            }
                         }
                     }
                 }
