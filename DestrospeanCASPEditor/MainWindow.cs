@@ -77,8 +77,9 @@ public partial class MainWindow : Window
 
     public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
 
-    enum MeshExportFileType
+    enum MeshFileType
     {
+        GEOM,
         OBJ,
         WSO
     }
@@ -248,42 +249,23 @@ public partial class MainWindow : Window
                     nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
                     prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                 };
-            exportGEOMAction.Activated += (sender, e) =>
+            System.Action<MeshFileType> exportMesh = (MeshFileType meshFileType) =>
                 {
-                    var fileChooserDialog = new FileChooserDialog("Export GEOM", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
-                    var fileFilter = new FileFilter
-                        {
-                            Name = "The Sims 3 GEOM Resource"
-                        };
-                    fileFilter.AddPattern("*.simgeom");
-                    fileChooserDialog.AddFilter(fileFilter);
-                    if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                    switch (meshFileType)
                     {
-                        var resourceStream = lodKvp.Value[geomNotebook.CurrentPage].Stream;
-                        using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".simgeom") ? "" : ".simgeom")))
-                        {
-                            resourceStream.Seek(0, SeekOrigin.Begin);
-                            resourceStream.CopyTo(fileStream);
-                        }
-                    }
-                    fileChooserDialog.Destroy();
-                };
-            System.Action<MeshExportFileType> exportAsOBJOrWSO = (MeshExportFileType meshExportFileType) =>
-                {
-                    switch (meshExportFileType)
-                    {
-                        case MeshExportFileType.OBJ:
-                        case MeshExportFileType.WSO:
+                        case MeshFileType.GEOM:
+                        case MeshFileType.OBJ:
+                        case MeshFileType.WSO:
                             break;
                         default:
                             return;
                     }
-                    var fileChooserDialog = new FileChooserDialog("Export " + meshExportFileType.ToString(), this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+                    var fileChooserDialog = new FileChooserDialog("Export " + meshFileType.ToString(), this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
                     var fileFilter = new FileFilter
                         {
-                            Name = meshExportFileType == MeshExportFileType.OBJ ? "Wavefront OBJ" : meshExportFileType == MeshExportFileType.WSO ? "The Sims Resource Workshop Object" : null
+                            Name = meshFileType == MeshFileType.GEOM ? "The Sims 3 GEOM Resource" : meshFileType == MeshFileType.OBJ ? "Wavefront OBJ" : meshFileType == MeshFileType.WSO ? "The Sims Resource Workshop Object" : null
                         };
-                    fileFilter.AddPattern(meshExportFileType == MeshExportFileType.OBJ ? "*.obj" : meshExportFileType == MeshExportFileType.WSO ? "*.wso" : null);
+                    fileFilter.AddPattern(meshFileType == MeshFileType.GEOM ? "*.simgeom" : meshFileType == MeshFileType.OBJ ? "*.obj" : meshFileType == MeshFileType.WSO ? "*.wso" : null);
                     fileChooserDialog.AddFilter(fileFilter);
                     var geom = lodKvp.Value[geomNotebook.CurrentPage].ToGEOM();
                     if (fileChooserDialog.Run() == (int)ResponseType.Accept)
@@ -354,16 +336,37 @@ public partial class MainWindow : Window
                                 }
                             }
                         }
-                        switch (meshExportFileType)
+                        switch (meshFileType)
                         {
-                            case MeshExportFileType.OBJ:
-                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".obj") ? "" : ".obj")))
+                            case MeshFileType.GEOM:
+                                var filename = fileChooserDialog.Filename;
+                                if (filename.ToLower().EndsWith(".simgeom"))
+                                {
+                                    filename.Remove(filename.LastIndexOf('.'));
+                                }
+                                using (var fileStream = File.Create(filename + ".simgeom"))
+                                {
+                                    geom.Write(new BinaryWriter(fileStream));
+                                }
+                                for (var i = 0; i < morphs.Length; i++)
+                                {
+                                    if (morphs[i] != null)
+                                    {
+                                        using (var fileStream = File.Create(filename + "_" + "fat fit thin special".Split(' ')[i] + ".simgeom"))
+                                        {
+                                            morphs[i].Write(new BinaryWriter(fileStream));
+                                        }
+                                    }
+                                }
+                                break;
+                            case MeshFileType.OBJ:
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".obj") ? "" : ".obj")))
                                 {
                                     new OBJ(geom, morphs).Write(new StreamWriter(fileStream));
                                 }
                                 break;
-                            case MeshExportFileType.WSO:
-                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".wso") ? "" : ".wso")))
+                            case MeshFileType.WSO:
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".wso") ? "" : ".wso")))
                                 {
                                     new WSO(geom, morphs).Write(new BinaryWriter(fileStream));
                                 }
@@ -372,8 +375,9 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
-            exportOBJAction.Activated += (sender, e) => exportAsOBJOrWSO(MeshExportFileType.OBJ);
-            exportWSOAction.Activated += (sender, e) => exportAsOBJOrWSO(MeshExportFileType.WSO);
+            exportGEOMAction.Activated += (sender, e) => exportMesh(MeshFileType.GEOM);
+            exportOBJAction.Activated += (sender, e) => exportMesh(MeshFileType.OBJ);
+            exportWSOAction.Activated += (sender, e) => exportMesh(MeshFileType.WSO);
             importGEOMAction.Activated += (sender, e) =>
                 {
                     var fileChooserDialog = new FileChooserDialog("Import GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
