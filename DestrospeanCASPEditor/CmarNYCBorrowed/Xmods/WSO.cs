@@ -679,17 +679,6 @@ namespace Destrospean.CmarNYCBorrowed
             {
             }
 
-            public MeshGroup(int numVerts, Vertex[] verts, int numFace, FacePoint[] facePnts, int numGeos, string meshName)
-            {
-                VertexCount = numVerts;
-                Vertices = verts;
-                FaceCount = numFace;
-                FacePoints = facePnts;
-                GeostateCount = numGeos;
-                mMeshName = meshName.ToCharArray();
-                mNameLength = (byte)mMeshName.Length;
-            }
-
             public MeshGroup(BinaryReader reader)
             {
                 VertexCount = reader.ReadInt32();
@@ -708,29 +697,6 @@ namespace Destrospean.CmarNYCBorrowed
                 mNameLength = reader.ReadByte();
                 mMeshName = new char[(int)mNameLength];
                 mMeshName = reader.ReadChars((int)mNameLength);
-            }
-
-            public MeshGroup(MeshGroup mesh, MeshName name) : this(mesh, Enum.GetName(typeof(MeshName), name))
-            {
-            }
-
-            public MeshGroup(MeshGroup mesh, string meshName)
-            {
-                VertexCount = mesh.VertexCount;
-                Vertices = new Vertex[VertexCount];
-                for (var i = 0; i < VertexCount; i++)
-                {
-                    Vertices[i] = new Vertex(mesh.Vertices[i]);
-                }
-                FaceCount = mesh.FaceCount;
-                FacePoints = new FacePoint[FacePointCount];
-                for (var i = 0; i < FacePointCount; i++)
-                {
-                    FacePoints[i] = new FacePoint(mesh.FacePoints[i]);
-                }
-                GeostateCount = mesh.GeostateCount;
-                mMeshName = meshName.ToCharArray();
-                mNameLength = (byte)mMeshName.Length;
             }
 
             public MeshGroup(GEOM baseMesh, string meshName)
@@ -881,6 +847,29 @@ namespace Destrospean.CmarNYCBorrowed
                 mNameLength = (byte)mMeshName.Length;
             }
 
+            public MeshGroup(MeshGroup mesh, MeshName meshName) : this(mesh, Enum.GetName(typeof(MeshName), meshName))
+            {
+            }
+
+            public MeshGroup(MeshGroup mesh, string meshName)
+            {
+                VertexCount = mesh.VertexCount;
+                Vertices = new Vertex[VertexCount];
+                for (var i = 0; i < VertexCount; i++)
+                {
+                    Vertices[i] = new Vertex(mesh.Vertices[i]);
+                }
+                FaceCount = mesh.FaceCount;
+                FacePoints = new FacePoint[FacePointCount];
+                for (var i = 0; i < FacePointCount; i++)
+                {
+                    FacePoints[i] = new FacePoint(mesh.FacePoints[i]);
+                }
+                GeostateCount = mesh.GeostateCount;
+                mMeshName = meshName.ToCharArray();
+                mNameLength = (byte)mMeshName.Length;
+            }
+
             public MeshGroup(OBJ obj, string meshName, List<int[]> vertices, List<int[]> faces)
             {
                 VertexCount = vertices.Count;
@@ -903,6 +892,17 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
                 GeostateCount = 0;
+                mMeshName = meshName.ToCharArray();
+                mNameLength = (byte)mMeshName.Length;
+            }
+
+            public MeshGroup(int vertexCount, Vertex[] vertices, int faceCount, FacePoint[] facePoints, int geostateCount, string meshName)
+            {
+                VertexCount = vertexCount;
+                Vertices = vertices;
+                FaceCount = faceCount;
+                FacePoints = facePoints;
+                GeostateCount = geostateCount;
                 mMeshName = meshName.ToCharArray();
                 mNameLength = (byte)mMeshName.Length;
             }
@@ -1901,7 +1901,6 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 throw new WSOException("Source number of vertices does not equal target number of vertices!");
             }
-            
             for (var i = 0; i < mMeshes.Length; i++)
             {
                 var meshGroup = mMeshes[i];
@@ -2005,7 +2004,6 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 throw new WSOException("Source number of vertices does not equal target number of vertices!");
             }
-            
             for (var i = 0; i < mMeshes.Length; i++)
             {
                 var meshGroup = mMeshes[i];
