@@ -396,7 +396,7 @@ public partial class MainWindow : Window
                                 selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
                                 if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                 {
-                                    IResourceIndexEntry resourceIndexEntry = geometryResourceKvp.Key,
+                                    IResourceIndexEntry resourceIndexEntry = CurrentPackage.GetResourceIndexEntry(geometryResourceKvp.Key),
                                     tempResourceIndexEntry = CurrentPackage.AddResource(fileChooserDialog.Filename, resourceIndexEntry, false);
                                     CurrentPackage.ResolveResourceType(tempResourceIndexEntry);
                                     var resource = WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry);
@@ -886,7 +886,7 @@ public partial class MainWindow : Window
                 TreeIter iter;
                 TreeModel model;
                 ResourceTreeView.Selection.GetSelected(out model, out iter);
-                IResourceIndexEntry resourceIndexEntry = (IResourceIndexEntry)model.GetValue(iter, 4),
+                IResourceIndexEntry resourceIndexEntry = CurrentPackage.GetResourceIndexEntry((IResourceIndexEntry)model.GetValue(iter, 4)),
                 tempResourceIndexEntry = CurrentPackage.AddResource(fileChooserDialog.Filename, resourceIndexEntry, false);
                 CurrentPackage.ResolveResourceType(tempResourceIndexEntry);
                 CurrentPackage.ReplaceResource(resourceIndexEntry, WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry));
