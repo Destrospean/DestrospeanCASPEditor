@@ -422,15 +422,15 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
-            HScale fatnessHScale = new HScale(-1, 1, 0.01)
+            HScale fatnessHScale = new HScale(-1, 1, .01)
                 {
                     Value = mFat - mThin
                 },
-            fitnessHScale = new HScale(0, 1, 0.01)
+            fitnessHScale = new HScale(0, 1, .01)
                 {
                     Value = mFit
                 },
-            specialHScale = new HScale(0, 1, 0.01)
+            specialHScale = new HScale(0, 1, .01)
                 {
                     Value = mSpecial
                 };
