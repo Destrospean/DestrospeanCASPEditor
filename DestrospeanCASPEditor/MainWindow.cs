@@ -295,7 +295,7 @@ public partial class MainWindow : Window
                                 casPart.CASPartResource.BlendInfoThinIndex,
                                 casPart.CASPartResource.BlendInfoSpecialIndex
                             };
-                        var morphs = new Destrospean.CmarNYCBorrowed.GEOM[4];
+                        var morphs = new Destrospean.CmarNYCBorrowed.GEOM[bblnIndices.Length];
                         for (var i = 0; i < bblnIndices.Length; i++)
                         {
                             BBLN bbln;
