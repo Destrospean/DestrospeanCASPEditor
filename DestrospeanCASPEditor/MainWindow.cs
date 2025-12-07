@@ -723,15 +723,15 @@ public partial class MainWindow : Window
         foreach (var casPartKvp in CASParts)
         {
             casPartKvp.Value.SavePresets();
-            CurrentPackage.ReplaceResource(casPartKvp.Key, casPartKvp.Value.CASPartResource);
+            CurrentPackage.ReplaceResource(CurrentPackage.GetResourceIndexEntry(casPartKvp.Key), casPartKvp.Value.CASPartResource);
         }
         foreach (var geometryResourceKvp in GeometryResources)
         {
-            CurrentPackage.ReplaceResource(geometryResourceKvp.Key, geometryResourceKvp.Value);
+            CurrentPackage.ReplaceResource(CurrentPackage.GetResourceIndexEntry(geometryResourceKvp.Key), geometryResourceKvp.Value);
         }
         foreach (var vpxyResourceKvp in VPXYResources)
         {
-            CurrentPackage.ReplaceResource(vpxyResourceKvp.Key, vpxyResourceKvp.Value);
+            CurrentPackage.ReplaceResource(CurrentPackage.GetResourceIndexEntry(vpxyResourceKvp.Key), vpxyResourceKvp.Value);
         }
         if (string.IsNullOrEmpty(mSaveAsPath))
         {
