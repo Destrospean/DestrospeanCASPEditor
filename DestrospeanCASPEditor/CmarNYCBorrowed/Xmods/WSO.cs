@@ -735,7 +735,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public MeshGroup(GEOM baseMesh, string meshName)
             {
-                if (!baseMesh.IsValid | !baseMesh.IsBase)
+                if (!baseMesh.IsValid || !baseMesh.IsBase)
                 {
                     throw new WSOException("Input base mesh is not valid!");
                 }
@@ -800,11 +800,11 @@ namespace Destrospean.CmarNYCBorrowed
 
             public MeshGroup(GEOM baseMesh, GEOM morphMesh, string meshName)
             {
-                if (!baseMesh.IsValid | !baseMesh.IsBase)
+                if (!baseMesh.IsValid || !baseMesh.IsBase)
                 {
                     throw new WSOException("Input base mesh is not valid!");
                 }
-                if (!morphMesh.IsValid | !morphMesh.IsMorph)
+                if (!morphMesh.IsValid || !morphMesh.IsMorph)
                 {
                     throw new WSOException("Input morph mesh " + meshName + " is not valid!");
                 }
@@ -1643,13 +1643,13 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     stepIt = 0;
                 }
-                if (!(unassignedOnly && (Base.FacePoints[i].UVs[0] > 0 | Base.FacePoints[i].UVs[1] > 0)))
+                if (!(unassignedOnly && (Base.FacePoints[i].UVs[0] > 0 || Base.FacePoints[i].UVs[1] > 0)))
                 {
                     var position = new Vector3(Base.Vertices[(int)Base.FacePoints[i].VertexIndex].Position);
                     var currentVertexFaces = new List<Triangle>();
                     for (var j = 0; j < Base.FaceCount; j++)
                     {
-                        if (Base.GetFacePoint(j * 3).VertexIndex == Base.FacePoints[i].VertexIndex | Base.GetFacePoint(j * 3 + 1).VertexIndex == Base.FacePoints[i].VertexIndex | Base.GetFacePoint(j * 3 + 2).VertexIndex == Base.FacePoints[i].VertexIndex)
+                        if (Base.GetFacePoint(j * 3).VertexIndex == Base.FacePoints[i].VertexIndex || Base.GetFacePoint(j * 3 + 1).VertexIndex == Base.FacePoints[i].VertexIndex || Base.GetFacePoint(j * 3 + 2).VertexIndex == Base.FacePoints[i].VertexIndex)
                         {
                             currentVertexFaces.Add(new Triangle(Base.Vertices[(int)Base.FacePoints[j * 3].VertexIndex].Position, Base.Vertices[(int)Base.FacePoints[j * 3 + 1].VertexIndex].Position, Base.Vertices[(int)Base.FacePoints[j * 3 + 2].VertexIndex].Position));
                         }
@@ -2258,7 +2258,7 @@ namespace Destrospean.CmarNYCBorrowed
             var totalWeight = 0f;
             for (var i = 0; i < 4; i++)
             {
-                if (boneWeights[i] > 0 && (boneAssignents[i] < 0 | boneAssignents[i] >= BoneCount))
+                if (boneWeights[i] > 0 && (boneAssignents[i] < 0 || boneAssignents[i] >= BoneCount))
                 {
                     return false;
                 }

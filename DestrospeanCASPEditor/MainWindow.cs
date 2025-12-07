@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Gtk;
@@ -8,6 +9,7 @@ using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
+using System.IO;
 
 [Flags]
 public enum NextStateOptions : byte
@@ -20,6 +22,7 @@ public enum NextStateOptions : byte
 
 public partial class MainWindow : Window
 {
+
     PresetNotebook mPresetNotebook;
 
     string mSaveAsPath;
@@ -73,6 +76,12 @@ public partial class MainWindow : Window
     }
 
     public readonly Dictionary<IResourceIndexEntry, GenericRCOLResource> VPXYResources = new Dictionary<IResourceIndexEntry, GenericRCOLResource>();
+
+    enum MeshExportFileType
+    {
+        OBJ,
+        WSO
+    }
 
     public MainWindow() : base(WindowType.Toplevel)
     {
@@ -239,12 +248,151 @@ public partial class MainWindow : Window
                     nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
                     prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                 };
+            exportGEOMAction.Activated += (sender, e) =>
+                {
+                    var fileChooserDialog = new FileChooserDialog("Export GEOM", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+                    var fileFilter = new FileFilter
+                        {
+                            Name = "The Sims 3 GEOM Resource"
+                        };
+                    fileFilter.AddPattern("*.simgeom");
+                    fileChooserDialog.AddFilter(fileFilter);
+                    if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                    {
+                        var resourceStream = lodKvp.Value[geomNotebook.CurrentPage].Stream;
+                        using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".simgeom") ? "" : ".simgeom")))
+                        {
+                            resourceStream.Seek(0, SeekOrigin.Begin);
+                            resourceStream.CopyTo(fileStream);
+                        }
+                    }
+                    fileChooserDialog.Destroy();
+                };
+            System.Action<MeshExportFileType> exportAsOBJOrWSO = (MeshExportFileType meshExportFileType) =>
+                {
+                    switch (meshExportFileType)
+                    {
+                        case MeshExportFileType.OBJ:
+                        case MeshExportFileType.WSO:
+                            break;
+                        default:
+                            return;
+                    }
+                    var fileChooserDialog = new FileChooserDialog("Export " + meshExportFileType.ToString(), this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+                    var fileFilter = new FileFilter
+                        {
+                            Name = meshExportFileType == MeshExportFileType.OBJ ? "Wavefront OBJ" : meshExportFileType == MeshExportFileType.WSO ? "The Sims Resource Workshop Object" : null
+                        };
+                    fileFilter.AddPattern(meshExportFileType == MeshExportFileType.OBJ ? "*.obj" : meshExportFileType == MeshExportFileType.WSO ? "*.wso" : null);
+                    fileChooserDialog.AddFilter(fileFilter);
+                    var geom = lodKvp.Value[geomNotebook.CurrentPage].ToGEOM();
+                    if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                    {
+                        byte[] bblnIndices =
+                            {
+                                casPart.CASPartResource.BlendInfoFatIndex,
+                                casPart.CASPartResource.BlendInfoFitIndex,
+                                casPart.CASPartResource.BlendInfoThinIndex,
+                                casPart.CASPartResource.BlendInfoSpecialIndex
+                            };
+                        var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
+                        foreach (var bblnIndex in bblnIndices)
+                        {
+                            BBLN bbln;
+                            ResourceUtils.EvaluatedResourceKey evaluated;
+                            try
+                            {
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndex].ReverseEvaluateResourceKey());
+                                bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                                bbln = null;
+                            }
+                            if (bbln == null)
+                            {
+                                continue;
+                            }
+                            BGEO bgeo;
+                            try
+                            {
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                                bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                                bgeo = null;
+                            }
+                            foreach (var entry in bbln.Entries)
+                            {
+                                foreach (var geomMorph in entry.GEOMMorphs)
+                                {
+                                    if (bgeo != null)
+                                    {
+                                        morphs.Add(new Destrospean.CmarNYCBorrowed.GEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key));
+                                    }
+                                    else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
+                                    {
+                                        Destrospean.CmarNYCBorrowed.VPXY vpxy;
+                                        try
+                                        {
+                                            var vpxyEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                            vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, vpxyEvaluated.Package, vpxyEvaluated.ResourceIndexEntry).Stream));
+                                        }
+                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                        {
+                                            vpxy = null;
+                                        }
+                                        if (vpxy != null)
+                                        {
+                                            foreach (var link in vpxy.MeshLinks(lodKvp.Key))
+                                            {
+                                                Destrospean.CmarNYCBorrowed.GEOM delta;
+                                                try
+                                                {
+                                                    var deltaEvaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                                    delta = ((GeometryResource)WrapperDealer.GetResource(0, deltaEvaluated.Package, deltaEvaluated.ResourceIndexEntry)).ToGEOM();
+                                                }
+                                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                                {
+                                                    delta = null;
+                                                }
+                                                if (delta != null)
+                                                {
+                                                    morphs.Add(delta);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        switch (meshExportFileType)
+                        {
+                            case MeshExportFileType.OBJ:
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".obj") ? "" : ".obj")))
+                                {
+                                    new OBJ(geom, morphs.ToArray()).Write(new StreamWriter(fileStream));
+                                }
+                                break;
+                            case MeshExportFileType.WSO:
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".wso") ? "" : ".wso")))
+                                {
+                                    new WSO(geom, morphs[0], morphs[1], morphs[2], morphs[3], false).WriteFile(new BinaryWriter(fileStream));
+                                }
+                                break;
+                        }
+                    }
+                    fileChooserDialog.Destroy();
+                };
+            exportOBJAction.Activated += (sender, e) => exportAsOBJOrWSO(MeshExportFileType.OBJ);
+            exportWSOAction.Activated += (sender, e) => exportAsOBJOrWSO(MeshExportFileType.WSO);
             importGEOMAction.Activated += (sender, e) =>
                 {
                     var fileChooserDialog = new FileChooserDialog("Import GEOM", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
                     var fileFilter = new FileFilter
                         {
-                            Name = "The Sims 3 GEOM Resources"
+                            Name = "The Sims 3 GEOM Resource"
                         };
                     fileFilter.AddPattern("*.simgeom");
                     fileChooserDialog.AddFilter(fileFilter);
@@ -276,7 +424,7 @@ public partial class MainWindow : Window
                                 }
                             }
                         }
-                        catch (System.IO.InvalidDataException ex)
+                        catch (InvalidDataException ex)
                         {
                             Console.WriteLine(ex);
                         }
@@ -671,7 +819,7 @@ public partial class MainWindow : Window
                 RefreshWidgets(false);
                 NextState = NextStateOptions.UnsavedChanges;
             }
-            catch (System.IO.InvalidDataException ex)
+            catch (InvalidDataException ex)
             {
                 Console.WriteLine(ex);
             }
@@ -699,7 +847,7 @@ public partial class MainWindow : Window
         var fileChooserDialog = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
         var fileFilter = new FileFilter
             {
-                Name = "The Sims 3 DBPF Packages"
+                Name = "The Sims 3 DBPF Package"
             };
         fileFilter.AddPattern("*.package");
         fileChooserDialog.AddFilter(fileFilter);
@@ -714,7 +862,7 @@ public partial class MainWindow : Window
                 RefreshWidgets();
                 NextState = NextStateOptions.NoUnsavedChanges;
             }
-            catch (System.IO.InvalidDataException ex)
+            catch (InvalidDataException ex)
             {
                 Console.WriteLine(ex);
             }
@@ -757,7 +905,7 @@ public partial class MainWindow : Window
                 RefreshWidgets(false);
                 NextState = NextStateOptions.UnsavedChanges;
             }
-            catch (System.IO.InvalidDataException ex)
+            catch (InvalidDataException ex)
             {
                 Console.WriteLine(ex);
             }
@@ -799,7 +947,7 @@ public partial class MainWindow : Window
         var fileChooserDialog = new FileChooserDialog("Save Package As", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
         var fileFilter = new FileFilter
             {
-                Name = "The Sims 3 DBPF Packages"
+                Name = "The Sims 3 DBPF Package"
             };
         fileFilter.AddPattern("*.package");
         fileChooserDialog.AddFilter(fileFilter);

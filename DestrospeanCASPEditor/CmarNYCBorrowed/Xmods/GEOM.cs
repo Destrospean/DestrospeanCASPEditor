@@ -1926,7 +1926,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public bool CloseTo(UV other)
             {
-                var diff =0.001f;
+                var diff = .001f;
                 return Math.Abs(U - other.U) < diff && Math.Abs(V - other.V) < diff;
             }
 
@@ -2138,6 +2138,99 @@ namespace Destrospean.CmarNYCBorrowed
 
         public GEOM()
         {
+        }
+
+        public GEOM(GEOM baseMesh, BGEO bgeo, int bgeoSection1EntryNumber, int lod)
+        {
+            if (!baseMesh.IsValid || !baseMesh.IsBase || baseMesh.VertexCount <= 0)
+            {
+                throw new MeshException("Invalid base mesh, cannot construct new mesh!");
+            }
+            mVersion1 = baseMesh.mVersion1;
+            mCount = baseMesh.mCount;
+            mIndexCount = baseMesh.mIndexCount;
+            mExternalCount = baseMesh.mExternalCount;
+            mInternalCount = baseMesh.mInternalCount;
+            mDummyTGI = new TGI(baseMesh.mDummyTGI.Type, 0, 0);
+            mAbsolutePosition = baseMesh.mAbsolutePosition;
+            mMagic = baseMesh.mMagic;
+            mVersion = baseMesh.mVersion;
+            mShaderHash = 0;
+            mMTNFSize = 0;
+            mMergeGroup = baseMesh.mMergeGroup;
+            mSortOrder = baseMesh.mSortOrder;
+            mVertexCount = baseMesh.mVertexCount;
+            mFaceCount = 3;
+            mVertexFormats = new VertexFormat[]
+                {
+                    new VertexFormat(1, 1, 12),
+                    new VertexFormat(2, 1, 12),
+                    new VertexFormat(10, 4, 4)
+                };
+            mPositions = new Position[mVertexCount];
+            mNormals = new Normal[mVertexCount];
+            mVertexIDs = baseMesh.mVertexIDs;
+            mSubMeshCount = baseMesh.mSubMeshCount;
+            mBytesPerFacePoint = baseMesh.mBytesPerFacePoint;
+            mFacePointCount = baseMesh.mFacePointCount;
+            mFaces = baseMesh.mFaces;
+            mSKCONIndex = 0;
+            mBoneHashCount = baseMesh.mBoneHashCount;
+            mBoneHashArray = baseMesh.mBoneHashArray;
+            mTGICount = 1;
+            mTGIs = new TGI[]
+                {
+                    new TGI(0, 0, 0)
+                };
+            for (var i = 0; i < mVertexCount; i++)
+            {
+                mPositions[i] = new Position();
+                mNormals[i] = new Normal();
+            }
+            int currentVertexID = bgeo.GetLODStartVertexID(bgeoSection1EntryNumber, lod),
+            section2StartIndex = bgeo.GetSection2StartIndex(bgeoSection1EntryNumber, lod),
+            section3Index = bgeo.GetSection3StartIndex(bgeoSection1EntryNumber, lod) + bgeo.GetLODInitialOffset(bgeoSection1EntryNumber, lod);
+            float[] normalDeltas = null,
+            positionDeltas = null;
+            for (var i = section2StartIndex; i < section2StartIndex + bgeo.GetSection2Count(bgeoSection1EntryNumber, lod); i++)
+            {                                                               //navigate list of flags and offsets in section 2
+                var section2 = bgeo.GetSection2(i);
+                if (section2.HasPosition || section2.HasNormals)            //check flags for whether position data/normals data is present
+                {
+                    section3Index = section3Index + section2.Offset;        //position to section 3 index
+                    var advance = 0;
+                    positionDeltas = new float[]
+                        {
+                            0,
+                            0,
+                            0
+                        };
+                    normalDeltas = new float[]
+                        {
+                            0,
+                            0,
+                            0
+                        };
+                    if (section2.HasPosition)                               //read position data if present
+                    {
+                        positionDeltas = bgeo.GetSection3(section3Index);
+                        advance = 1;
+                    }
+                    if (section2.HasNormals)                                //normal data follows if present
+                    {
+                        normalDeltas = bgeo.GetSection3(section3Index + advance);
+                    }
+                    for (var j = 0; j < VertexCount; j++)                   //search mesh for all verts with matching vertex ID
+                    {
+                        if (mVertexIDs[j] == currentVertexID)
+                        {
+                            mPositions[j].AddDeltas(positionDeltas);
+                            mNormals[j].AddDeltas(normalDeltas);
+                        }
+                    }
+                }
+                currentVertexID += 1;
+            }
         }
 
         public GEOM(GEOM baseMesh, Vector3[] deltaPositions, Vector3[] deltaNormals)
@@ -2596,14 +2689,14 @@ namespace Destrospean.CmarNYCBorrowed
             var seamStitches = new List<SeamStitch>();
             for (var i = 0; i < mVertexCount; i++)
             {
-                foreach (var seam in Enum.GetValues(typeof(GEOM.SeamType)))
+                foreach (var seam in Enum.GetValues(typeof(SeamType)))
                 {
-                    var vertices = GetSeamVertexPositions(species, age, gender, lod, (GEOM.SeamType)seam);
-                    for (int v = 0; v < vertices.Length; v++)
+                    var vertices = GetSeamVertexPositions(species, age, gender, lod, (SeamType)seam);
+                    for (var j = 0; j < vertices.Length; j++)
                     {
-                        if (vertices[v].PositionMatches(mPositions[i].Coordinates))
+                        if (vertices[j].PositionMatches(mPositions[i].Coordinates))
                         {
-                            seamStitches.Add(new SeamStitch(i, (GEOM.SeamType)seam, v, mUVs[0]));
+                            seamStitches.Add(new SeamStitch(i, (SeamType)seam, j, mUVs[0]));
                         }
                     }
                 }
@@ -2632,7 +2725,10 @@ namespace Destrospean.CmarNYCBorrowed
                         }
                     }
                 }
-                if (stitches.Count > 0) newStitch.Add(new UVStitch(i, stitches.ToArray()));
+                if (stitches.Count > 0)
+                {
+                    newStitch.Add(new UVStitch(i, stitches.ToArray()));
+                }
             }
             mUVStitches = newStitch.ToArray();
             mUVStitchCount = mUVStitches.Length;
@@ -2642,17 +2738,17 @@ namespace Destrospean.CmarNYCBorrowed
         {
             if (!HasVertexIDs)
             {
-                InsertVertexIDinFormatList();
+                InsertVertexIDInFormatList();
                 mVertexIDs = new int[VertexCount];
             }
-            var refVerts = new Vector3[refMesh.VertexCount];
+            var refVertices = new Vector3[refMesh.VertexCount];
             for (var i = 0; i < refMesh.VertexCount; i++)
             {
-                refVerts[i] = new Vector3(refMesh.GetPosition(i));
+                refVertices[i] = new Vector3(refMesh.GetPosition(i));
             }
             for (var i = 0; i < VertexCount; i++)
             {
-                mVertexIDs[i] = refMesh.mVertexIDs[new Vector3(GetPosition(i)).NearestPointIndexSimple(refVerts)];
+                mVertexIDs[i] = refMesh.mVertexIDs[new Vector3(GetPosition(i)).NearestPointIndexSimple(refVertices)];
             }
             CopyFaceMorphs = true;
         }
@@ -2798,7 +2894,7 @@ namespace Destrospean.CmarNYCBorrowed
                 facePoint2 = indexTrans0[mFaces[i].FacePoint2];
                 for (var j = 0; j < SlotrayAdjustments.Length; j++)
                 {
-                    int[] slotVertIndices = mSlotrayIntersections[j].TrianglePointIndices;
+                    var slotVertIndices = mSlotrayIntersections[j].TrianglePointIndices;
                     if (mFaces[i].FacePoint0 == slotVertIndices[0] && mFaces[i].FacePoint1 == slotVertIndices[1] && mFaces[i].FacePoint2 == slotVertIndices[2])
                     {
                         var temp = new SlotrayIntersection(mSlotrayIntersections[j]);
@@ -2818,7 +2914,7 @@ namespace Destrospean.CmarNYCBorrowed
             var newPositions = new List<Position>();
             var newNormals = new List<Normal>();
             var newUVs = new List<UV>[UVCount];
-            for (int i = 0; i < UVCount; i++)
+            for (var i = 0; i < UVCount; i++)
             {
                 newUVs[i] = new List<UV>();
             }
@@ -2835,9 +2931,18 @@ namespace Destrospean.CmarNYCBorrowed
                     newUVs[j].Add(new UV(mUVs[j][indexTrans1[i]]));
                 }
                 newBones.Add(new Bones(mBones[indexTrans1[i]]));
-                if (HasTangents) newTangents.Add(new Tangent(mTangents[indexTrans1[i]]));
-                if (HasTags) newTagValues.Add(new TagValue(mTags[indexTrans1[i]]));
-                if (HasVertexIDs) newIDs.Add(mVertexIDs[indexTrans1[i]]);
+                if (HasTangents)
+                {
+                    newTangents.Add(new Tangent(mTangents[indexTrans1[i]]));
+                }
+                if (HasTags)
+                {
+                    newTagValues.Add(new TagValue(mTags[indexTrans1[i]]));
+                }
+                if (HasVertexIDs)
+                {
+                    newIDs.Add(mVertexIDs[indexTrans1[i]]);
+                }
             }
             mPositions = newPositions.ToArray();
             mNormals = newNormals.ToArray();
@@ -3002,11 +3107,11 @@ namespace Destrospean.CmarNYCBorrowed
             }
             var usedBoneHash = new List<uint>();
             var oldBoneHash = BoneHashList;
-            foreach (byte b in usedBones)
+            foreach (var b in usedBones)
             {
                 usedBoneHash.Add(oldBoneHash[b]);
             }
-            for (int i = 0; i < mVertexCount; i++)
+            for (var i = 0; i < mVertexCount; i++)
             {
                 byte[] sourceBones = GetBones(i),
                 sourceWeights = GetBoneWeights(i),
@@ -3319,13 +3424,13 @@ namespace Destrospean.CmarNYCBorrowed
             mFaceCount += 1;
         }
 
-        public void InsertVertexIDinFormatList()
+        public void InsertVertexIDInFormatList()
         {
             if (Array.IndexOf(VertexFormatList, 10) >= 0)
             {
                 return;
             }
-            VertexFormat[] newFormat = new VertexFormat[VertexFormatList.Length + 1];
+            var newFormat = new VertexFormat[VertexFormatList.Length + 1];
             if (Array.IndexOf(VertexFormatList, 5) >= 0)
             {
                 var index = 0;
@@ -3839,7 +3944,7 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 mTGIs[i] = new TGI(reader);
             }
-            if (IsMorph & mSKCONIndex >= mTGICount)
+            if (IsMorph && mSKCONIndex >= mTGICount)
             {
                 mSKCONIndex = 0;
             }
@@ -3860,7 +3965,13 @@ namespace Destrospean.CmarNYCBorrowed
 
         public void SetBones(int vertexSequenceNumber, byte bone0, byte bone1, byte bone2, byte bone3)
         {
-            mBones[vertexSequenceNumber].BoneAssignments = new byte[] { bone0, bone1, bone2, bone3 };
+            mBones[vertexSequenceNumber].BoneAssignments = new byte[]
+                {
+                    bone0,
+                    bone1,
+                    bone2,
+                    bone3
+                };
         }
 
         public void SetBones(int vertexSequenceNumber, byte[] newBones)
@@ -3875,7 +3986,13 @@ namespace Destrospean.CmarNYCBorrowed
 
         public void SetBoneWeights(int vertexSequenceNumber, byte weight0, byte weight1, byte weight2, byte weight3)
         {
-            mBones[vertexSequenceNumber].BoneWeights = new byte[] { weight0, weight1, weight2, weight3 };
+            mBones[vertexSequenceNumber].BoneWeights = new byte[]
+                {
+                    weight0,
+                    weight1,
+                    weight2,
+                    weight3
+                };
         }
 
         public void SetBoneWeightsV5(int vertexSequenceNumber, float[] newWeights)
@@ -3885,7 +4002,13 @@ namespace Destrospean.CmarNYCBorrowed
 
         public void SetBoneWeightsV5(int vertexSequenceNumber, float weight0, float weight1, float weight2, float weight3)
         {
-            mBones[vertexSequenceNumber].BoneWeightsV5 = new float[] { weight0, weight1, weight2, weight3 };
+            mBones[vertexSequenceNumber].BoneWeightsV5 = new float[]
+                {
+                    weight0,
+                    weight1,
+                    weight2,
+                    weight3
+                };
         }
 
         public void SetNormal(int vertexSequenceNumber, float[] newNormal)
@@ -7040,7 +7163,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public void UpdatePositions()
         {
-            for (int i = 0; i < mPositions.Length; i++)
+            for (var i = 0; i < mPositions.Length; i++)
             {
                 mPositions[i] = new Position((new Vector3(GetPosition(i)) + DeltaPosition[i]).Coordinates);
             }

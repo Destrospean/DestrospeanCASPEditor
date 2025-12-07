@@ -457,7 +457,7 @@ public partial class MainWindow : Window
                         if (bgeo != null)
                         {
                             bgeo.Weight = morphs[i] * geomMorph.Amount;
-                            geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
+                            geom = geom.ToGEOM(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
                         }
                         else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                         {
@@ -473,9 +473,8 @@ public partial class MainWindow : Window
                             }
                             if (vpxy != null)
                             {
-                                var deltaLinks = vpxy.MeshLinks(lod);
                                 var deltas = new List<Destrospean.CmarNYCBorrowed.GEOM>();
-                                foreach (var link in deltaLinks)
+                                foreach (var link in vpxy.MeshLinks(lod))
                                 {
                                     Destrospean.CmarNYCBorrowed.GEOM delta;
                                     try

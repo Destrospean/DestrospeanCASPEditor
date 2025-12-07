@@ -317,6 +317,115 @@ namespace Destrospean.CmarNYCBorrowed
         {
         }
 
+        public BGEO(GEOM[][][] ageGenderLODMeshes, int[] ageArray, int[] genderArray, int[] speciesArray, int[] regionArray) //dimensions: age/gender group, lod, mesh - for slider morphs
+        {
+            if (ageGenderLODMeshes.GetLength(0) != ageArray.Length || ageGenderLODMeshes.GetLength(0) != genderArray.Length || ageGenderLODMeshes.GetLength(0) != speciesArray.Length || ageGenderLODMeshes.GetLength(0) != regionArray.Length)
+            {
+                throw new BlendException("Age/gender/species/region array lengths do not match GEOM array length!");
+            }
+            this.mMagic = new char[]
+                {
+                    'B',
+                    'G',
+                    'E',
+                    'O'
+                };
+            this.mVersion = 768;
+            this.mSection1Count = ageGenderLODMeshes.GetLength(0);
+            this.mSection1LODCount = 4;
+            this.mSection1 = new Section1[this.Section1Count];
+            var section2 = new List<Section2>();
+            var section3 = new List<Section3>();
+            int indexIn = 0,
+            indexOut = 0;
+            for (var i = 0; i < this.mSection1Count; i++)
+            {
+                var section1Info = new int[3][];
+                for (var j = 0; j < 3; j++)
+                {
+                    section1Info[j] = new int[4];
+                }
+                for (var j = 0; j < ageGenderLODMeshes[i].Length; j++)
+                {
+                    if (ageGenderLODMeshes[i][j] == null || ageGenderLODMeshes[i][j].Length == 0)
+                    {
+                        continue;
+                    }
+                    Section2[] tempSection2 = null;
+                    Section3[] tempSection3 = null;
+                    var firstVertex = 0;
+                    BGEOLODConstructor(ageGenderLODMeshes[i][j], indexIn, out firstVertex, out tempSection2, out tempSection3, out indexOut);
+                    section1Info[0][j] = firstVertex;
+                    section1Info[1][j] = tempSection2.Length;
+                    section1Info[2][j] = tempSection3.Length;
+                    section2.AddRange(tempSection2);
+                    section3.AddRange(tempSection3);
+                    indexIn = indexOut;
+                }
+                this.mSection1[i] = new Section1(ageArray[i], genderArray[i], speciesArray[i], regionArray[i], section1Info[0], section1Info[1], section1Info[2]);
+            }
+            this.mSection1HeaderSize = 8;
+            this.mSection1LODSize = 12;
+            this.mSection1Offset = 44;
+            this.mSection2 = section2.ToArray();
+            this.mSection2Offset = 44 + this.mSection1Count * 56;
+            this.mSection2Count = this.mSection2.Length;
+            this.mSection3 = section3.ToArray();
+            this.mSection3Offset = this.mSection2Offset + this.mSection2Count * 2;
+            this.mSection3Count = this.mSection3.Length;
+        }
+
+        public BGEO(GEOM[][] lodMeshes) //dimensions: lod, mesh - for clothing fat/fit/thin/special morphs
+        {
+            mMagic = new char[]
+                {
+                    'B',
+                    'G',
+                    'E', 
+                    'O'
+                };
+            mVersion = 768;
+            mSection1Count = 1;
+            mSection1LODCount = 4;
+            mSection1 = new Section1[1];
+            var section2 = new List<Section2>();
+            var section3 = new List<Section3>();
+            int indexIn = 0,
+            indexOut = 0;
+            var section1Info = new int[3][];
+            for (var i = 0; i < 3; i++)
+            {
+                section1Info[i] = new int[4];
+            }
+            for (var i = 0; i < lodMeshes.Length; i++)
+            {
+                if (lodMeshes[i] == null || lodMeshes[i].Length == 0)
+                {
+                    continue;
+                }
+                Section2[] tempSection2 = null;
+                Section3[] tempSection3 = null;
+                var firstVertex = 0;
+                BGEOLODConstructor(lodMeshes[i], indexIn, out firstVertex, out tempSection2, out tempSection3, out indexOut);
+                section1Info[0][i] = firstVertex;
+                section1Info[1][i] = tempSection2.Length;
+                section1Info[2][i] = tempSection3.Length;
+                section2.AddRange(tempSection2);
+                section3.AddRange(tempSection3);
+                indexIn = indexOut;
+            }
+            mSection1[0] = new Section1(127, 3, 1, (int)CASRegions.Body, section1Info[0], section1Info[1], section1Info[2]);
+            mSection1HeaderSize = 8;
+            mSection1LODSize = 12;
+            mSection1Offset = 44;
+            mSection2Offset = 100;
+            mSection2 = section2.ToArray();
+            mSection2Count = mSection2.Length;
+            mSection3Offset = 100 + mSection2Count * 2;
+            mSection3 = section3.ToArray();
+            mSection3Count = mSection3.Length;
+        }
+
         public BGEO(BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
@@ -359,6 +468,109 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 section2Index = mSection1[i].FixSection3Count(mSection2, mSection1LODCount, section2Index);
             }
+        }
+
+        public void BGEOLODConstructor(GEOM[] lodMorphMeshes, int indexIn, out int firstVertexID, out Section2[] outSection2, out Section3[] outSection3, out int indexOut)
+        {
+            int maxVertexID = 0,
+            minVertexID = Int32.MaxValue;
+            float normalsLimit = 0,
+            positionLimit = 0;
+            for (var i = 0; i < lodMorphMeshes.Length; i++)
+            {
+                if (!lodMorphMeshes[i].IsMorph)
+                {
+                    throw new BlendException("Not a valid morph mesh!");
+                }
+                minVertexID = Math.Min(lodMorphMeshes[i].MinVertexID, minVertexID);
+                maxVertexID = Math.Max(lodMorphMeshes[i].MaxVertexID, maxVertexID);
+            }
+            /*
+            var overlap = false;
+            if (lodMorphMeshes.Length > 1 && (lodMorphMeshes[1].MinVertexID > lodMorphMeshes[0].MinVertexID && lodMorphMeshes[1].MinVertexID < lodMorphMeshes[0].MaxVertexID || lodMorphMeshes[1].MaxVertexID > lodMorphMeshes[0].MinVertexID && lodMorphMeshes[1].MaxVertexID < lodMorphMeshes[0].MaxVertexID))
+            {
+                overlap = true;
+            }
+            if (lodMorphMeshes.Length > 2 && (lodMorphMeshes[2].MinVertexID > lodMorphMeshes[0].MinVertexID && lodMorphMeshes[2].MinVertexID < lodMorphMeshes[0].MaxVertexID || lodMorphMeshes[2].MaxVertexID > lodMorphMeshes[0].MinVertexID && lodMorphMeshes[2].MaxVertexID < lodMorphMeshes[0].MaxVertexID))
+            {
+                overlap = true;
+            }
+            if (lodMorphMeshes.Length > 2 && (lodMorphMeshes[2].MinVertexID > lodMorphMeshes[1].MinVertexID && lodMorphMeshes[2].MinVertexID < lodMorphMeshes[1].MaxVertexID || lodMorphMeshes[2].MaxVertexID > lodMorphMeshes[1].MinVertexID && lodMorphMeshes[2].MaxVertexID < lodMorphMeshes[1].MaxVertexID))
+            {
+                overlap = true;
+            }
+            if (overlap)
+            {
+                if (MessageBox.Show("Your meshes have overlapping vertex IDs within\na LOD and the morph may not work correctly.\nDo you want to continue anyway?", "Vertex numbering alert", MessageBoxButtons.YesNo) == DialogResult.No)
+                {
+                    throw new BlendException("Vertex numbering error");
+                }
+            }
+            */
+            var vertexIDCount = maxVertexID - minVertexID + 1;
+            var vertexList = new VertexData[vertexIDCount];
+            for (var i = 0; i < lodMorphMeshes.Length; i++)
+            {
+                for (var j = 0; j < lodMorphMeshes[i].VertexCount; j++)
+                {
+                    var id = lodMorphMeshes[i].GetVertexID(j);
+                    vertexList[id - minVertexID] = new VertexData(id, new Vector3(lodMorphMeshes[i].GetPosition(j)), new Vector3(lodMorphMeshes[i].GetNormal(j)));
+                }
+            }
+            //var gap = false;
+            var nothing = new Vector3();
+            for (var i = 0; i < vertexList.Length; i++)
+            {
+                if (vertexList[i] == null)
+                {
+                    //gap = true;
+                    vertexList[i] = new VertexData(i + minVertexID, nothing, nothing);
+                }
+            }
+            /*
+            if (gap)
+            {
+                if (MessageBox.Show("Your meshes have a gap in vertex IDs within\na LOD but the morph will probably work.\nDo you want to continue anyway?", "Vertex numbering alert", MessageBoxButtons.YesNo) == DialogResult.No)
+                {
+                    throw new BlendException("Vertex numbering error");
+                }
+            }
+            */
+            var newSection2 = new Section2[vertexIDCount];
+            var newSection3 = new List<Section3>();
+            var offset = 0 - indexIn;
+            for (var i = 0; i < vertexList.Length; i++)
+            {
+                bool hasNormals = false,
+                hasPosition = false;
+                if (Math.Abs(vertexList[i].Position.X) > positionLimit || Math.Abs(vertexList[i].Position.Y) > positionLimit || Math.Abs(vertexList[i].Position.Z) > positionLimit)
+                {
+                    newSection3.Add(new Section3(vertexList[i].Position.X, vertexList[i].Position.Y, vertexList[i].Position.Z));
+                    hasPosition = true;
+                }
+                if (Math.Abs(vertexList[i].Normals.X) > normalsLimit || Math.Abs(vertexList[i].Normals.Y) > normalsLimit || Math.Abs(vertexList[i].Normals.Z) > normalsLimit)
+                {
+                    newSection3.Add(new Section3(vertexList[i].Normals.X, vertexList[i].Normals.Y, vertexList[i].Normals.Z));
+                    hasNormals = true;
+                }
+                if (hasNormals || hasPosition)
+                {
+                    newSection2[i] = new Section2(hasPosition, hasNormals, offset);
+                    offset = 0;
+                    if (hasNormals || hasPosition)
+                    {
+                        offset++;
+                    }
+                }
+                else
+                {
+                    newSection2[i] = new Section2(false, false, 0);
+                }
+            }
+            firstVertexID = minVertexID;
+            outSection2 = newSection2;
+            outSection3 = newSection3.ToArray();
+            indexOut = outSection3.Length - offset;
         }
 
         public List<VertexData> GetDeltas(int entry, int lod)

@@ -40,7 +40,7 @@ namespace Destrospean.CmarNYCBorrowed
             return new RIG(new System.IO.BinaryReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
         }
 
-        public static GEOM LoadBGEOMorph(this GEOM baseMesh, BGEO morph, int lod, Species species, AgeGender age, AgeGender gender)
+        public static GEOM ToGEOM(this GEOM baseMesh, BGEO morph, int lod, Species species, AgeGender age, AgeGender gender)
         {
             if (baseMesh == null || !baseMesh.HasVertexIDs)
             {
@@ -147,7 +147,7 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 return baseMesh;
             }
-            if (morphs.Length == 0 || morphs == null)
+            if (morphs == null || morphs.Length == 0)
             {
                 return new GEOM(baseMesh);
             }
@@ -187,7 +187,7 @@ namespace Destrospean.CmarNYCBorrowed
             return new BGEO(new System.IO.BinaryReader(blendGeometryResource.Stream));
         }
 
-        public static GEOM ToGEOM(this meshExpImp.ModelBlocks.GeometryResource geometryResource)
+        public static GEOM ToGEOM(this GeometryResource geometryResource)
         {
             return new GEOM(new System.IO.BinaryReader(geometryResource.Stream));
         }
