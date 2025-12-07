@@ -253,8 +253,6 @@ namespace Destrospean.CmarNYCBorrowed
                                     isValid = false;
                                 }
                                 break;
-                            default:
-                                break;
                         }
                     }
                 }
@@ -296,15 +294,15 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     return -1;
                 }
-                var m = 0;
+                var maxVertexID = 0;
                 for (var i = 0; i < mVertexIDs.Length; i++)
                 {
-                    if (m < mVertexIDs[i])
+                    if (maxVertexID < mVertexIDs[i])
                     {
-                        m = mVertexIDs[i];
+                        maxVertexID = mVertexIDs[i];
                     }
                 }
-                return m;
+                return maxVertexID;
             }
         }
 
@@ -326,15 +324,15 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     return -1;
                 }
-                var m = mVertexIDs[0];
+                var minVertexID = mVertexIDs[0];
                 for (var i = 1; i < mVertexIDs.Length; i++)
                 {
-                    if (m > mVertexIDs[i])
+                    if (minVertexID > mVertexIDs[i])
                     {
-                        m = mVertexIDs[i];
+                        minVertexID = mVertexIDs[i];
                     }
                 }
-                return m;
+                return minVertexID;
             }
         }
 
@@ -928,8 +926,6 @@ namespace Destrospean.CmarNYCBorrowed
                         case 4:
                             mFace[i] = reader.ReadUInt32();
                             break;
-                        default:
-                            break;
                     }
 
                 }
@@ -979,8 +975,6 @@ namespace Destrospean.CmarNYCBorrowed
                             break;
                         case 4:
                             writer.Write(mFace[i]);
-                            break;
-                        default:
                             break;
                     }
                 }
@@ -1483,13 +1477,7 @@ namespace Destrospean.CmarNYCBorrowed
                 }
             }
 
-            public int Size
-            {
-                get
-                {
-                    return 6;
-                }
-            }
+            public const int Size = 6;
 
             public float UVX;
 
@@ -2088,7 +2076,7 @@ namespace Destrospean.CmarNYCBorrowed
 
             public bool Equals(VertexData other)
             {
-                return (Position.Equals(other.Position) && Normal.Equals(other.Normal) && UV.Equals(other.UV));
+                return Position.Equals(other.Position) && Normal.Equals(other.Normal) && UV.Equals(other.UV);
             }
         }
 
@@ -2258,7 +2246,7 @@ namespace Destrospean.CmarNYCBorrowed
             mSortOrder = baseMesh.mSortOrder;
             mVertexCount = baseMesh.VertexCount;
             mFaceCount = 3;
-            mVertexFormats = new VertexFormat[3]
+            mVertexFormats = new VertexFormat[]
                 {
                     new VertexFormat(1, 1, 12),
                     new VertexFormat(2, 1, 12),
@@ -2275,7 +2263,7 @@ namespace Destrospean.CmarNYCBorrowed
             mBoneHashCount = baseMesh.mBoneHashCount;
             mBoneHashArray = baseMesh.mBoneHashArray;
             mTGICount = 1;
-            mTGIs = new TGI[1]
+            mTGIs = new TGI[]
                 {
                     new TGI(0, 0, 0)
                 };
@@ -2288,7 +2276,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public GEOM(BinaryReader reader)
         {
-            ReadFile(reader);
+            Read(reader);
         }
 
         public GEOM(GEOM source)
@@ -2404,8 +2392,6 @@ namespace Destrospean.CmarNYCBorrowed
                         {
                             mVertexIDs[j] = source.mVertexIDs[j];
                         }
-                        break;
-                    default:
                         break;
                 }
             }
@@ -2586,8 +2572,6 @@ namespace Destrospean.CmarNYCBorrowed
                         }
                         mVertexIDs = newIDs;
                         break;
-                    default:
-                        break;
                 }
             }
             if (uvIndex > 0)
@@ -2762,14 +2746,14 @@ namespace Destrospean.CmarNYCBorrowed
             var bonePosition = bone.WorldPosition;
             for (var i = 0; i < mPositions.Length; i++)
             {
-                var vertWeight = GetBoneWeightForVertex(i, bone.BoneHash);
-                if (vertWeight == 0)
+                var vertexWeight = GetBoneWeightForVertex(i, bone.BoneHash);
+                if (vertexWeight == 0)
                 {
                     continue;
                 }
                 Vector3 newPosition = DeltaPosition[i] + bonePosition,
                 oldPosition = new Vector3(mPositions[i].Coordinates);
-                oldPosition += (newPosition - oldPosition) * vertWeight * weight;
+                oldPosition += (newPosition - oldPosition) * vertexWeight * weight;
                 mPositions[i] = new Position(oldPosition.Coordinates);
             }
         }
@@ -2987,18 +2971,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public int CompareTo(GEOM other)
         {
-            if (VertexCount > other.VertexCount)
-            {
-                return -1;
-            }
-            else if (VertexCount < other.VertexCount)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
+            return VertexCount > other.VertexCount ? -1 : VertexCount < other.VertexCount ? 1 : 0;
         }
 
         public string[] DataString(int lineNumber)
@@ -3031,8 +3004,6 @@ namespace Destrospean.CmarNYCBorrowed
                         break;
                     case 10:
                         text[i] = "Vertex ID: " + mVertexIDs[lineNumber].ToString();
-                        break;
-                    default:
                         break;
                 }
             }
@@ -3535,8 +3506,6 @@ namespace Destrospean.CmarNYCBorrowed
                             }
                         }
                         break;
-                    default:
-                        break;
                 }
             }
             if (uvIndex > 0 && UVCount != uvIndex)
@@ -3769,7 +3738,7 @@ namespace Destrospean.CmarNYCBorrowed
             geom2.mUVStitches = geom2Stitches.ToArray();
         }
 
-        public void ReadFile(BinaryReader reader)
+        public void Read(BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
             if (reader.BaseStream.Length < 12)
@@ -3835,8 +3804,6 @@ namespace Destrospean.CmarNYCBorrowed
                     case 10:
                         mVertexIDs = new int[mVertexCount];
                         break;
-                    default:
-                        break;
                 }
             }
             if (uvIndex > 0)
@@ -3886,8 +3853,6 @@ namespace Destrospean.CmarNYCBorrowed
                             break;
                         case 10:
                             mVertexIDs[i] = reader.ReadInt32();
-                            break;
-                        default:
                             break;
                     }
                 }
@@ -4065,7 +4030,7 @@ namespace Destrospean.CmarNYCBorrowed
         public void SetupDeltas()
         {
             DeltaPosition = new Vector3[mPositions.Length];
-            for (int i = 0; i < mPositions.Length; i++)
+            for (var i = 0; i < mPositions.Length; i++)
             {
                 DeltaPosition[i] = new Vector3();
             }
@@ -7209,7 +7174,7 @@ namespace Destrospean.CmarNYCBorrowed
         public string VertexDataString(int vertexSequenceNumber)
         {
             var vertexFormatList = VertexFormatList;
-            string s = " | ",
+            string separator = " | ",
             text = "";
             var uvIndex = 0;
             for (var i = 0; i < vertexFormatList.Length; i++)
@@ -7217,32 +7182,30 @@ namespace Destrospean.CmarNYCBorrowed
                 switch (vertexFormatList[i])
                 {
                     case 1:
-                        text = text + mPositions[vertexSequenceNumber].ToString() + s;
+                        text += mPositions[vertexSequenceNumber].ToString() + separator;
                         break;
                     case 2:
-                        text = text + mNormals[vertexSequenceNumber].ToString() + s;
+                        text += mNormals[vertexSequenceNumber].ToString() + separator;
                         break;
                     case 3:
-                        text = text + mUVs[uvIndex][vertexSequenceNumber].ToString() + s;
+                        text += mUVs[uvIndex][vertexSequenceNumber].ToString() + separator;
                         uvIndex += 1;
                         break;
                     case 4:
-                        text = text + mBones[vertexSequenceNumber].ToString() + s;
+                        text += mBones[vertexSequenceNumber].ToString() + separator;
                         break;
                     case 6:
-                        text = text + mTangents[vertexSequenceNumber].ToString() + s;
+                        text += mTangents[vertexSequenceNumber].ToString() + separator;
                         break;
                     case 7:
-                        text = text + mTags[vertexSequenceNumber].ToString() + s;
+                        text += mTags[vertexSequenceNumber].ToString() + separator;
                         break;
                     case 10:
-                        text = text + mVertexIDs[vertexSequenceNumber].ToString() + s;
-                        break;
-                    default:
+                        text += mVertexIDs[vertexSequenceNumber].ToString() + separator;
                         break;
                 }
             }
-            return text.Remove(text.LastIndexOf(s));
+            return text.Remove(text.LastIndexOf(separator));
         }
 
         public bool VertexFormatEquals(int[] testFormatList)
@@ -7267,7 +7230,7 @@ namespace Destrospean.CmarNYCBorrowed
             return Array.IndexOf(mVertexIDs, vertexID);
         }
 
-        public void WriteFile(BinaryWriter writer)
+        public void Write(BinaryWriter writer)
         {
             var temp = 0;
             if (mMTNF != null)
@@ -7354,8 +7317,6 @@ namespace Destrospean.CmarNYCBorrowed
                             break;
                         case 10:
                             writer.Write(mVertexIDs[i]);
-                            break;
-                        default:
                             break;
                     }
                 }

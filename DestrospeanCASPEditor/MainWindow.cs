@@ -378,7 +378,7 @@ public partial class MainWindow : Window
                             case MeshExportFileType.WSO:
                                 using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.EndsWith(".wso") ? "" : ".wso")))
                                 {
-                                    new WSO(geom, morphs[0], morphs[1], morphs[2], morphs[3], false).WriteFile(new BinaryWriter(fileStream));
+                                    new WSO(geom, morphs.ToArray()).Write(new BinaryWriter(fileStream));
                                 }
                                 break;
                         }

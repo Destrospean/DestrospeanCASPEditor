@@ -1291,7 +1291,11 @@ namespace Destrospean.CmarNYCBorrowed
         {
         }
 
-        public WSO(GEOM baseMesh, GEOM fatMorph, GEOM fitMorph, GEOM thinMorph, GEOM specialMorph, bool group0)
+        public WSO(GEOM baseMesh, GEOM[] morphs, bool group0 = false) : this(baseMesh, morphs.Length > 0 ? morphs[0] : null, morphs.Length > 1 ? morphs[1] : null, morphs.Length > 2 ? morphs[2] : null, morphs.Length > 3 ? morphs[3] : null, group0)
+        {
+        }
+
+        public WSO(GEOM baseMesh, GEOM fatMorph, GEOM fitMorph, GEOM thinMorph, GEOM specialMorph, bool group0 = false)
         {
             mVersion = 4;
             var count = 1;
@@ -1358,9 +1362,6 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        //
-        // Methods
-        //
         public void AppendMesh(WSO meshToAppend)
         {
             if (meshToAppend.MeshCount != MeshCount)
@@ -1400,10 +1401,10 @@ namespace Destrospean.CmarNYCBorrowed
 
         public void AutoBone(WSO refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPoints, float weightingFactor, bool restrictToFace, Gtk.ProgressBar progress)
         {
+            int emptyBone;
             string[] newBoneNameList,
             refBoneNameList = refMesh.BoneNameList;
-            Bone[] newBonesList;
-            int emptyBone;
+            Bone[] newBoneList;
             if (unassignedVerticesOnly)
             {
                 var tempBones = new List<Bone>(BoneList);
@@ -1417,20 +1418,20 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
                 newBoneNameList = tempBoneNames.ToArray();
-                newBonesList = tempBones.ToArray();
+                newBoneList = tempBones.ToArray();
                 emptyBone = EmptyBoneIndex;
             }
             else
             {
                 newBoneNameList = refMesh.BoneNameList;
-                newBonesList = refMesh.BoneList;
+                newBoneList = refMesh.BoneList;
                 emptyBone = refMesh.EmptyBoneIndex;
             }
-            BoneList = newBonesList;
-            var refVerts = new Vector3[refMesh.Base.VertexCount];
-            for (var i = 0; i < refVerts.Length; i++)
+            BoneList = newBoneList;
+            var refVertices = new Vector3[refMesh.Base.VertexCount];
+            for (var i = 0; i < refVertices.Length; i++)
             {
-                refVerts[i] = new Vector3(refMesh.Base.GetVertex(i).Position);
+                refVertices[i] = new Vector3(refMesh.Base.GetVertex(i).Position);
             }
             var refFaces = new int[refMesh.Base.FaceCount][];
             for (var i = 0; i < refMesh.Base.FaceCount; i++)
@@ -1461,7 +1462,7 @@ namespace Destrospean.CmarNYCBorrowed
                     continue;
                 }
                 var position = new Vector3(Base.GetVertex(i).Position);
-                var refPoints = position.GetReferenceMeshPoints(refVerts, refFaces, interpolate, restrictToFace, interpolationPoints);
+                var refPoints = position.GetReferenceMeshPoints(refVertices, refFaces, interpolate, restrictToFace, interpolationPoints);
                 var refArray = new Vector3[refPoints.Length];
                 for (var j = 0; j < refPoints.Length; j++)
                 {
@@ -1645,8 +1646,8 @@ namespace Destrospean.CmarNYCBorrowed
                 }
                 if (!(unassignedOnly && (Base.FacePoints[i].UVs[0] > 0 || Base.FacePoints[i].UVs[1] > 0)))
                 {
-                    var position = new Vector3(Base.Vertices[(int)Base.FacePoints[i].VertexIndex].Position);
                     var currentVertexFaces = new List<Triangle>();
+                    var position = new Vector3(Base.Vertices[(int)Base.FacePoints[i].VertexIndex].Position);
                     for (var j = 0; j < Base.FaceCount; j++)
                     {
                         if (Base.GetFacePoint(j * 3).VertexIndex == Base.FacePoints[i].VertexIndex || Base.GetFacePoint(j * 3 + 1).VertexIndex == Base.FacePoints[i].VertexIndex || Base.GetFacePoint(j * 3 + 2).VertexIndex == Base.FacePoints[i].VertexIndex)
@@ -1685,9 +1686,9 @@ namespace Destrospean.CmarNYCBorrowed
 
         public int BoneScan()
         {
-            var maxBone = 0;
             bool badBone = false,
             tooManyBones = false;
+            var maxBone = 0;
             for (var i = 0; i < mMeshCount; i++)
             {
                 for (var j = 0; j < Mesh(i).VertexCount; j++)
@@ -1871,7 +1872,7 @@ namespace Destrospean.CmarNYCBorrowed
             return true;
         }
 
-        public void ReadFile(BinaryReader reader)
+        public void Read(BinaryReader reader)
         {
             mVersion = reader.ReadInt32();
             if (mVersion == 5)
@@ -2108,7 +2109,6 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 throw new WSOException("Source number of faces does not equal target number of faces!");
             }
-            
             for (var i = 0; i < mMeshes.Length; i++)
             {
                 var meshGroup = mMeshes[i];
@@ -2130,7 +2130,6 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 throw new WSOException("Source number of vertices does not equal target number of vertices!");
             }
-            
             for (var i = 0; i < mMeshes.Length; i++)
             {
                 var meshGroup = mMeshes[i];
@@ -2285,7 +2284,7 @@ namespace Destrospean.CmarNYCBorrowed
             return false;
         }
 
-        public void WriteFile(BinaryWriter writer)
+        public void Write(BinaryWriter writer)
         {
             writer.Write(mVersion);
             if (mVersion == 5)
