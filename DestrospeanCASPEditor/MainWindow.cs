@@ -22,7 +22,6 @@ public enum NextStateOptions : byte
 
 public partial class MainWindow : Window
 {
-
     PresetNotebook mPresetNotebook;
 
     string mSaveAsPath;
