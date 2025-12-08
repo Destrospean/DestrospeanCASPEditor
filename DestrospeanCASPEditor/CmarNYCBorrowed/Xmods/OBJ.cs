@@ -419,11 +419,12 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     catch
                     {
-                        //DialogResult dialogResult = MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel);
-                        //if (dialogResult == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
+                        /*
+                        if (MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                        */
                         mVertexList.Add(new Vertex(0, 0, 0));
                         continue;
                     }
@@ -438,11 +439,12 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     catch
                     {
-                        //DialogResult dialogResult2 = MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel);
-                        //if (dialogResult2 == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
+                        /*
+                        if (MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                        */
                         mUVList.Add(new UV(0, 0));
                         continue;
                     }
@@ -457,11 +459,12 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     catch
                     {
-                        //DialogResult dialogResult3 = MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel);
-                        //if (dialogResult3 == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
+                        /*
+                        if (MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                        */
                         mNormalList.Add(new Normal(0, 0, 0));
                         continue;
                     }
@@ -518,11 +521,12 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     catch
                     {
-                        //DialogResult dialogResult4 = MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel);
-                        //if (dialogResult4 == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
+                        /*
+                        if (MessageBox.Show("Error in .obj text: " + text + Environment.NewLine + "Skip and continue anyway?", "OBJ Error", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        {
+                            break;
+                        }
+                        */
                         continue;
                     }
                 }

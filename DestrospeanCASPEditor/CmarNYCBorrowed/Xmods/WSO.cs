@@ -2307,11 +2307,12 @@ namespace Destrospean.CmarNYCBorrowed
         {
             if (obj.UVArray.Length == 0)
             {
-                //DialogResult dialogResult = MessageBox.Show("This OBJ mesh has no UV mapping. Continue with a blank UV map?", "No UV mapping found", MessageBoxButtons.OKCancel);
-                //if (dialogResult == DialogResult.Cancel)
-                //{
-                //    return null;
-                //}
+                /*
+                if (MessageBox.Show("This OBJ mesh has no UV mapping. Continue with a blank UV map?", "No UV mapping found", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                    return null;
+                }
+                */
                 obj.AddEmptyUV();
             }
             else if (flipUV)
@@ -2325,11 +2326,12 @@ namespace Destrospean.CmarNYCBorrowed
             }
             if (obj.NormalArray.Length == 0 && !smoothModel)
             {
-                //DialogResult dialogResult2 = MessageBox.Show("This OBJ mesh has no normals. Continue and calculate normals?", "No normals found", MessageBoxButtons.OKCancel);
-                //if (dialogResult2 == DialogResult.Cancel)
-                //{
-                //   return null;
-                //}
+                /*
+                if (MessageBox.Show("This OBJ mesh has no normals. Continue and calculate normals?", "No normals found", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                   return null;
+                }
+                */
                 smoothModel = true;
             }
             if (smoothModel)

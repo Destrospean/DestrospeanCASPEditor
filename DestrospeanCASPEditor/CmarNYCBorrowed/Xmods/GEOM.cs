@@ -2668,6 +2668,103 @@ namespace Destrospean.CmarNYCBorrowed
             mFacePointCount += meshToAppend.mFacePointCount;
         }
 
+        public void AutoBone(GEOM refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPointCount, float weightingFactor, bool restrictToFace, Gtk.ProgressBar progress)
+        {
+            uint[] newBoneHashList,
+            refBoneHashList = refMesh.BoneHashList;
+            if (unassignedVerticesOnly)
+            {
+                var tempBoneHashList = new List<uint>(BoneHashList);
+                for (var i = 0; i < refMesh.BoneHashList.Length; i++)
+                {
+                    if (Array.IndexOf(BoneHashList, refBoneHashList[i]) < 0)
+                    {
+                        tempBoneHashList.Add(refBoneHashList[i]);
+                    }
+                }
+                newBoneHashList = tempBoneHashList.ToArray();
+            }
+            else
+            {
+                newBoneHashList = refMesh.BoneHashList;
+            }
+            SetBoneHashList(newBoneHashList);
+            var refVertices = new Vector3[refMesh.VertexCount];
+            for (var i = 0; i < refMesh.VertexCount; i++)
+            {
+                refVertices[i] = new Vector3(refMesh.GetPosition(i));
+            }
+            var refFaces = new int[refMesh.FaceCount][];
+            for (var i = 0; i < refMesh.FaceCount; i++)
+            {
+                refFaces[i] = refMesh.GetFaceIndices(i);
+            }
+            var stepIt = 0;
+            for (var i = 0; i < VertexCount; i++)
+            {
+                stepIt++;
+                if (stepIt >= 100)
+                {
+                    if (progress != null)
+                    {
+                        //progress.PerformStep();
+                        progress.Pulse();
+                    }
+                    stepIt = 0;
+                }
+                if (unassignedVerticesOnly && GetBoneWeights(i)[0] > 0 && ValidBones(i))
+                {
+                    continue;
+                }
+                var position = new Vector3(GetPosition(i));
+                var refPoints = position.GetReferenceMeshPoints(refVertices, refFaces, interpolate, restrictToFace, interpolationPointCount);
+                var refArray = new Vector3[refPoints.Length];
+                for (var j = 0; j < refPoints.Length; j++)
+                {
+                    refArray[j] = new Vector3(refMesh.GetPosition(refPoints[j]));
+                }
+                var newBones = new List<byte>();
+                var newWeights = new List<float>();
+                var valueWeights = position.GetInterpolationWeights(refArray, weightingFactor);
+                for (var j = 0; j < refPoints.Length; j++)
+                {
+                    var refBones = refMesh.GetBones(refPoints[j]);
+                    var refWeights = refMesh.GetBoneWeights(refPoints[j]);
+                    for (var k = 0; k < refBones.Length; k++)
+                    {
+                        if (refBones[k] < refBoneHashList.Length)
+                        {
+                            var index = newBones.IndexOf(refBones[k]);
+                            if (index >= 0)
+                            {
+                                newWeights[index] += valueWeights[j] * refWeights[k];
+                            }
+                            else
+                            {
+                                newBones.Add(refBones[k]);
+                                newWeights.Add(valueWeights[j] * refWeights[k]);
+                            }
+                        }
+                    }
+                }
+                SortBones(ref newBones, ref newWeights);
+                for (var j = newBones.Count; j < 4; j++)
+                {
+                    newBones.Add((byte)(newBoneHashList.Length));
+                    newWeights.Add(0f);
+                }
+                for (var j = 0; j < 4; j++)
+                {
+                    if (newBones[j] < refBoneHashList.Length)
+                    {
+                        newBones[j] = (byte)Array.IndexOf(newBoneHashList, refBoneHashList[newBones[j]]);
+                    }
+                }
+                SetBones(i, newBones.GetRange(0, 4).ToArray());
+                SetBoneWeights(i, newWeights.GetRange(0, 4).ConvertAll(new Converter<float, byte>(x => (byte)(x * byte.MaxValue))).ToArray());
+            }
+        }
+
         public void AutoSeamStitches(Species species, AgeGender age, AgeGender gender, int lod)
         {
             var seamStitches = new List<SeamStitch>();
@@ -2824,6 +2921,88 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 DeltaPosition[i] = (new Vector3(mPositions[i].Coordinates)) - bonePosition;
             }
+        }
+
+        public bool CalculateTangents(bool showError = true)
+        {
+            //Code adapted from NOAA_Julien on Unity forums (and adapted again by Destrospean from CmarNYC's adaptation)
+            var triangles = new int[FaceCount * 3];
+            for (var i = 0; i < FaceCount; i++)
+            {
+                var temp = GetFaceIndices(i);
+                triangles[i * 3] = temp[0];
+                triangles[i * 3 + 1] = temp[1];
+                triangles[i * 3 + 2] = temp[2];
+            }
+            Vector3[] normals = new Vector3[VertexCount],
+            vertices = new Vector3[VertexCount];
+            var uvs = new Vector2[VertexCount];
+            for (var i = 0; i < VertexCount; i++)
+            {
+                vertices[i] = new Vector3(GetPosition(i));
+                uvs[i] = new Vector2(GetUV(i, 0));
+                normals[i] = new Vector3(GetNormal(i));
+            }
+            int triangleCount = triangles.Length,
+            vertexCount = vertices.Length;
+            var tan1 = new Vector3[vertexCount];
+            for (var i = 0; i < triangleCount; i += 3)
+            {
+                int i1 = triangles[i],
+                i2 = triangles[i + 1],
+                i3 = triangles[i + 2];
+                Vector3 v1 = vertices[i1],
+                v2 = vertices[i2],
+                v3 = vertices[i3];
+                Vector2 w1 = uvs[i1],
+                w2 = uvs[i2],
+                w3 = uvs[i3];
+                float x1 = v2.X - v1.X,
+                x2 = v3.X - v1.X,
+                y1 = v2.Y - v1.Y,
+                y2 = v3.Y - v1.Y,
+                z1 = v2.Z - v1.Z,
+                z2 = v3.Z - v1.Z,
+                s1 = w2.X - w1.X,
+                s2 = w3.X - w1.X,
+                t1 = w2.Y - w1.Y,
+                t2 = w3.Y - w1.Y,
+                r = 1 / (s1 * t2 - s2 * t1);
+                var sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+                tan1[i1] += sdir;
+                tan1[i2] += sdir;
+                tan1[i3] += sdir;
+            }
+            var normalizeError = false;
+            for (var i = 0; i < vertexCount; ++i)
+            {
+                Vector3 n = normals[i],
+                t = tan1[i],
+                temp = t - n * Vector3.Dot(n, t);
+                try
+                {
+                    temp.Normalize();
+                    SetTangent(i, temp.X, temp.Y, temp.Z);
+                }
+                catch (Exception e)
+                {
+                    if (String.CompareOrdinal(e.Message, "Cannot normalize a vector with magnitude of zero!") == 0 && showError && !normalizeError)
+                    {
+                        /*
+                        if (MessageBox.Show("At least one triangle has a side of zero length." + System.Environment.NewLine + "Skip bad triangles and continue?", "Mesh Error Found", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        {
+                            return false;
+                        }
+                        */
+                        normalizeError = true;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return true;
         }
 
         public void Clean()
@@ -3057,6 +3236,24 @@ namespace Destrospean.CmarNYCBorrowed
             mFacePointCount = mFaces.Length * 3;
         }
 
+        public void FixBoneWeights()
+        {
+            for (var i = 0; i < mVertexCount; i++)
+            {
+                var boneWeights = GetBoneWeights(i);
+                var totalWeight = 0;
+                for (var j = 0; j < 4; j++)
+                {
+                    totalWeight += boneWeights[j];
+                }
+                if (!IsEqual(totalWeight, 1))
+                {
+                    boneWeights[0] += (byte)(1 - totalWeight);
+                }
+                SetBoneWeights(i, boneWeights);
+            }
+        }
+
         public void FixUnusedBones()
         {
             if (mBoneHashArray == null || mBoneHashArray.Length == 0)
@@ -3102,6 +3299,280 @@ namespace Destrospean.CmarNYCBorrowed
             }
             mBoneHashCount = usedBoneHash.Count;
             mBoneHashArray = usedBoneHash.ToArray();
+        }
+
+        public static GEOM[] GEOMsFromOBJ(OBJ obj, GEOM refMesh, TGI bumpMapTGI, bool smoothModel, bool cleanModel, Gtk.ProgressBar progressBar)
+        {
+            if (!refMesh.IsValid || !refMesh.IsBase)
+            {
+                throw new MeshException("Reference mesh must be a valid base GEOM mesh!");
+            }
+            var isMorph = new bool[obj.GroupCount];
+            for (var i = 0; i < obj.GroupCount; i++)
+            {
+                isMorph[i] = obj.GroupArray[i].GroupName.Contains("_fat") || obj.GroupArray[i].GroupName.Contains("_fit") || obj.GroupArray[i].GroupName.Contains("_thin") || obj.GroupArray[i].GroupName.Contains("_special");
+            }
+            if (isMorph[0])
+            {
+                throw new MeshException("The first mesh group must be a base mesh!");
+            }
+            if (obj.UVArray.Length == 0)
+            {
+                /*
+                if (MessageBox.Show("This OBJ mesh has no UV mapping. Continue with a blank UV map?", "No UV mapping found", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                    return null;
+                }
+                */
+                obj.UVArray = new OBJ.UV[1]
+                    {
+                        new OBJ.UV()
+                    };
+            }
+            if (obj.NormalArray.Length == 0 && !smoothModel)
+            {
+                /*
+                if (MessageBox.Show("This OBJ mesh has no normals. Continue and calculate normals?", "No normals found", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                    return null;
+                }
+                */
+                smoothModel = true;
+            }
+            if (smoothModel)
+            {
+                obj.CalculateNormals(true);
+            }
+            var geomList = new GEOM[obj.GroupCount];
+            var currentBase = 0;
+            if (progressBar != null)
+            {
+                progressBar.Adjustment.Lower = 0;
+                progressBar.Adjustment.Upper = obj.FaceCount;
+                progressBar.Adjustment.Value = 0;
+                progressBar.PulseStep = 1;
+                progressBar.Visible = true;
+            }
+            for (var i = 0; i < geomList.Length; i++)
+            {
+                if (!isMorph[i])
+                {
+                    currentBase = i;
+                }
+                List<int[]> faces = new List<int[]>(),
+                vertices = new List<int[]>();
+                foreach (var face in obj.GroupArray[i].Faces)
+                {
+                    if (progressBar != null)
+                    {
+                        //progressBar.PerformStep();
+                        progressBar.Pulse();
+                    }
+                    int j = 0,
+                    vertexIndex = 0;;
+                    var temp = new int[3];
+                    foreach (var facePoint in face.FacePoints)
+                    {
+                        if (!obj.TryGetVertexIndex(facePoint, vertices, out vertexIndex, cleanModel))
+                        {
+                            temp[j] = vertices.Count;
+                            vertices.Add(facePoint);
+                        }
+                        else
+                        {
+                            temp[j] = vertexIndex;
+                        }
+                        j++;
+                    }
+                    faces.Add(temp);
+                }
+                geomList[i] = new GEOM();
+                geomList[i].mVersion1 = refMesh.mVersion1;
+                geomList[i].mCount = refMesh.mCount;
+                geomList[i].mIndexCount = refMesh.mIndexCount;
+                geomList[i].mExternalCount = refMesh.mExternalCount;
+                geomList[i].mInternalCount = refMesh.mInternalCount;
+                geomList[i].mDummyTGI = new TGI(refMesh.mDummyTGI);
+                geomList[i].mAbsolutePosition = refMesh.mAbsolutePosition;
+                geomList[i].mMagic = refMesh.mMagic;
+                geomList[i].mVersion = refMesh.mVersion;
+                if (isMorph[i])
+                {
+                    geomList[i].mShaderHash = 0;
+                    geomList[i].mMTNFSize = 0;
+                }
+                else
+                {
+                    geomList[i].mShaderHash = refMesh.mShaderHash;
+                    geomList[i].mMTNFSize = refMesh.mMTNFSize;
+                    geomList[i].mMTNF = new MTNF(refMesh.mMTNF);
+                }
+                geomList[i].mMergeGroup = refMesh.mMergeGroup;
+                geomList[i].mSortOrder = refMesh.mSortOrder;
+                geomList[i].mVertexCount = vertices.Count;
+                if (isMorph[i] && geomList[i].mVertexCount != geomList[currentBase].mVertexCount)
+                {
+                    throw new MeshException("The number of vertices in " + obj.GroupArray[i].GroupName + " does not match the base mesh!");
+                }
+                if (isMorph[i])
+                {
+                    geomList[i].mFaceCount = 3;
+                    geomList[i].mVertexFormats = new VertexFormat[]
+                        {
+                            new VertexFormat(1, 1, 12),
+                            new VertexFormat(2, 1, 12),
+                            new VertexFormat(10, 4, 4)
+                        };
+                }
+                else
+                {
+                    geomList[i].mFaceCount = refMesh.mFaceCount;
+                    geomList[i].mVertexFormats = new VertexFormat[refMesh.mFaceCount];
+                    for (var j = 0; j < refMesh.mFaceCount; j++)
+                    {
+                        geomList[i].mVertexFormats[j] = new VertexFormat(refMesh.mVertexFormats[j]);
+                    }
+                }
+                geomList[i].mSubMeshCount = refMesh.mSubMeshCount;
+                geomList[i].mBytesPerFacePoint = refMesh.mBytesPerFacePoint;
+                geomList[i].mFacePointCount = faces.Count * 3;
+                if (isMorph[i] && geomList[i].mFacePointCount != geomList[currentBase].mFacePointCount)
+                {
+                    throw new MeshException("The number of faces in " + obj.GroupArray[i].GroupName + " does not match the base mesh!");
+                }
+                geomList[i].mFaces = new Face[faces.Count];
+                for (var j = 0; j < faces.Count; j++)
+                {
+                    geomList[i].mFaces[j] = new Face(faces[j]);
+                }
+                geomList[i].mSKCONIndex = refMesh.mSKCONIndex;
+                geomList[i].mBoneHashCount = refMesh.mBoneHashCount;
+                geomList[i].mBoneHashArray = new uint[refMesh.mBoneHashArray.Length];
+                for (var j = 0; j < refMesh.mBoneHashArray.Length; j++)
+                {
+                    geomList[i].mBoneHashArray[j] = refMesh.mBoneHashArray[j];
+                }
+                if (isMorph[i])
+                {
+                    geomList[i].mTGICount = 1;
+                    geomList[i].mTGIs = new TGI[1];
+                    geomList[i].mTGIs[0] = new TGI(0, 0, 0);
+                }
+                else
+                {
+                    geomList[i].mTGICount = refMesh.mTGICount;
+                    geomList[i].mTGIs = new TGI[refMesh.mTGIs.Length];
+                    for (var j = 0; j < refMesh.mTGIs.Length; j++)
+                    {
+                        geomList[i].mTGIs[j] = new TGI(refMesh.mTGIs[j]);
+                    }
+                    if (bumpMapTGI.Instance > 0 && geomList[i].Shader.NormalIndex >= 0)
+                    {
+                        geomList[i].mTGIs[geomList[i].Shader.NormalIndex] = bumpMapTGI;
+                    }
+                }
+                for (var j = 0; j < geomList[i].mVertexFormats.Length; j++)
+                {
+                    switch (geomList[i].mVertexFormats[j].FormatDataType) //OBJ vertex references are 1-based, so subtract one
+                    {
+                        case 1:
+                            geomList[i].mPositions = new Position[vertices.Count];
+                            for (var k = 0; k < vertices.Count; k++)
+                            {
+                                if (isMorph[i])
+                                {
+                                    Vector3 basePosition = new Vector3(geomList[currentBase].GetPosition(k)),
+                                    morphPosition = new Vector3(obj.VertexArray[vertices[k][0] - 1].Coordinates),
+                                    morph = morphPosition - basePosition;
+                                    geomList[i].mPositions[k] = new Position(morph.Coordinates);
+                                }
+                                else
+                                {
+                                    geomList[i].mPositions[k] = new Position(obj.VertexArray[vertices[k][0] - 1].Coordinates);
+                                }
+                            }
+                            break;
+                        case 2:
+                            geomList[i].mNormals = new Normal[vertices.Count];
+                            for (var k = 0; k < vertices.Count; k++)
+                            {
+                                if (isMorph[i])
+                                {
+                                    Vector3 baseNormal = new Vector3(geomList[currentBase].GetNormal(k)),
+                                    morphNormal = new Vector3(obj.NormalArray[vertices[k][2] - 1].Coordinates),
+                                    morph = morphNormal - baseNormal;
+                                    geomList[i].mNormals[k] = new Normal(morph.Coordinates);
+                                }
+                                else
+                                {
+                                    geomList[i].mNormals[k] = new Normal(obj.NormalArray[vertices[k][2] - 1].Coordinates);
+                                }
+                            }
+                            break;
+                        case 3:
+                            geomList[i].mUVs = new UV[vertices.Count][];
+                            for (var k = 0; k < vertices.Count; k++)
+                            {
+                                geomList[i].mUVs[k][0] = new UV(obj.UVArray[vertices[k][1] - 1].Coordinates, true);
+                            }
+                            break;
+                    }
+                }
+                for (var j = 0; j < geomList[i].mVertexFormats.Length; j++)
+                {
+                    switch (geomList[i].mVertexFormats[j].FormatDataType)
+                    {
+                        case 4:
+                            geomList[i].mBones = new Bones[geomList[i].mVertexCount];
+                            //geomList[i].vWeights = new boneweight[geomList[i].mVertexCount];
+                            for (var k = 0; k < geomList[i].mVertexCount; k++)
+                            {
+                                geomList[i].mBones[k] = new Bones();
+                                //geomList[i].vWeights[k] = new boneweight();
+                            }
+                            geomList[i].AutoBone(refMesh, false, true, 3, 2, false, null);
+                            geomList[i].FixBoneWeights();
+                            break;
+                        case 6:
+                            geomList[i].mTangents = new Tangent[geomList[i].mVertexCount];
+                            for (var k = 0; k < geomList[i].mVertexCount; k++)
+                            {
+                                geomList[i].mTangents[k] = new Tangent();
+                            }
+                            geomList[i].CalculateTangents();
+                            break;
+                        case 7:
+                            geomList[i].mTags = new TagValue[geomList[i].mVertexCount];
+                            for (var k = 0; k < geomList[i].mVertexCount; k++)
+                            {
+                                geomList[i].mTags[k] = new TagValue(0xFFFFFFFF);
+                            }
+                            break;
+                    }
+                }
+                for (var j = 0; j < geomList[i].mVertexFormats.Length; j++)
+                {
+                    switch (geomList[i].mVertexFormats[j].FormatDataType)
+                    {
+                        case 10:
+                            geomList[i].mVertexIDs = new int[geomList[i].mVertexCount];
+                            if (geomList[i].IsBase)
+                            {
+                                geomList[i].RenumberBase(refMesh.MinVertexID);
+                            }
+                            else if (geomList[i].IsMorph)
+                            {
+                                geomList[i].RenumberMorph(geomList[currentBase]);
+                            }
+                            break;
+                    }
+                }
+            }
+            if (progressBar != null)
+            {
+                progressBar.Visible = false;
+            }
+            return geomList;
         }
 
         public int GetBoneIndex(uint boneHash)
@@ -3235,7 +3706,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             else if (species == Species.LittleDog && age <= AgeGender.Child)
             {
-                speciesIndex = 1;       //little dogs only have adult form so go to dog/child
+                speciesIndex = 1; //little dogs only have adult form so go to dog/child
                 ageGenderIndex = 1;
             }
             else
@@ -3273,15 +3744,15 @@ namespace Destrospean.CmarNYCBorrowed
         {
             byte[] vertexBones = GetBones(vertexIndex),
             vertexWeights = GetBoneWeights(vertexIndex);
-            var weight = 0f;
+            var totalWeight = 0f;
             for (var i = 0; i < 4; i++)
             {
                 if (vertexBones[i] < mBoneHashArray.Length && vertexBones[i] >= 0 && boneHashes.Contains(mBoneHashArray[vertexBones[i]]))
                 {
-                    weight += (float)vertexWeights[i] / byte.MaxValue;
+                    totalWeight += (float)vertexWeights[i] / byte.MaxValue;
                 }
             }
-            return weight;
+            return totalWeight;
         }
 
         public float[] GetUV(int vertexSequenceNumber, int uvSet)
@@ -3920,6 +4391,56 @@ namespace Destrospean.CmarNYCBorrowed
                 mSKCONIndex = 0;
             }
             return;
+        }
+
+        public int RenumberBase(int startID)
+        {
+            if (!IsBase || !IsValid)
+            {
+                throw new MeshException("This mesh is not a valid base mesh!");
+            }
+            if (!HasVertexIDs)
+            {
+                InsertVertexIDInFormatList();
+            }
+            var newIDs = new int[mVertexCount];
+            var nextID = Math.Max(0, startID);
+            bool incrementID;
+            for (var i = 0; i < mVertexCount; i++)
+            {
+                incrementID = true;
+                for (var j = 0; j < i; j++)
+                {
+                    if (mPositions[i].Equals(mPositions[j]) && mNormals[i].Equals(mNormals[j]))
+                    {
+                        newIDs[i] = newIDs[j];
+                        incrementID = false;
+                        break;
+                    }
+                }
+                if (incrementID)
+                {
+                    newIDs[i] = nextID;
+                    nextID++;
+                }
+            }
+            mVertexIDs = newIDs;
+            return nextID;
+        }
+
+        public void RenumberMorph(GEOM baseMesh)
+        {
+            if (!IsMorph || !IsValid)
+            {
+                throw new MeshException("This mesh is not a valid morph mesh!");
+            }
+            if (mVertexCount != baseMesh.mVertexCount)
+            {
+                throw new MeshException("This morph does not have the same number of vertices as the base!");
+            }
+            var newIDs = new int[mVertexCount];
+            Array.Copy(baseMesh.mVertexIDs, newIDs, mVertexCount);
+            mVertexIDs = newIDs;
         }
 
         public void SetBoneHashList(uint[] boneHashList)
@@ -7013,6 +7534,25 @@ namespace Destrospean.CmarNYCBorrowed
                         SetPosition(i, head.GetPosition(j));
                         SetNormal(i, head.GetNormal(j));
                         SetTagValue(i, GetTagValue(i) & 0xFFFFFF00 | 0x00000063);
+                    }
+                }
+            }
+        }
+
+        public void SortBones(ref List<byte> newBones, ref List<float> newWeights)
+        {
+            for (var i = newBones.Count - 1; i > 0; i--)
+            {
+                for (var j = 0; j < i; j++)
+                {
+                    if (newWeights[j] < newWeights[j + 1])
+                    {
+                        var tempBones = newBones[j];
+                        newBones[j] = newBones[j + 1];
+                        newBones[j + 1] = tempBones;
+                        var tempWeights = newWeights[j];
+                        newWeights[j] = newWeights[j + 1];
+                        newWeights[j + 1] = tempWeights;
                     }
                 }
             }
