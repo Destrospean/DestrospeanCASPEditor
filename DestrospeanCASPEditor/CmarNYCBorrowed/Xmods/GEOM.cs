@@ -1955,7 +1955,7 @@ namespace Destrospean.CmarNYCBorrowed
                 }
             }
 
-            public List<float[]> UV0Coordinates
+            public List<float[]> UV1Coordinates
             {
                 get
                 {
@@ -1968,7 +1968,7 @@ namespace Destrospean.CmarNYCBorrowed
                 }
             }
 
-            public List<Vector2> UV0Vectors
+            public List<Vector2> UV1Vectors
             {
                 get
                 {
@@ -2483,11 +2483,11 @@ namespace Destrospean.CmarNYCBorrowed
                     case 4:
                         var newBones = new Bones[mVertexCount + meshToAppend.mVertexCount];
                         var tempBoneHash = new List<uint>(mBoneHashArray);
-                        foreach (var h in meshToAppend.mBoneHashArray)
+                        foreach (var hash in meshToAppend.mBoneHashArray)
                         {
-                            if (tempBoneHash.IndexOf(h) < 0)
+                            if (tempBoneHash.IndexOf(hash) < 0)
                             {
-                                tempBoneHash.Add(h);
+                                tempBoneHash.Add(hash);
                             }
                         }
                         var newBoneHashArray = tempBoneHash.ToArray();
@@ -2498,7 +2498,7 @@ namespace Destrospean.CmarNYCBorrowed
                             tempBones = new byte[oldBones.Length];
                             for (var k = 0; k < oldBones.Length; k++)
                             {
-                                if (oldWeights[k] > 0 & oldBones[k] < mBoneHashArray.Length)
+                                if (oldWeights[k] > 0 && oldBones[k] < mBoneHashArray.Length)
                                 {
                                     tempBones[k] = (byte)Array.IndexOf(newBoneHashArray, mBoneHashArray[oldBones[k]]);
                                 }
@@ -2511,12 +2511,12 @@ namespace Destrospean.CmarNYCBorrowed
                         }
                         for (var j = 0; j < meshToAppend.mVertexCount; j++)
                         {
-                            byte[] oldBones = meshToAppend.GetBones(j);
-                            byte[] oldWeights = meshToAppend.GetBoneWeights(j);
-                            byte[] tempBones = new byte[oldBones.Length];
+                            byte[] oldBones = meshToAppend.GetBones(j),
+                            oldWeights = meshToAppend.GetBoneWeights(j),
+                            tempBones = new byte[oldBones.Length];
                             for (var k = 0; k < oldBones.Length; k++)
                             {
-                                if (oldWeights[k] > 0 & oldBones[k] < meshToAppend.mBoneHashArray.Length)
+                                if (oldWeights[k] > 0 && oldBones[k] < meshToAppend.mBoneHashArray.Length)
                                 {
                                     tempBones[k] = (byte)Array.IndexOf(newBoneHashArray, meshToAppend.mBoneHashArray[oldBones[k]]);
                                 }
@@ -2532,20 +2532,20 @@ namespace Destrospean.CmarNYCBorrowed
                         mBoneHashCount = newBoneHashArray.Length;
                         break;
                     case 6:
-                        var newTan = new Tangent[mVertexCount + meshToAppend.mVertexCount];
-                        Array.Copy(mTangents, 0, newTan, 0, mVertexCount);
+                        var newTangent = new Tangent[mVertexCount + meshToAppend.mVertexCount];
+                        Array.Copy(mTangents, 0, newTangent, 0, mVertexCount);
                         if (meshToAppend.HasTangents)
                         {
-                            Array.Copy(meshToAppend.mTangents, 0, newTan, mVertexCount, meshToAppend.mVertexCount);
+                            Array.Copy(meshToAppend.mTangents, 0, newTangent, mVertexCount, meshToAppend.mVertexCount);
                         }
                         else
                         {
-                            for (var v = mVertexCount; v < newTan.Length; v++)
+                            for (var v = mVertexCount; v < newTangent.Length; v++)
                             {
-                                newTan[v] = new Tangent();
+                                newTangent[v] = new Tangent();
                             }
                         }
-                        mTangents = newTan;
+                        mTangents = newTangent;
                         break;
                     case 7:
                         var newTag = new TagValue[mVertexCount + meshToAppend.mVertexCount];
@@ -2653,12 +2653,12 @@ namespace Destrospean.CmarNYCBorrowed
                     for (var i = 0; i < meshToAppend.mSlotrayIntersections.Length; i++)
                     {
                         adj1[i + mSlotrayIntersections.Length] = new SlotrayIntersection(meshToAppend.mSlotrayIntersections[i]);
-                        int[] f = meshToAppend.mSlotrayIntersections[i].TrianglePointIndices;
-                        for (int j = 0; j < f.Length; j++)
+                        var indices = meshToAppend.mSlotrayIntersections[i].TrianglePointIndices;
+                        for (var j = 0; j < indices.Length; j++)
                         {
-                            f[j] += mVertexCount;
+                            indices[j] += mVertexCount;
                         }
-                        adj1[i + mSlotrayIntersections.Length].TrianglePointIndices = f;
+                        adj1[i + mSlotrayIntersections.Length].TrianglePointIndices = indices;
                     }
                 }
                 mSlotrayIntersections = adj1;
@@ -2844,9 +2844,9 @@ namespace Destrospean.CmarNYCBorrowed
                     if (mPositions[i].Equals(mPositions[j]) & mNormals[i].Equals(mNormals[j]))
                     {
                         var match = true;
-                        for (var u = 0; u < UVCount; u++)
+                        for (var k = 0; k < UVCount; k++)
                         {
-                            if (!mUVs[u][i].CloseTo(mUVs[u][j]))
+                            if (!mUVs[k][i].CloseTo(mUVs[k][j]))
                             {
                                 match = false;
                             }
@@ -3078,9 +3078,9 @@ namespace Destrospean.CmarNYCBorrowed
             }
             var usedBoneHash = new List<uint>();
             var oldBoneHash = BoneHashList;
-            foreach (var b in usedBones)
+            foreach (var bone in usedBones)
             {
-                usedBoneHash.Add(oldBoneHash[b]);
+                usedBoneHash.Add(oldBoneHash[bone]);
             }
             for (var i = 0; i < mVertexCount; i++)
             {
@@ -3108,7 +3108,10 @@ namespace Destrospean.CmarNYCBorrowed
         {
             for (var i = 0; i < BoneCount; i++)
             {
-                if (boneHash == mBoneHashArray[i]) return i;
+                if (boneHash == mBoneHashArray[i])
+                {
+                    return i;
+                }
             }
             return -1;
         }
@@ -3235,7 +3238,10 @@ namespace Destrospean.CmarNYCBorrowed
                 speciesIndex = 1;       //little dogs only have adult form so go to dog/child
                 ageGenderIndex = 1;
             }
-            else ageGenderIndex = age > AgeGender.Child ? 0 : 1;
+            else
+            {
+                ageGenderIndex = age > AgeGender.Child ? 0 : 1;
+            }
             return MeshSeamVertices[speciesIndex][ageGenderIndex][lod][(int)seam];
         }
 
@@ -3246,7 +3252,7 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 if (uvStitch.Index == vertexIndex)
                 {
-                    uvList.AddRange(uvStitch.UV0Coordinates);
+                    uvList.AddRange(uvStitch.UV1Coordinates);
                     break;
                 }
             }
@@ -3689,7 +3695,7 @@ namespace Destrospean.CmarNYCBorrowed
                         {
                             if (geom1.mUVStitches[k].Index == i)
                             {
-                                geom1Stitch.AddRange(geom1Stitches[k].UV0Vectors);
+                                geom1Stitch.AddRange(geom1Stitches[k].UV1Vectors);
                                 geom1Index = k;
                                 break;
                             }
@@ -3698,7 +3704,7 @@ namespace Destrospean.CmarNYCBorrowed
                         {
                             if (geom2.mUVStitches[k].Index == j)
                             {
-                                geom2Stitch.AddRange(geom2Stitches[k].UV0Vectors);
+                                geom2Stitch.AddRange(geom2Stitches[k].UV1Vectors);
                                 geom2Index = k;
                                 break;
                             }
