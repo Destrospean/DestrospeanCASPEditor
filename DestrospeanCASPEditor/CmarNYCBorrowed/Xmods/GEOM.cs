@@ -3191,7 +3191,6 @@ namespace Destrospean.CmarNYCBorrowed
         /// <summary>
         /// Fills gap at waist when wearing a female top and male bottom
         /// </summary>
-        /// <param name="geom"></param>
         public void FillWaistGap()
         {
             uint femaleWaist = (uint)SeamType.WaistAdultFemale,
