@@ -3240,17 +3240,17 @@ namespace Destrospean.CmarNYCBorrowed
         {
             for (var i = 0; i < mVertexCount; i++)
             {
-                var boneWeights = GetBoneWeights(i);
-                var totalWeight = 0;
+                var boneWeights = GetBoneWeightsV5(i);
+                var totalWeight = 0f;
                 for (var j = 0; j < 4; j++)
                 {
                     totalWeight += boneWeights[j];
                 }
                 if (!IsEqual(totalWeight, 1))
                 {
-                    boneWeights[0] += (byte)(1 - totalWeight);
+                    boneWeights[0] += 1 - totalWeight;
                 }
-                SetBoneWeights(i, boneWeights);
+                SetBoneWeightsV5(i, boneWeights);
             }
         }
 
