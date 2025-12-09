@@ -164,14 +164,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 mPropertiesTyped = new SortedDictionary<string, string>(new PropertyNameComparer());
             }
 
-            public static float[] GetColor(string fromString)
-            {
-                return new List<string>(fromString.Split(',')).ConvertAll(new Converter<string, float>(float.Parse)).ToArray();
-            }
-
             public virtual string GetValue(string propertyName)
             {
                 return mPropertiesXmlNodes[propertyName].Attributes["value"].Value;
+            }
+
+            public static float[] ParseCommaSeparatedValues(string text)
+            {
+                return Array.ConvertAll(text.Split(','), float.Parse);
             }
 
             public virtual void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
@@ -318,7 +318,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     else if (key.StartsWith("color"))
                     {
-                        var color = GetColor(value);
+                        var color = ParseCommaSeparatedValues(value);
                         rgbColors.Add(new float[]
                             {
                                 color[0],
@@ -374,11 +374,11 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (key.EndsWith("bg"))
                         {
-                            hsvShiftBackground = GetColor(value);
+                            hsvShiftBackground = ParseCommaSeparatedValues(value);
                         }
                         else
                         {
-                            hsvShift.Add(GetColor(value));
+                            hsvShift.Add(ParseCommaSeparatedValues(value));
                         }
                     }
                     else if (key.StartsWith("s "))
@@ -615,11 +615,11 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 else if (key.EndsWith("lowerright"))
                                 {
-                                    logosLowerRight.Add(GetColor(value));
+                                    logosLowerRight.Add(ParseCommaSeparatedValues(value));
                                 }
                                 else if (key.EndsWith("upperleft"))
                                 {
-                                    logosUpperLeft.Add(GetColor(value));
+                                    logosUpperLeft.Add(ParseCommaSeparatedValues(value));
                                 }
                                 else if (key.EndsWith("rotation"))
                                 {
@@ -659,13 +659,13 @@ namespace Destrospean.DestrospeanCASPEditor
                                         controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
                                         break;
                                     case "diffuse color":
-                                        diffuseColor = GetColor(value);
+                                        diffuseColor = ParseCommaSeparatedValues(value);
                                         break;
                                     case "diffuse map":
                                         diffuseMap = ParentPackage.GetTexture(value, width, height);
                                         break;
                                     case "highlight color":
-                                        highlightColor = GetColor(value);
+                                        highlightColor = ParseCommaSeparatedValues(value);
                                         break;
                                     case "mask":
                                         maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
@@ -680,10 +680,10 @@ namespace Destrospean.DestrospeanCASPEditor
                                         partType = value;
                                         break;
                                     case "root color":
-                                        rootColor = GetColor(value);
+                                        rootColor = ParseCommaSeparatedValues(value);
                                         break;
                                     case "tip color":
-                                        tipColor = GetColor(value);
+                                        tipColor = ParseCommaSeparatedValues(value);
                                         break;
                                 }
                             }
@@ -753,7 +753,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                             }
                         }
-                        var patternImages = Patterns.ConvertAll(new Converter<Pattern, object>(x => bool.Parse(GetValue(x.SlotName + " Enabled")) ? x.PatternImage : null));
+                        var patternImages = Patterns.ConvertAll(x => bool.Parse(GetValue(x.SlotName + " Enabled")) ? x.PatternImage : null);
                         if (maskArray != null)
                         {
                             if (multiplier != null)
@@ -815,7 +815,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     get
                     {
-                        return Patterns.ConvertAll(new Converter<Pattern, string>(x => x.SlotName)).ToArray();
+                        return Patterns.ConvertAll(x => x.SlotName).ToArray();
                     }
                 }
 
@@ -1003,7 +1003,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 DefaultPresetResourceIndexEntry = defaultPresetResourceIndexEntries[0];
                 DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, DefaultPresetResourceIndexEntry).Stream));
             }
-            Presets = CASPartResource.Presets.ConvertAll(new Converter<CASPartResource.CASPartResource.Preset, Preset>(x => new Preset(this, x)));
+            Presets = CASPartResource.Presets.ConvertAll(x => new Preset(this, x));
             ResourceIndexEntry = resourceIndexEntry;
             LoadLODs(geometryResources, vpxyResources);
         }

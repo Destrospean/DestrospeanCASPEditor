@@ -2712,7 +2712,7 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                     stepIt = 0;
                 }
-                if (unassignedVerticesOnly && GetBoneWeights(i)[0] > 0 && ValidBones(i))
+                if (unassignedVerticesOnly && GetBoneWeightsV5(i)[0] > 0 && ValidBones(i))
                 {
                     continue;
                 }
@@ -2729,7 +2729,7 @@ namespace Destrospean.CmarNYCBorrowed
                 for (var j = 0; j < refPoints.Length; j++)
                 {
                     var refBones = refMesh.GetBones(refPoints[j]);
-                    var refWeights = refMesh.GetBoneWeights(refPoints[j]);
+                    var refWeights = refMesh.GetBoneWeightsV5(refPoints[j]);
                     for (var k = 0; k < refBones.Length; k++)
                     {
                         if (refBones[k] < refBoneHashList.Length)
@@ -2751,7 +2751,7 @@ namespace Destrospean.CmarNYCBorrowed
                 for (var j = newBones.Count; j < 4; j++)
                 {
                     newBones.Add((byte)(newBoneHashList.Length));
-                    newWeights.Add(0f);
+                    newWeights.Add(0);
                 }
                 for (var j = 0; j < 4; j++)
                 {
@@ -2761,7 +2761,7 @@ namespace Destrospean.CmarNYCBorrowed
                     }
                 }
                 SetBones(i, newBones.GetRange(0, 4).ToArray());
-                SetBoneWeights(i, newWeights.GetRange(0, 4).ConvertAll(new Converter<float, byte>(x => (byte)(x * byte.MaxValue))).ToArray());
+                SetBoneWeightsV5(i, newWeights.GetRange(0, 4).ToArray());
             }
         }
 
@@ -3324,6 +3324,7 @@ namespace Destrospean.CmarNYCBorrowed
                     return null;
                 }
                 */
+                Console.WriteLine("This OBJ mesh has no UV mapping.");
                 obj.UVArray = new OBJ.UV[1]
                     {
                         new OBJ.UV()
@@ -3337,6 +3338,7 @@ namespace Destrospean.CmarNYCBorrowed
                     return null;
                 }
                 */
+                Console.WriteLine("This OBJ mesh has no normals.");
                 smoothModel = true;
             }
             if (smoothModel)
@@ -3510,10 +3512,11 @@ namespace Destrospean.CmarNYCBorrowed
                             }
                             break;
                         case 3:
-                            geomList[i].mUVs = new UV[vertices.Count][];
+                            geomList[i].mUVs = new UV[1][];
+                            geomList[i].mUVs[0] = new UV[vertices.Count];
                             for (var k = 0; k < vertices.Count; k++)
                             {
-                                geomList[i].mUVs[k][0] = new UV(obj.UVArray[vertices[k][1] - 1].Coordinates, true);
+                                geomList[i].mUVs[0][k] = new UV(obj.UVArray[vertices[k][1] - 1].Coordinates, true);
                             }
                             break;
                     }
@@ -3524,11 +3527,9 @@ namespace Destrospean.CmarNYCBorrowed
                     {
                         case 4:
                             geomList[i].mBones = new Bones[geomList[i].mVertexCount];
-                            //geomList[i].vWeights = new boneweight[geomList[i].mVertexCount];
                             for (var k = 0; k < geomList[i].mVertexCount; k++)
                             {
                                 geomList[i].mBones[k] = new Bones();
-                                //geomList[i].vWeights[k] = new boneweight();
                             }
                             geomList[i].AutoBone(refMesh, false, true, 3, 2, false, null);
                             geomList[i].FixBoneWeights();

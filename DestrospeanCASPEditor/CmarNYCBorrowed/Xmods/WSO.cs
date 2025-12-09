@@ -1362,6 +1362,11 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
+        public WSO(BinaryReader reader)
+        {
+            Read(reader);
+        }
+
         public void AppendMesh(WSO meshToAppend)
         {
             if (meshToAppend.MeshCount != MeshCount)

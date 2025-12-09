@@ -321,6 +321,15 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             try
             {
+                castResource = new CASPartResource.BlendGeometryResource(0, resource.Stream);
+                tag = "BGEO";
+                goto FinalSteps;
+            }
+            catch
+            {
+            }
+            try
+            {
                 castResource = new CASPartResource.CASPartResource(0, resource.Stream);
                 tag = "CASP";
                 goto FinalSteps;

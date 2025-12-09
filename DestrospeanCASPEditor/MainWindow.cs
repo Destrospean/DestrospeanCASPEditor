@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
@@ -9,7 +10,7 @@ using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using System.IO;
+using XmodsGEOM = Destrospean.CmarNYCBorrowed.GEOM;
 
 [Flags]
 public enum NextStateOptions : byte
@@ -276,7 +277,7 @@ public partial class MainWindow : Window
                                 casPart.CASPartResource.BlendInfoThinIndex,
                                 casPart.CASPartResource.BlendInfoSpecialIndex
                             };
-                        var morphs = new Destrospean.CmarNYCBorrowed.GEOM[bblnIndices.Length];
+                        var morphs = new XmodsGEOM[bblnIndices.Length];
                         for (var i = 0; i < bblnIndices.Length; i++)
                         {
                             BBLN bbln;
@@ -306,7 +307,7 @@ public partial class MainWindow : Window
                                 {
                                     if (bgeo != null)
                                     {
-                                        morphs[i] = new Destrospean.CmarNYCBorrowed.GEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key);
+                                        morphs[i] = new XmodsGEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key);
                                     }
                                     else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                                     {
@@ -374,6 +375,176 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
+            System.Action<MeshFileType> importMesh = (MeshFileType meshFileType) =>
+                {
+                    switch (meshFileType)
+                    {
+                        case MeshFileType.OBJ:
+                        case MeshFileType.WSO:
+                            break;
+                        default:
+                            return;
+                    }
+                    var fileChooserDialog = new FileChooserDialog("Import " + meshFileType.ToString(), this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+                    var fileFilter = new FileFilter
+                        {
+                            Name = meshFileType == MeshFileType.OBJ ? "Wavefront OBJ" : meshFileType == MeshFileType.WSO ? "The Sims Resource Workshop Object" : null
+                        };
+                    fileFilter.AddPattern(meshFileType == MeshFileType.OBJ ? "*.obj" : meshFileType == MeshFileType.WSO ? "*.wso" : null);
+                    fileChooserDialog.AddFilter(fileFilter);
+                    var geom = lodKvp.Value[geomNotebook.CurrentPage].ToGEOM();
+                    if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                    {
+                        byte[] bblnIndices =
+                            {
+                                casPart.CASPartResource.BlendInfoFatIndex,
+                                casPart.CASPartResource.BlendInfoFitIndex,
+                                casPart.CASPartResource.BlendInfoThinIndex,
+                                casPart.CASPartResource.BlendInfoSpecialIndex
+                            };
+                        var morphsEvaluated = new ResourceUtils.EvaluatedResourceKey?[bblnIndices.Length];
+                        for (var i = 0; i < bblnIndices.Length; i++)
+                        {
+                            BBLN bbln;
+                            ResourceUtils.EvaluatedResourceKey evaluated;
+                            try
+                            {
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
+                                bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                                morphsEvaluated[i] = null;
+                                continue;
+                            }
+                            try
+                            {
+                                morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                                continue;
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                            }
+                            foreach (var entry in bbln.Entries)
+                            {
+                                foreach (var geomMorph in entry.GEOMMorphs)
+                                {
+                                    if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
+                                    {
+                                        try
+                                        {
+                                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                            var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                            foreach (var link in vpxy.MeshLinks(lodKvp.Key))
+                                            {
+                                                try
+                                                {
+                                                    morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                                }
+                                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                                {
+                                                    morphsEvaluated[i] = null;
+                                                }
+                                            }
+                                        }
+                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                        {
+                                            morphsEvaluated[i] = null;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        using (var fileStream = File.OpenRead(fileChooserDialog.Filename))
+                        {
+                            var newGEOMPlusMorphs = XmodsGEOM.GEOMsFromOBJ(meshFileType == MeshFileType.OBJ ? new OBJ(new StreamReader(fileStream)) : meshFileType == MeshFileType.WSO ? new OBJ(new WSO(new BinaryReader(fileStream))) : null, geom, new TGI(), false, false, null);
+                            for (var i = newGEOMPlusMorphs.Length - 1; i > -1 ; i--)
+                            {
+                                var stream = new MemoryStream();
+                                newGEOMPlusMorphs[i].Write(new BinaryWriter(stream));
+                                int selectedGEOMIndex = geomNotebook.CurrentPage,
+                                selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
+                                if (i == 0)
+                                {
+                                    foreach (var geometryResourceKvp in GeometryResources)
+                                    {
+                                        if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
+                                        {
+                                            IResourceIndexEntry resourceIndexEntry = CurrentPackage.GetResourceIndexEntry(geometryResourceKvp.Key),
+                                            tempResourceIndexEntry = CurrentPackage.AddResource(resourceIndexEntry, stream, false);
+                                            CurrentPackage.ResolveResourceType(tempResourceIndexEntry);
+                                            var resource = WrapperDealer.GetResource(0, CurrentPackage, tempResourceIndexEntry);
+                                            CurrentPackage.ReplaceResource(resourceIndexEntry, resource);
+                                            CurrentPackage.DeleteResource(tempResourceIndexEntry);
+                                            GeometryResources[resourceIndexEntry] = (GeometryResource)resource;
+                                            casPart.LoadLODs(GeometryResources, VPXYResources);
+                                            foreach (var child in ResourcePropertyNotebook.Children)
+                                            {
+                                                ResourcePropertyNotebook.Remove(child);
+                                            }
+                                            BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex);
+                                            NextState = NextStateOptions.UnsavedChanges;
+                                            break;
+                                        }
+                                    }
+                                }
+                                else if (morphsEvaluated[i - 1].HasValue)
+                                {
+                                    var morphEvaluated = morphsEvaluated[i - 1].Value;
+                                    IResourceIndexEntry tempResourceIndexEntry;
+                                    if (morphEvaluated.ResourceIndexEntry.GetResourceTypeTag() == "BGEO")
+                                    {
+                                        var bgeo = new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
+                                        var lodMorphMeshes = new XmodsGEOM[4];
+                                        var resourceStream = new MemoryStream();
+                                        var section1 = bgeo.GetSection1(0);
+                                        for (var j = 0; j < lodMorphMeshes.Length; j++)
+                                        {
+                                            lodMorphMeshes[j] = j == lodKvp.Key ? newGEOMPlusMorphs[i] : new XmodsGEOM(newGEOMPlusMorphs[0], bgeo, 0, j);
+                                        }
+                                        new BGEO(new XmodsGEOM[][][]
+                                            {
+                                                new XmodsGEOM[][] //LOD SHOULD BE SECOND INDEX!!!
+                                                {
+                                                    new XmodsGEOM[]
+                                                    {
+                                                        lodMorphMeshes[0]
+                                                    },
+                                                    new XmodsGEOM[]
+                                                    {
+                                                        lodMorphMeshes[1]
+                                                    },
+                                                    new XmodsGEOM[]
+                                                    {
+                                                        lodMorphMeshes[2]
+                                                    },
+                                                    new XmodsGEOM[]
+                                                    {
+                                                        lodMorphMeshes[3]
+                                                    }
+                                                }
+                                            }, new uint[]
+                                            {
+                                                section1.AgeGenderSpecies
+                                            }, new uint[]
+                                            {
+                                                section1.Region
+                                            }).Write(new BinaryWriter(resourceStream));
+                                        tempResourceIndexEntry = morphEvaluated.Package.AddResource(morphEvaluated.ResourceIndexEntry, resourceStream, false);
+                                    }
+                                    else
+                                    {
+                                        tempResourceIndexEntry = morphEvaluated.Package.AddResource(morphEvaluated.ResourceIndexEntry, stream, false);
+                                    }
+                                    morphEvaluated.Package.ResolveResourceType(tempResourceIndexEntry);
+                                    morphEvaluated.Package.ReplaceResource(morphEvaluated.ResourceIndexEntry, WrapperDealer.GetResource(0, morphEvaluated.Package, tempResourceIndexEntry));
+                                    morphEvaluated.Package.DeleteResource(tempResourceIndexEntry);
+                                }
+                            }
+                        }
+                    }
+                    fileChooserDialog.Destroy();
+                };
             exportGEOMAction.Activated += (sender, e) => exportMesh(MeshFileType.GEOM);
             exportOBJAction.Activated += (sender, e) => exportMesh(MeshFileType.OBJ);
             exportWSOAction.Activated += (sender, e) => exportMesh(MeshFileType.WSO);
@@ -390,10 +561,10 @@ public partial class MainWindow : Window
                     {
                         try
                         {
+                            int selectedGEOMIndex = geomNotebook.CurrentPage,
+                            selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
                             foreach (var geometryResourceKvp in GeometryResources)
                             {
-                                int selectedGEOMIndex = geomNotebook.CurrentPage,
-                                selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
                                 if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                 {
                                     IResourceIndexEntry resourceIndexEntry = CurrentPackage.GetResourceIndexEntry(geometryResourceKvp.Key),
@@ -421,6 +592,8 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
+            importOBJAction.Activated += (sender, e) => importMesh(MeshFileType.OBJ);
+            importWSOAction.Activated += (sender, e) => importMesh(MeshFileType.WSO);
             HScale fatnessHScale = new HScale(-1, 1, .01)
                 {
                     Value = mFat - mThin
