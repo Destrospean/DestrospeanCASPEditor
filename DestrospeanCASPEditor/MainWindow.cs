@@ -868,8 +868,8 @@ public partial class MainWindow : Window
                     ResourceListStore.AppendValues(tag, "0x" + resourceIndexEntry.ResourceType.ToString("X8"), "0x" + resourceIndexEntry.ResourceGroup.ToString("X8"), "0x" + resourceIndexEntry.Instance.ToString("X16"), resourceIndexEntry);
                     break;
             }
-            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(resourceIndexEntry.ReverseEvaluateResourceKey());
             var key = resourceIndexEntry.ReverseEvaluateResourceKey();
+            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(key);
             switch (tag)
             {
                 case "_IMG":
