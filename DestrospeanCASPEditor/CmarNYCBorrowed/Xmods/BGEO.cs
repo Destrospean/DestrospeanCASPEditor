@@ -323,7 +323,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public BGEO(GEOM[][][] ageGenderLODMorphMeshes, int[] ageArray, int[] genderArray, int[] speciesArray, int[] regionArray) //dimensions: age/gender group, lod, mesh - for slider morphs
         {
-            if (ageGenderLODMorphMeshes.GetLength(0) != ageArray.Length || ageGenderLODMorphMeshes.GetLength(0) != genderArray.Length || ageGenderLODMorphMeshes.GetLength(0) != speciesArray.Length || ageGenderLODMorphMeshes.GetLength(0) != regionArray.Length)
+            if (ageGenderLODMorphMeshes.Length != ageArray.Length || ageGenderLODMorphMeshes.Length != genderArray.Length || ageGenderLODMorphMeshes.Length != speciesArray.Length || ageGenderLODMorphMeshes.Length != regionArray.Length)
             {
                 throw new BlendException("Age/gender/species/region array lengths do not match GEOM array length!");
             }
@@ -335,7 +335,7 @@ namespace Destrospean.CmarNYCBorrowed
                     'O'
                 };
             mVersion = 768;
-            mSection1Count = ageGenderLODMorphMeshes.GetLength(0);
+            mSection1Count = ageGenderLODMorphMeshes.Length;
             mSection1LODCount = 4;
             mSection1 = new Section1[Section1Count];
             var section2 = new List<Section2>();
@@ -381,7 +381,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public BGEO(GEOM[][][] ageGenderLODMorphMeshes, uint[] ageGenderSpeciesArray, uint[] regionArray) //dimensions: age/gender group, lod, mesh - for slider morphs
         {
-            if (ageGenderLODMorphMeshes.GetLength(0) != ageGenderSpeciesArray.Length || ageGenderLODMorphMeshes.GetLength(0) != regionArray.Length)
+            if (ageGenderLODMorphMeshes.Length != ageGenderSpeciesArray.Length || ageGenderLODMorphMeshes.Length != regionArray.Length)
             {
                 throw new BlendException("Age/gender/species/region array lengths do not match GEOM array length!");
             }
@@ -393,7 +393,7 @@ namespace Destrospean.CmarNYCBorrowed
                     'O'
                 };
             mVersion = 768;
-            mSection1Count = ageGenderLODMorphMeshes.GetLength(0);
+            mSection1Count = ageGenderLODMorphMeshes.Length;
             mSection1LODCount = 4;
             mSection1 = new Section1[Section1Count];
             var section2 = new List<Section2>();

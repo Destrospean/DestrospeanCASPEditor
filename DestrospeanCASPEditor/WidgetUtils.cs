@@ -55,11 +55,11 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             var mainWindow = MainWindow.Singleton;
             var geometryResourceKey = "";
-            foreach (var geometryResourceKvp in mainWindow.GeometryResources)
+            foreach (var geometryResourceKvp in mainWindow.PreloadedGeometryResources)
             {
                 if (geometryResourceKvp.Value == geometryResource)
                 {
-                    geometryResourceKey = geometryResourceKvp.Key.ReverseEvaluateResourceKey();
+                    geometryResourceKey = geometryResourceKvp.Key;
                     break;
                 }
             }

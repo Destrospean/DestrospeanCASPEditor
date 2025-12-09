@@ -988,7 +988,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
+        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<string, GeometryResource> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
         {
             CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
             ParentPackage = package;
@@ -1027,14 +1027,15 @@ namespace Destrospean.DestrospeanCASPEditor
             CurrentRig = null;
         }
 
-        public void LoadLODs(Dictionary<IResourceIndexEntry, GeometryResource> geometryResources, Dictionary<IResourceIndexEntry, GenericRCOLResource> vpxyResources)
+        public void LoadLODs(Dictionary<string, GeometryResource> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
         {
             var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
             GenericRCOLResource vpxyResource;
-            if (!vpxyResources.TryGetValue(vpxyResourceIndexEntry, out vpxyResource))
+            var vpxyKey = vpxyResourceIndexEntry.ReverseEvaluateResourceKey();
+            if (!vpxyResources.TryGetValue(vpxyKey, out vpxyResource))
             {
-                vpxyResources.Add(vpxyResourceIndexEntry, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
-                vpxyResource = vpxyResources[vpxyResourceIndexEntry];
+                vpxyResources.Add(vpxyKey, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
+                vpxyResource = vpxyResources[vpxyKey];
             }
             foreach (var entry in ((s3pi.GenericRCOLResource.VPXY)vpxyResource.ChunkEntries[0].RCOLBlock).Entries)
             {
@@ -1046,10 +1047,11 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         var geometryResourceIndexEntry = ParentPackage.GetResourceIndexEntry(entry00.ParentTGIBlocks[tgiIndex]);
                         GeometryResource geometryResource;
-                        if (!geometryResources.TryGetValue(geometryResourceIndexEntry, out geometryResource))
+                        var geometryResourceKey = geometryResourceIndexEntry.ReverseEvaluateResourceKey();
+                        if (!geometryResources.TryGetValue(geometryResourceKey, out geometryResource))
                         {
-                            geometryResources.Add(geometryResourceIndexEntry, (GeometryResource)WrapperDealer.GetResource(0, ParentPackage, geometryResourceIndexEntry));
-                            geometryResource = geometryResources[geometryResourceIndexEntry];
+                            geometryResources.Add(geometryResourceKey, (GeometryResource)WrapperDealer.GetResource(0, ParentPackage, geometryResourceIndexEntry));
+                            geometryResource = geometryResources[geometryResourceKey];
                         }
                         LODs[entry00.EntryID].Add(geometryResource);
                     }

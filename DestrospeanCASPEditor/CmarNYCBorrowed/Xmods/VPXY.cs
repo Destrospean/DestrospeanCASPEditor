@@ -8,13 +8,17 @@ namespace Destrospean.CmarNYCBorrowed
     {
         float[] mBoundingBox;
 
-        byte mCount, mFlag;
+        byte mBoxType, mCount, mFlag;
+
+        int mChunkPosition, mChunkSize, mExternalCount, mFTPTIndex, mIndexCount, mInternalCount, mRCOLCount, mRCOLVersion, mTGICount, mTGIOffset, mTGISize, mVersion;
 
         Entry[] mEntries;
 
-        int mExternalCount, mInternalCount, mTGICount, mTGISize, mVersion;
-
         TGI[] mExternalITG, mInternalITG, mTGIList;
+
+        char[] mMagic;
+
+        uint mUnknown;
 
         public TGI[] AllLinks
         {
@@ -182,9 +186,9 @@ namespace Destrospean.CmarNYCBorrowed
         public VPXY(BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
-            reader.ReadInt32();
-            reader.ReadInt32();
-            reader.ReadInt32();
+            mRCOLVersion = reader.ReadInt32();
+            mRCOLCount = reader.ReadInt32();
+            mIndexCount = reader.ReadInt32();
             mExternalCount = reader.ReadInt32();
             mInternalCount = reader.ReadInt32();
             if (mInternalCount > 0)
@@ -203,11 +207,11 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 mExternalITG[i] = new TGI(reader, TGI.TGISequence.ITG);
             }
-            reader.ReadInt32();
-            reader.ReadInt32();
-            reader.ReadChars(4);
+            mChunkPosition = reader.ReadInt32();
+            mChunkSize = reader.ReadInt32();
+            mMagic = reader.ReadChars(4);
             mVersion = reader.ReadInt32();
-            reader.ReadInt32();
+            mTGIOffset = reader.ReadInt32();
             mTGISize = reader.ReadInt32();
             mCount = reader.ReadByte();
             mEntries = new Entry[mCount];
@@ -215,19 +219,19 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 mEntries[i] = new Entry(reader);
             }
-            reader.ReadByte();
+            mBoxType = reader.ReadByte();
             mBoundingBox = new float[6];
             for (var i = 0; i < 6; i++)
             {
                 mBoundingBox[i] = reader.ReadSingle();
             }
-            reader.ReadUInt32();
+            mUnknown = reader.ReadUInt32();
             if (mVersion <= 4)
             {
                 mFlag = reader.ReadByte();
                 if (mFlag == 1)
                 {
-                    reader.ReadInt32();
+                    mFTPTIndex = reader.ReadInt32();
                 }
             }
             if (mTGISize > 0)
@@ -246,6 +250,102 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
+        public VPXY(TGI tgi, TGI[][] geomTGIs) : this(tgi, new TGI[] { }, geomTGIs)
+        {
+        }
+
+        public VPXY(TGI tgi, TGI[] boneTGIs, TGI[][] geomTGIs)
+        {
+            if (geomTGIs.GetLength(0) != 4)
+            {
+                throw new ApplicationException("First dimension of LOD TGIs must be 4!");
+            }
+            mRCOLVersion = 3;
+            mRCOLCount = 1;
+            mIndexCount = 0;
+            mExternalCount = 0;
+            mInternalCount = 1;
+            mInternalITG = new TGI[]
+                {
+                    new TGI(tgi.Type, tgi.Group, tgi.Instance)
+                };
+            mChunkPosition = 44;
+            mChunkSize = 141;
+            mMagic = new char[4]
+                {
+                    'V',
+                    'P',
+                    'X',
+                    'Y'
+                };
+            mVersion = 4;
+            mCount = 0;
+            mTGICount = 0;
+            for (var i = 0; i < boneTGIs.Length; i++)
+            {
+                mCount++;
+                mTGICount++;
+            }
+            for (var i = 0; i < geomTGIs.GetLength(0); i++)
+            {
+                for (var j = 0; j < geomTGIs[i].Length; j++)
+                {
+                    mTGICount++;
+                }
+                if (geomTGIs[i].Length > 0)
+                {
+                    mCount++;
+                }
+            }
+            mBoxType = 2;
+            mBoundingBox = new float[]
+                {
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                };
+            mUnknown = 0;
+            mFlag = 0;
+            mEntries = new Entry[mCount];
+            mTGIList = new TGI[mTGICount];
+            if (mCount > 0)
+            {
+                int entryCount = 0,
+                tgiCount = 0;
+                for (var i = 0; i < boneTGIs.Length; i++)
+                {
+                    mEntries[entryCount] = new Entry(tgiCount);
+                    mTGIList[tgiCount] = new TGI(boneTGIs[i].Type, boneTGIs[i].Group, boneTGIs[i].Instance);
+                    entryCount++;
+                    tgiCount++;
+                }
+                for (var i = 0; i < 4; i++)
+                {
+                    var temp = new List<int>();
+                    for (int j = 0; j < geomTGIs[i].Length; j++)
+                    {
+                        temp.Add(tgiCount);
+                        mTGIList[tgiCount] = new TGI(geomTGIs[i][j].Type, geomTGIs[i][j].Group, geomTGIs[i][j].Instance);
+                        tgiCount++;
+                    }
+                    if (temp.Count > 0)
+                    {
+                        mEntries[entryCount] = new Entry(i, temp.ToArray());
+                        entryCount++;
+                    }
+                }
+            }
+            mTGIOffset = 35;
+            foreach (var entry in mEntries)
+            {
+                mTGIOffset += entry.Size;
+            }
+            mTGISize = mTGICount * 16 + 4;
+        }
+
         public TGI[] MeshLinks(int lod)
         {
             var temp = new List<TGI>();
@@ -260,6 +360,53 @@ namespace Destrospean.CmarNYCBorrowed
                 }
             }
             return temp.ToArray();
+        }
+
+        public void Write(BinaryWriter writer)
+        {
+            writer.Write(mRCOLVersion);
+            writer.Write(mRCOLCount);
+            writer.Write(mIndexCount);
+            writer.Write(mExternalCount);
+            writer.Write(mInternalCount);
+            for (var i = 0; i < mInternalCount; i++)
+            {
+                mInternalITG[i].Write(writer, TGI.TGISequence.ITG);
+            }
+            for (var i = 0; i < mExternalCount; i++)
+            {
+                mExternalITG[i].Write(writer, TGI.TGISequence.ITG);
+            }
+            writer.Write(mChunkPosition);
+            writer.Write(mChunkSize);
+            writer.Write(mMagic);
+            writer.Write(mVersion);
+            writer.Write(mTGIOffset);
+            writer.Write(mTGISize);
+            writer.Write(mCount);
+            for (var i = 0; i < mCount; i++)
+            {
+                mEntries[i].Write(writer);
+            }
+            writer.Write(mBoxType);
+            for (var i = 0; i < 6; i++)
+            {
+                writer.Write(mBoundingBox[i]);
+            }
+            writer.Write(mUnknown);
+            writer.Write(mFlag);
+            if (mFlag == 1)
+            {
+                writer.Write(mFTPTIndex);
+            }
+            if (mTGISize > 0)
+            {
+                writer.Write(mTGICount);
+                for (var i = 0; i < mTGICount; i++)
+                {
+                    mTGIList[i].Write(writer);
+                }
+            }
         }
     }
 }

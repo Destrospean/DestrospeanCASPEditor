@@ -401,7 +401,7 @@ public partial class MainWindow : Window
     void LoadGEOMs(CASPart casPart)
     {
         mMeshes.Clear();
-        if (!CASParts.ContainsValue(casPart))
+        if (!PreloadedCASParts.ContainsValue(casPart))
         {
             return;
         }
@@ -458,15 +458,12 @@ public partial class MainWindow : Window
                         {
                             try
                             {
-                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                                var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                                 var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
-                                foreach (var link in vpxy.MeshLinks(lod))
+                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
                                 {
                                     try
                                     {
-                                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
-                                        morphs.Add(((GeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToGEOM());
+                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey()].ToGEOM());
                                     }
                                     catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                     {
@@ -483,9 +480,7 @@ public partial class MainWindow : Window
                     {
                         try
                         {   
-                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                            var vpxy = new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
-                            foreach (var link in vpxy.AllLinks)
+                            foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey()].Stream)).AllLinks)
                             {
                                 try
                                 {   
@@ -529,11 +524,11 @@ public partial class MainWindow : Window
                 }
             }
             var key = "";
-            foreach (var geometryResourceKvp in GeometryResources)
+            foreach (var geometryResourceKvp in PreloadedGeometryResources)
             {
                 if (geometryResourceKvp.Value == geometryResource)
                 {
-                    key = geometryResourceKvp.Key.ReverseEvaluateResourceKey();
+                    key = geometryResourceKvp.Key;
                     break;
                 }
             }
@@ -848,7 +843,7 @@ public partial class MainWindow : Window
                 CASPart.Preset currentPreset = null;
                 if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
                 {
-                    currentPreset = CASParts[(s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
+                    currentPreset = PreloadedCASParts[((s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey()].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
                 }
                 if (currentPreset != null && currentPreset.SpecularMap != null)
                 {

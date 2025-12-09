@@ -1960,7 +1960,7 @@ namespace Destrospean.CmarNYCBorrowed
                 get
                 {
                     var pairs = new List<float[]>();
-                    for (var i = 0; i < mCoordinates.GetLength(0); i++)
+                    for (var i = 0; i < mCoordinates.Length; i++)
                     {
                         pairs.Add(mCoordinates[i]);
                     }
@@ -1973,7 +1973,7 @@ namespace Destrospean.CmarNYCBorrowed
                 get
                 {
                     var pairs = new List<Vector2>();
-                    for (var i = 0; i < mCoordinates.GetLength(0); i++)
+                    for (var i = 0; i < mCoordinates.Length; i++)
                     {
                         pairs.Add(new Vector2(mCoordinates[i]));
                     }
