@@ -2054,12 +2054,12 @@ namespace Destrospean.CmarNYCBorrowed
 
             public UV UV;
 
-            public VertexData(ushort index, Position position, Normal norm, UV uv, Bones bones, TagValue color, uint vertexID)
+            public VertexData(ushort index, Position position, Normal normal, UV uv, Bones bones, TagValue color, uint vertexID)
             {
                 ID = vertexID;
                 Bones = bones;
                 Index = index;
-                Normal = norm;
+                Normal = normal;
                 Position = position;
                 TagValue = color;
                 UV = uv;
