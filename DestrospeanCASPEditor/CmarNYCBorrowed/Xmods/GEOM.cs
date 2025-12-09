@@ -3300,7 +3300,7 @@ namespace Destrospean.CmarNYCBorrowed
             mBoneHashArray = usedBoneHash.ToArray();
         }
 
-        public static GEOM[] GEOMsFromOBJ(OBJ obj, GEOM refMesh, TGI bumpMapTGI, bool smoothModel, bool cleanModel, Gtk.ProgressBar progressBar)
+        public static GEOM[] GEOMsFromOBJ(OBJ obj, GEOM refMesh, TGI bumpMapTGI, bool smoothModel, bool cleanModel, Action updateProgressCallback = null)
         {
             if (!refMesh.IsValid || !refMesh.IsBase)
             {
@@ -3346,14 +3346,6 @@ namespace Destrospean.CmarNYCBorrowed
             }
             var geomList = new GEOM[obj.GroupCount];
             var currentBase = 0;
-            if (progressBar != null)
-            {
-                progressBar.Adjustment.Lower = 0;
-                progressBar.Adjustment.Upper = obj.FaceCount;
-                progressBar.Adjustment.Value = 0;
-                progressBar.PulseStep = 1;
-                progressBar.Visible = true;
-            }
             for (var i = 0; i < geomList.Length; i++)
             {
                 if (!isMorph[i])
@@ -3364,10 +3356,9 @@ namespace Destrospean.CmarNYCBorrowed
                 vertices = new List<int[]>();
                 foreach (var face in obj.GroupArray[i].Faces)
                 {
-                    if (progressBar != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progressBar.PerformStep();
-                        progressBar.Pulse();
+                        updateProgressCallback();
                     }
                     int j = 0,
                     vertexIndex = 0;;
@@ -3567,10 +3558,6 @@ namespace Destrospean.CmarNYCBorrowed
                             break;
                     }
                 }
-            }
-            if (progressBar != null)
-            {
-                progressBar.Visible = false;
             }
             return geomList;
         }
