@@ -2668,7 +2668,7 @@ namespace Destrospean.CmarNYCBorrowed
             mFacePointCount += meshToAppend.mFacePointCount;
         }
 
-        public void AutoBone(GEOM refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPointCount, float weightingFactor, bool restrictToFace, Gtk.ProgressBar progress)
+        public void AutoBone(GEOM refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPointCount, float weightingFactor, bool restrictToFace, Action updateProgressCallback = null)
         {
             uint[] newBoneHashList,
             refBoneHashList = refMesh.BoneHashList;
@@ -2705,10 +2705,9 @@ namespace Destrospean.CmarNYCBorrowed
                 stepIt++;
                 if (stepIt >= 100)
                 {
-                    if (progress != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progress.PerformStep();
-                        progress.Pulse();
+                        updateProgressCallback();
                     }
                     stepIt = 0;
                 }

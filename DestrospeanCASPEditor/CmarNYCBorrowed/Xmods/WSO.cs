@@ -1404,7 +1404,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public void AutoBone(WSO refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPoints, float weightingFactor, bool restrictToFace, Gtk.ProgressBar progress)
+        public void AutoBone(WSO refMesh, bool unassignedVerticesOnly, bool interpolate, int interpolationPoints, float weightingFactor, bool restrictToFace, Action updateProgressCallback = null)
         {
             int emptyBone;
             string[] newBoneNameList,
@@ -1455,10 +1455,9 @@ namespace Destrospean.CmarNYCBorrowed
                 stepIt++;
                 if (stepIt >= 100)
                 {
-                    if (progress != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progress.PerformStep();
-                        progress.Pulse();
+                        updateProgressCallback();
                     }
                     stepIt = 0;
                 }
@@ -1523,7 +1522,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public void AutoMorph(WSO refMesh, Gtk.ProgressBar progressBar, bool interpolate, int interpolationPoints, bool restrictToFace, bool doFat, bool doThin, bool doFit, bool doSpecial, float weightingFactor)
+        public void AutoMorph(WSO refMesh, bool interpolate, int interpolationPoints, bool restrictToFace, bool doFat, bool doThin, bool doFit, bool doSpecial, float weightingFactor, Action updateProgressCallback = null)
         {
             var refPoints = new int[Base.VertexCount][];
             var refVertices = new Vector3[refMesh.Base.VertexCount];
@@ -1548,10 +1547,9 @@ namespace Destrospean.CmarNYCBorrowed
                 stepIt++;
                 if (stepIt >= 100)
                 {
-                    if (progressBar != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progressBar.PerformStep();
-                        progressBar.Pulse();
+                        updateProgressCallback();
                     }
                     stepIt = 0;
                 }
@@ -1567,42 +1565,38 @@ namespace Destrospean.CmarNYCBorrowed
             if (doFat)
             {
                 Fat = MakeWSOAutoMorph(Base, refMesh.Base, refMesh.Fat, refPoints, valueWeights, MeshName.group_fat);
-                if (progressBar != null)
+                if (updateProgressCallback != null)
                 {
-                    //progressBar.PerformStep();
-                    progressBar.Pulse();
+                    updateProgressCallback();
                 }
             }
             if (doThin)
             {
                 Thin = MakeWSOAutoMorph(Base, refMesh.Base, refMesh.Thin, refPoints, valueWeights, MeshName.group_thin);
-                if (progressBar != null)
+                if (updateProgressCallback != null)
                 {
-                    //progressBar.PerformStep();
-                    progressBar.Pulse();
+                    updateProgressCallback();
                 }
             }
             if (doFit)
             {
                 Fit = MakeWSOAutoMorph(Base, refMesh.Base, refMesh.Fit, refPoints, valueWeights, MeshName.group_fit);
-                if (progressBar != null)
+                if (updateProgressCallback != null)
                 {
-                    //progressBar.PerformStep();
-                    progressBar.Pulse();
+                    updateProgressCallback();
                 }
             }
             if (doSpecial)
             {
                 Special = MakeWSOAutoMorph(Base, refMesh.Base, refMesh.Special, refPoints, valueWeights, MeshName.group_special);
-                if (progressBar != null)
+                if (updateProgressCallback != null)
                 {
-                    //progressBar.PerformStep();
-                    progressBar.Pulse();
+                    updateProgressCallback();
                 }
             }
         }
 
-        public void AutoUV(WSO refMesh, bool unassignedOnly, float weightingFactor, Gtk.ProgressBar progress)
+        public void AutoUV(WSO refMesh, bool unassignedOnly, float weightingFactor, Action updateProgressCallback = null)
         {
             var refVertices = new Vector3[refMesh.Base.VertexCount];
             for (var i = 0; i < refVertices.Length; i++)
@@ -1642,10 +1636,9 @@ namespace Destrospean.CmarNYCBorrowed
                 stepIt++;
                 if (stepIt >= 100)
                 {
-                    if (progress != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progress.PerformStep();
-                        progress.Pulse();
+                        updateProgressCallback();
                     }
                     stepIt = 0;
                 }
@@ -2308,7 +2301,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
         }
 
-        public static WSO[] WSOsfromOBJ(OBJ obj, WSO refMesh, bool smoothModel, bool cleanModel, bool flipUV, Gtk.ProgressBar progressBar)
+        public static WSO[] WSOsfromOBJ(OBJ obj, WSO refMesh, bool smoothModel, bool cleanModel, bool flipUV, Action updateProgressCallback = null)
         {
             if (obj.UVArray.Length == 0)
             {
@@ -2364,10 +2357,9 @@ namespace Destrospean.CmarNYCBorrowed
                 vertices = new List<int[]>();
                 foreach (var face in obj.GroupArray[i].Faces)
                 {
-                    if (progressBar != null)
+                    if (updateProgressCallback != null)
                     {
-                        //progressBar.PerformStep();
-                        progressBar.Pulse();
+                        updateProgressCallback();
                     }
                     var temp = new int[3];
                     int j = 0,
@@ -2392,10 +2384,6 @@ namespace Destrospean.CmarNYCBorrowed
             wsos[index].mMeshes = meshGroups.ToArray();
             wsos[index].mMeshCount = meshGroups.Count;
             wsos[index].AutoBone(refMesh, false, true, 3, 2, false, null);
-            if (progressBar != null)
-            {
-                progressBar.Visible = false;
-            }
             return wsos.ToArray();
         }
     }
