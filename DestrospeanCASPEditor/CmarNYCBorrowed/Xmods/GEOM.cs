@@ -3354,7 +3354,15 @@ namespace Destrospean.CmarNYCBorrowed
                 }
                 List<int[]> faces = new List<int[]>(),
                 vertices = new List<int[]>();
-                foreach (var face in obj.GroupArray[i].Faces)
+                OBJ.Group[] groupArray = 
+                    {
+                        Array.Find(obj.GroupArray, x => x.GroupName.EndsWith("_base")),
+                        Array.Find(obj.GroupArray, x => x.GroupName.EndsWith("_fat")),
+                        Array.Find(obj.GroupArray, x => x.GroupName.EndsWith("_fit")),
+                        Array.Find(obj.GroupArray, x => x.GroupName.EndsWith("_thin")),
+                        Array.Find(obj.GroupArray, x => x.GroupName.EndsWith("_special"))
+                    };
+                foreach (var face in groupArray[i].Faces)
                 {
                     if (updateProgressCallback != null)
                     {
@@ -3404,7 +3412,7 @@ namespace Destrospean.CmarNYCBorrowed
                 geomList[i].mVertexCount = vertices.Count;
                 if (isMorph[i] && geomList[i].mVertexCount != geomList[currentBase].mVertexCount)
                 {
-                    throw new MeshException("The number of vertices in " + obj.GroupArray[i].GroupName + " does not match the base mesh!");
+                    throw new MeshException("The number of vertices in " + groupArray[i].GroupName + " does not match the base mesh!");
                 }
                 if (isMorph[i])
                 {
@@ -3430,7 +3438,7 @@ namespace Destrospean.CmarNYCBorrowed
                 geomList[i].mFacePointCount = faces.Count * 3;
                 if (isMorph[i] && geomList[i].mFacePointCount != geomList[currentBase].mFacePointCount)
                 {
-                    throw new MeshException("The number of faces in " + obj.GroupArray[i].GroupName + " does not match the base mesh!");
+                    throw new MeshException("The number of faces in " + groupArray[i].GroupName + " does not match the base mesh!");
                 }
                 geomList[i].mFaces = new Face[faces.Count];
                 for (var j = 0; j < faces.Count; j++)
