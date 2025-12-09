@@ -375,8 +375,8 @@ public partial class MainWindow : Window
                         }
                     }
                     fileChooserDialog.Destroy();
-                };
-            System.Action<MeshFileType> importMesh = (MeshFileType meshFileType) =>
+                },
+            importMesh = (MeshFileType meshFileType) =>
                 {
                     switch (meshFileType)
                     {
