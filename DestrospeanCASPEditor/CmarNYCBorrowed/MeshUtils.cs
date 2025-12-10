@@ -40,7 +40,7 @@ namespace Destrospean.CmarNYCBorrowed
             return new RIG(new System.IO.BinaryReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
         }
 
-        public static GEOM ToGEOM(this GEOM baseMesh, BGEO morph, int lod, Species species, AgeGender age, AgeGender gender)
+        public static GEOM LoadBGEOMorph(this GEOM baseMesh, BGEO morph, int lod, Species species, AgeGender age, AgeGender gender)
         {
             if (baseMesh == null || !baseMesh.HasVertexIDs)
             {
