@@ -602,7 +602,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         logosUpperLeft = new List<float[]>();
                         List<float> logosRotation = new List<float>(),
                         stencilsRotation = new List<float>();
-                        string partType = null;
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
                             string key = propertyXmlNodeKvp.Key.ToLower(),
@@ -676,9 +675,6 @@ namespace Destrospean.DestrospeanCASPEditor
                                     case "overlay":
                                         overlay = ParentPackage.GetTexture(value, width, height);
                                         break;
-                                    case "parttype":
-                                        partType = value;
-                                        break;
                                     case "root color":
                                         rootColor = ParseCommaSeparatedValues(value);
                                         break;
@@ -690,7 +686,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         if (diffuseMap != null)
                         {
-                            if (partType.ToLower() == "hair")
+                            if (mXmlDocument.SelectSingleNode("complate").Attributes["name"].Value.ToLower() == "hairuniversal")
                             {
                                 float[][] hairMatrix =
                                     {
