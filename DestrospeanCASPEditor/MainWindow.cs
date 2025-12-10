@@ -448,7 +448,7 @@ public partial class MainWindow : Window
                         }
                         using (var fileStream = File.OpenRead(fileChooserDialog.Filename))
                         {
-                            var newGEOMPlusMorphs = GEOM.GEOMsFromOBJ(meshFileType == MeshFileType.OBJ ? new OBJ(new StreamReader(fileStream)) : meshFileType == MeshFileType.WSO ? new OBJ(new WSO(new BinaryReader(fileStream))) : null, geom, new TGI(), false, false, null);
+                            var newGEOMPlusMorphs = GEOM.GEOMsFromOBJ(meshFileType == MeshFileType.OBJ ? new OBJ(new StreamReader(fileStream)) : meshFileType == MeshFileType.WSO ? new OBJ(new WSO(new BinaryReader(fileStream))) : null, geom, new TGI(), false, false);
                             for (var i = newGEOMPlusMorphs.Length - 1; i > -1 ; i--)
                             {
                                 var stream = new MemoryStream();
