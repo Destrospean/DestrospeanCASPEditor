@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor.Widgets;
+using Destrospean.S3PIAbstractions;
 using Gdk;
 using Gtk;
 using meshExpImp.ModelBlocks;

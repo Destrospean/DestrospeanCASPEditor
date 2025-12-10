@@ -1,4 +1,5 @@
-﻿using Gdk;
+﻿using Destrospean.S3PIAbstractions;
+using Gdk;
 using Gtk;
 
 namespace Destrospean.DestrospeanCASPEditor.Widgets

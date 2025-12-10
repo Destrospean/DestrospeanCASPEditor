@@ -202,7 +202,6 @@
     <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="CASPart.cs" />
-    <Compile Include="ResourceUtils.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
@@ -218,41 +217,15 @@
     <Compile Include="OpenGL\Shader.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
-    <Compile Include="CmarNYCBorrowed\HSVColor.cs" />
-    <Compile Include="CmarNYCBorrowed\PatternInfo.cs" />
-    <Compile Include="CmarNYCBorrowed\TextureUtils.cs" />
     <Compile Include="Dialogs\ChangePatternDialog.cs" />
-    <Compile Include="CmarNYCBorrowed\MeshUtils.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\AxisAngle.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\BBLN.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\BGEO.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\BOND.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Enums.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\GEOM.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Matrix3D.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Matrix4D.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Quaternion.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\RIG.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\TGI.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Vector2.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Vector3.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\VPXY.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Euler.cs" />
     <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\WSO.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\OBJ.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Triangle.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Seams.cs" />
-    <Compile Include="CmarNYCBorrowed\Xmods\Plane.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Widgets\" />
     <Folder Include="Dialogs\" />
     <Folder Include="OpenGL\" />
-    <Folder Include="CmarNYCBorrowed\" />
-    <Folder Include="CmarNYCBorrowed\Xmods\" />
     <Folder Include="Icons\" />
   </ItemGroup>
   <ProjectExtensions>
@@ -322,4 +295,14 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CmarNYCBorrowed\CmarNYCBorrowed\CmarNYCBorrowed.csproj">
+      <Project>{1DAE5711-35BA-4DF3-B392-68DAAAC3A5FD}</Project>
+      <Name>CmarNYCBorrowed</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions.csproj">
+      <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
+      <Name>Destrospean.S3PIAbstractions</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

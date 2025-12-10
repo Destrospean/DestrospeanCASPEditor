@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
+using Destrospean.S3PIAbstractions;
 using Gtk;
 
 namespace Destrospean.DestrospeanCASPEditor

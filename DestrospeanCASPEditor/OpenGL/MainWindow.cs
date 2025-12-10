@@ -6,6 +6,7 @@ using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.OpenGL;
+using Destrospean.S3PIAbstractions;
 using Gtk;
 using meshExpImp.ModelBlocks;
 using OpenTK;
@@ -439,7 +440,7 @@ public partial class MainWindow : Window
                 BGEO bgeo = null;
                 try
                 {
-                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
                     bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
                 }
                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
@@ -459,11 +460,11 @@ public partial class MainWindow : Window
                             try
                             {
                                 var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
-                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
+                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
                                 {
                                     try
                                     {
-                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey()].ToGEOM());
+                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()].ToGEOM());
                                     }
                                     catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                     {
@@ -480,11 +481,11 @@ public partial class MainWindow : Window
                     {
                         try
                         {   
-                            foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex]).ReverseEvaluateResourceKey()].Stream)).AllLinks)
+                            foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
                             {
                                 try
                                 {   
-                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
                                     var bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                                     bond.Weight = weights[i] * boneMorph.Amount;
                                     geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);

@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
+using Destrospean.S3PIAbstractions;
 using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
@@ -174,7 +175,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 return Array.ConvertAll(text.Split(','), float.Parse);
             }
 
-            public virtual void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
+            public virtual void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
             {
                 mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
                 if (beforeMarkUnsaved != null)
@@ -467,7 +468,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 PatternImage = null;
             }
 
-            public override void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
+            public override void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
             {
                 base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
             }
@@ -978,7 +979,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
 
-            public override void SetValue(string propertyName, string newValue, Action beforeMarkUnsaved = null)
+            public override void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
             {
                 mInternal.SetValue(propertyName, newValue, beforeMarkUnsaved ?? RegenerateTexture);
             }

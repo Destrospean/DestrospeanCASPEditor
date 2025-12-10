@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using Destrospean.S3PIAbstractions;
 using Gdk;
 using s3pi.Interfaces;
 

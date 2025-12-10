@@ -4,6 +4,7 @@ using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
+using Destrospean.S3PIAbstractions;
 using Gtk;
 using meshExpImp.ModelBlocks;
 using OpenTK.Graphics.OpenGL;
@@ -298,7 +299,7 @@ public partial class MainWindow : Window
                             BGEO bgeo = null;
                             try
                             {
-                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
                                 bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
                             }
                             catch (ResourceUtils.ResourceIndexEntryNotFoundException)
@@ -316,13 +317,13 @@ public partial class MainWindow : Window
                                     {
                                         try
                                         {
-                                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
                                             var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                                             foreach (var link in vpxy.MeshLinks(lodKvp.Key))
                                             {
                                                 try
                                                 {
-                                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link).ReverseEvaluateResourceKey());
+                                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
                                                     morphs[i] = ((GeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToGEOM();
                                                 }
                                                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
@@ -424,7 +425,7 @@ public partial class MainWindow : Window
                             }
                             try
                             {
-                                morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI).ReverseEvaluateResourceKey());
+                                morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
                                 continue;
                             }
                             catch (ResourceUtils.ResourceIndexEntryNotFoundException)
@@ -438,7 +439,7 @@ public partial class MainWindow : Window
                                     {
                                         try
                                         {
-                                            morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
+                                            morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
                                         }
                                         catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                         {
@@ -505,14 +506,14 @@ public partial class MainWindow : Window
                                             lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                 {
                                                     newGEOMPlusMorphs[i]
-                                                } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x).ReverseEvaluateResourceKey()].ToGEOM());
+                                                } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()].ToGEOM());
                                         }
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
                                             var meshLinks = vpxy.MeshLinks(j);
                                             for (var k = 0; k < meshLinks.Length; k++)
                                             {
-                                                var key = new ResourceUtils.ResourceKey(meshLinks[k]).ReverseEvaluateResourceKey();
+                                                var key = new ResourceUtils.ResourceKey(meshLinks[k].Type, meshLinks[k].Group, meshLinks[k].Instance).ReverseEvaluateResourceKey();
                                                 var evaluated = casPart.ParentPackage.EvaluateResourceKey(key);
                                                 evaluated.Package.DeleteResource(evaluated.ResourceIndexEntry);
                                                 PreloadedGeometryResources.Remove(key);
