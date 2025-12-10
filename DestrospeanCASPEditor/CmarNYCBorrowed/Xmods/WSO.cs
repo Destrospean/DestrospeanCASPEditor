@@ -21,11 +21,11 @@ namespace Destrospean.CmarNYCBorrowed
                 var index = 0;
                 if (MeshNames.Length > 1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_base");
+                    index = Array.IndexOf(MeshNames, "group_base");
                 }
                 if (index == -1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_0");
+                    index = Array.IndexOf(MeshNames, "group_0");
                 }
                 if (index > -1)
                 {
@@ -38,11 +38,11 @@ namespace Destrospean.CmarNYCBorrowed
                 var index = 0;
                 if (MeshNames.Length > 1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_base");
+                    index = Array.IndexOf(MeshNames, "group_base");
                 }
                 if (index == -1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_0");
+                    index = Array.IndexOf(MeshNames, "group_0");
                 }
                 if (index > -1)
                 {
@@ -66,11 +66,11 @@ namespace Destrospean.CmarNYCBorrowed
                 var index = 0;
                 if (MeshNames.Length > 1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_base");
+                    index = Array.IndexOf(MeshNames, "group_base");
                 }
                 if (index == -1)
                 {
-                    index = Array.IndexOf<string>(MeshNames, "group_0");
+                    index = Array.IndexOf(MeshNames, "group_0");
                 }
                 if (index > -1)
                 {
@@ -131,7 +131,7 @@ namespace Destrospean.CmarNYCBorrowed
                         }
                     }
                 }
-                return Array.IndexOf<string>(BoneNameList, "b__ROOT_bind__");
+                return Array.IndexOf(BoneNameList, "b__ROOT_bind__");
             }
         }
 
@@ -139,7 +139,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_fat");
+                var index = Array.IndexOf(MeshNames, "group_fat");
                 if (index > -1)
                 {
                     return mMeshes[index];
@@ -148,7 +148,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             set
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_fat");
+                var index = Array.IndexOf(MeshNames, "group_fat");
                 if (index > -1)
                 {
                     mMeshes[index] = value;
@@ -169,7 +169,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_fit");
+                var index = Array.IndexOf(MeshNames, "group_fit");
                 if (index > -1)
                 {
                     return mMeshes[index];
@@ -178,7 +178,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             set
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_fit");
+                var index = Array.IndexOf(MeshNames, "group_fit");
                 if (index > -1)
                 {
                     mMeshes[index] = value;
@@ -199,7 +199,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return Array.IndexOf<string>(MeshNames, "group_base") >= 0 || Array.IndexOf<string>(MeshNames, "group_0") >= 0;
+                return Array.IndexOf(MeshNames, "group_base") >= 0 || Array.IndexOf(MeshNames, "group_0") >= 0;
             }
         }
 
@@ -207,7 +207,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return Array.IndexOf<string>(MeshNames, "group_fat") >= 0;
+                return Array.IndexOf(MeshNames, "group_fat") >= 0;
             }
         }
 
@@ -215,7 +215,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return Array.IndexOf<string>(MeshNames, "group_fit") >= 0;
+                return Array.IndexOf(MeshNames, "group_fit") >= 0;
             }
         }
 
@@ -231,7 +231,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return Array.IndexOf<string>(MeshNames, "group_special") >= 0;
+                return Array.IndexOf(MeshNames, "group_special") >= 0;
             }
         }
 
@@ -239,7 +239,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return Array.IndexOf<string>(MeshNames, "group_thin") >= 0;
+                return Array.IndexOf(MeshNames, "group_thin") >= 0;
             }
         }
 
@@ -276,7 +276,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_special");
+                var index = Array.IndexOf(MeshNames, "group_special");
                 if (index > -1)
                 {
                     return mMeshes[index];
@@ -285,7 +285,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             set
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_special");
+                var index = Array.IndexOf(MeshNames, "group_special");
                 if (index > -1)
                 {
                     mMeshes[index] = value;
@@ -306,7 +306,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_thin");
+                var index = Array.IndexOf(MeshNames, "group_thin");
                 if (index > -1)
                 {
                     return mMeshes[index];
@@ -315,7 +315,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             set
             {
-                var index = Array.IndexOf<string>(MeshNames, "group_thin");
+                var index = Array.IndexOf(MeshNames, "group_thin");
                 if (index > -1)
                 {
                     mMeshes[index] = value;
@@ -910,7 +910,7 @@ namespace Destrospean.CmarNYCBorrowed
             public void AppendMeshGroup(MeshGroup meshGroupToAppend, string[] oldBoneArray, string[] newBoneArray)
             {
                 var vertices = new Vertex[VertexCount + meshGroupToAppend.VertexCount];
-                var index = Array.IndexOf<string>(newBoneArray, Enum.GetName(typeof(BoneHash), BoneHash.b__ROOT_bind__));
+                var index = Array.IndexOf(newBoneArray, Enum.GetName(typeof(BoneHash), BoneHash.b__ROOT_bind__));
                 for (var i = 0; i < VertexCount; i++)
                 {
                     vertices[i] = Vertices[i];
@@ -923,7 +923,7 @@ namespace Destrospean.CmarNYCBorrowed
                     {
                         if (bones[j] >= 0 && bones[j] < oldBoneArray.Length)
                         {
-                            boneIndices[j] = Array.IndexOf<string>(newBoneArray, oldBoneArray[bones[j]]);
+                            boneIndices[j] = Array.IndexOf(newBoneArray, oldBoneArray[bones[j]]);
                         }
                         else
                         {
@@ -1376,7 +1376,7 @@ namespace Destrospean.CmarNYCBorrowed
             var matched = true;
             for (var i = 0; i < MeshCount; i++)
             {
-                if (Array.IndexOf<string>(meshToAppend.MeshNames, mMeshes[i].MeshName) < 0)
+                if (Array.IndexOf(meshToAppend.MeshNames, mMeshes[i].MeshName) < 0)
                 {
                     matched = false;
                 }
@@ -1392,7 +1392,7 @@ namespace Destrospean.CmarNYCBorrowed
             }
             for (var i = 0; i < meshToAppend.mBones.Length; i++)
             {
-                if (Array.IndexOf<string>(BoneNameList, meshToAppend.mBones[i].Name) < 0)
+                if (Array.IndexOf(BoneNameList, meshToAppend.mBones[i].Name) < 0)
                 {
                     tempBones.Add(meshToAppend.mBones[i]);
                 }
@@ -1400,7 +1400,7 @@ namespace Destrospean.CmarNYCBorrowed
             mBones = tempBones.ToArray();
             for (var i = 0; i < MeshCount; i++)
             {
-                mMeshes[i].AppendMeshGroup(meshToAppend.mMeshes[Array.IndexOf<string>(meshToAppend.MeshNames, mMeshes[i].MeshName)], meshToAppend.BoneNameList, BoneNameList);
+                mMeshes[i].AppendMeshGroup(meshToAppend.mMeshes[Array.IndexOf(meshToAppend.MeshNames, mMeshes[i].MeshName)], meshToAppend.BoneNameList, BoneNameList);
             }
         }
 
@@ -1787,7 +1787,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public MeshGroup Mesh(string name)
         {
-            var index = Array.IndexOf<string>(MeshNames, name);
+            var index = Array.IndexOf(MeshNames, name);
             if (index > -1)
             {
                 return mMeshes[index];
@@ -1806,7 +1806,7 @@ namespace Destrospean.CmarNYCBorrowed
 
         public int MeshIndex(string name)
         {
-            return Array.IndexOf<string>(MeshNames, name);
+            return Array.IndexOf(MeshNames, name);
         }
 
         public bool MorphMatch()
