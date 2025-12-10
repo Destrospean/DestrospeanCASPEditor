@@ -162,7 +162,15 @@ namespace Destrospean.CmarNYCBorrowed
             Bitmap image;
             if (!ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
             {
-                var evaluated = package.EvaluateImageResourceKey(key);
+                ResourceUtils.EvaluatedResourceKey evaluated;
+                try
+                {
+                    evaluated = package.EvaluateImageResourceKey(key);
+                }
+                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                {
+                    return null;
+                }
                 image = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).AsBytes);
                 if (evaluated.Package == package)
                 {
@@ -192,6 +200,10 @@ namespace Destrospean.CmarNYCBorrowed
         public static uint[] GetTextureARGBArray(this IPackage package, string key, int[] dimensions = null)
         {
             var image = package.GetTexture(key, dimensions);
+            if (image == null)
+            {
+                return null;
+            }
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
             var byteCount = Math.Abs(bitmapData.Stride) * image.Height;
             var bgraValues = new byte[byteCount];

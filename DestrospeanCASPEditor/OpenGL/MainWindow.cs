@@ -401,7 +401,7 @@ public partial class MainWindow : Window
     void LoadGEOMs(CASPart casPart)
     {
         mMeshes.Clear();
-        if (!PreloadedCASParts.ContainsValue(casPart))
+        if (!PreloadedCASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
         {
             return;
         }
