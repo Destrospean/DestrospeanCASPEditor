@@ -918,6 +918,10 @@ public partial class MainWindow : Window
         }
         foreach (var casPartKvp in PreloadedCASParts)
         {
+            if (ResourceUtils.MissingResourceKeys.Contains(casPartKvp.Key))
+            {
+                continue;
+            }
             casPartKvp.Value.SavePresets();
             CurrentPackage.ReplaceResource(CurrentPackage.EvaluateResourceKey(casPartKvp.Key).ResourceIndexEntry, casPartKvp.Value.CASPartResource);
         }
@@ -929,6 +933,7 @@ public partial class MainWindow : Window
         {
             CurrentPackage.ReplaceResource(CurrentPackage.EvaluateResourceKey(vpxyResourceKvp.Key).ResourceIndexEntry, vpxyResourceKvp.Value);
         }
+        CurrentPackage.FindAll(x => !x.IsDeleted && x.Compressed == 0).ForEach(x => x.Compressed = 0xFFFF);
         if (string.IsNullOrEmpty(mSaveAsPath))
         {
             CurrentPackage.SavePackage();
@@ -1139,7 +1144,7 @@ public partial class MainWindow : Window
         fileChooserDialog.AddFilter(fileFilter);
         if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
-            SavePackage(fileChooserDialog.Filename);
+            SavePackage(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".package") ? "" : ".package"));
         }
         fileChooserDialog.Destroy();
     }
