@@ -10,8 +10,8 @@ using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using XmodsGEOM = Destrospean.CmarNYCBorrowed.GEOM;
-using XmodsVPXY = Destrospean.CmarNYCBorrowed.VPXY;
+using GEOM = Destrospean.CmarNYCBorrowed.GEOM;
+using VPXY = Destrospean.CmarNYCBorrowed.VPXY;
 
 [Flags]
 public enum NextStateOptions : byte
@@ -278,7 +278,7 @@ public partial class MainWindow : Window
                                 casPart.CASPartResource.BlendInfoThinIndex,
                                 casPart.CASPartResource.BlendInfoSpecialIndex
                             };
-                        var morphs = new XmodsGEOM[bblnIndices.Length];
+                        var morphs = new GEOM[bblnIndices.Length];
                         for (var i = 0; i < bblnIndices.Length; i++)
                         {
                             BBLN bbln;
@@ -308,14 +308,14 @@ public partial class MainWindow : Window
                                 {
                                     if (bgeo != null)
                                     {
-                                        morphs[i] = new XmodsGEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key);
+                                        morphs[i] = new GEOM(geom, bgeo, bgeo.GetSection1EntryIndex(casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12)), lodKvp.Key);
                                     }
                                     else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                                     {
                                         try
                                         {
                                             evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex]).ReverseEvaluateResourceKey());
-                                            var vpxy = new XmodsVPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                            var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
                                             foreach (var link in vpxy.MeshLinks(lodKvp.Key))
                                             {
                                                 try
@@ -448,7 +448,7 @@ public partial class MainWindow : Window
                         }
                         using (var fileStream = File.OpenRead(fileChooserDialog.Filename))
                         {
-                            var newGEOMPlusMorphs = XmodsGEOM.GEOMsFromOBJ(meshFileType == MeshFileType.OBJ ? new OBJ(new StreamReader(fileStream)) : meshFileType == MeshFileType.WSO ? new OBJ(new WSO(new BinaryReader(fileStream))) : null, geom, new TGI(), false, false, null);
+                            var newGEOMPlusMorphs = GEOM.GEOMsFromOBJ(meshFileType == MeshFileType.OBJ ? new OBJ(new StreamReader(fileStream)) : meshFileType == MeshFileType.WSO ? new OBJ(new WSO(new BinaryReader(fileStream))) : null, geom, new TGI(), false, false, null);
                             for (var i = newGEOMPlusMorphs.Length - 1; i > -1 ; i--)
                             {
                                 var stream = new MemoryStream();
@@ -481,7 +481,7 @@ public partial class MainWindow : Window
                                 }
                                 else if (morphsEvaluated[i - 1].HasValue)
                                 {
-                                    var lodMorphMeshes = new XmodsGEOM[4][];
+                                    var lodMorphMeshes = new GEOM[4][];
                                     var morphEvaluated = morphsEvaluated[i - 1].Value;
                                     var morphName = "_fat _fit _thin _special".Split(' ')[i - 1];
                                     if (morphEvaluated.ResourceIndexEntry.GetResourceTypeTag() == "BGEO")
@@ -489,18 +489,18 @@ public partial class MainWindow : Window
                                         var bgeo = new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
-                                            lodMorphMeshes[j] = new XmodsGEOM[]
+                                            lodMorphMeshes[j] = new GEOM[]
                                                 {
-                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new XmodsGEOM(newGEOMPlusMorphs[0], bgeo, 0, j)
+                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(newGEOMPlusMorphs[0], bgeo, 0, j)
                                                 };
                                         }
                                     }
                                     else
                                     {
-                                        var vpxy = new XmodsVPXY(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
+                                        var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
-                                            lodMorphMeshes[j] = j == lodKvp.Key ? new XmodsGEOM[]
+                                            lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                 {
                                                     newGEOMPlusMorphs[i]
                                                 } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x).ReverseEvaluateResourceKey()].ToGEOM());
@@ -547,7 +547,7 @@ public partial class MainWindow : Window
                                         }
                                     }
                                     var vpxyTGI = new TGI(ResourceUtils.GetResourceType("VPXY"), 1, bblnResourceIndexEntries[i - 1].Instance);
-                                    var newVPXY = new XmodsVPXY(vpxyTGI, geomTGIs);
+                                    var newVPXY = new VPXY(vpxyTGI, geomTGIs);
                                     var newBBLN = new BBLN(7, casPart.CASPartResource.Unknown1 + morphName, vpxyTGI);
                                     var vpxyResourceKey = new TGIBlock(0, null, bblnResourceIndexEntries[i - 1].ResourceType, bblnResourceIndexEntries[i - 1].ResourceGroup, bblnResourceIndexEntries[i - 1].Instance);
                                     var vpxyStream = new MemoryStream();
