@@ -87,6 +87,8 @@ public partial class MainWindow : Window
 
     public MainWindow() : base(WindowType.Toplevel)
     {
+        TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
+        TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;
         HasUnsavedChanges = false;
         Singleton = this;
         Build();

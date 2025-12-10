@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -11,6 +12,40 @@ namespace Destrospean.CmarNYCBorrowed
     {
         const float kInverseByteMax = 1f / byte.MaxValue,
         kOneThirdInverseByteMax = kInverseByteMax / 3;
+
+        static Dictionary<string, Bitmap> sPreloadedGameImages, sPreloadedImages;
+
+        public static Dictionary<string, Bitmap> PreloadedGameImages
+        {
+            get
+            {
+                if (sPreloadedGameImages == null)
+                {
+                    sPreloadedGameImages = new Dictionary<string, Bitmap>();
+                }
+                return sPreloadedGameImages;
+            }
+            set
+            {
+                sPreloadedGameImages = value;
+            }
+        }
+
+        public static Dictionary<string, Bitmap> PreloadedImages
+        {
+            get
+            {
+                if (sPreloadedImages == null)
+                {
+                    sPreloadedImages = new Dictionary<string, Bitmap>();
+                }
+                return sPreloadedImages;
+            }
+            set
+            {
+                sPreloadedImages = value;
+            }
+        }
 
         public static Bitmap GetHSVPatternImage(this IPackage package, PatternInfo pattern)
         {
@@ -160,7 +195,7 @@ namespace Destrospean.CmarNYCBorrowed
         public static Bitmap GetTexture(this IPackage package, string key, int[] dimensions = null)
         {
             Bitmap image;
-            if (!ImageUtils.PreloadedGameImages.TryGetValue(key, out image) && !ImageUtils.PreloadedImages.TryGetValue(key, out image))
+            if (!PreloadedGameImages.TryGetValue(key, out image) && !PreloadedImages.TryGetValue(key, out image))
             {
                 ResourceUtils.EvaluatedResourceKey evaluated;
                 try
@@ -174,11 +209,11 @@ namespace Destrospean.CmarNYCBorrowed
                 image = GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).AsBytes);
                 if (evaluated.Package == package)
                 {
-                    ImageUtils.PreloadedImages.Add(key, image);
+                    PreloadedImages.Add(key, image);
                 }
                 else
                 {
-                    ImageUtils.PreloadedGameImages.Add(key, image);
+                    PreloadedGameImages.Add(key, image);
                 }
             }
             if (dimensions != null && dimensions[0] != image.Size.Width && dimensions[1] != image.Size.Height)
