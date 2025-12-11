@@ -68,10 +68,10 @@ public static class Platform
     [Flags]
     public enum OSFlags
     {
-        Windows = 0x1,
-        Unix = 0x2,
-        Linux = 0x4,
-        Darwin = 0x8
+        Windows = 1,
+        Unix,
+        Linux = 4,
+        Darwin = 8
     }
 
     public static OSFlags OS

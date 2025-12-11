@@ -144,6 +144,7 @@
     </Reference>
     <Reference Include="s3pi.UserCAStPreset">
       <HintPath>..\libs\s3pi.UserCAStPreset.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.WrapperDealer">
       <HintPath>..\libs\s3pi.WrapperDealer.dll</HintPath>
