@@ -46,40 +46,43 @@ namespace Destrospean.DestrospeanCASPEditor
             patternNameListStore = new ListStore(typeof(string));
             var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
             var patternsByCategory = new Dictionary<string, List<string>>();
-            var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry).Stream).ReadToEnd());
-            foreach (var categoryNodeObject in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
-            {
-                var categoryNode = (XmlNode)categoryNodeObject;
-                if (categoryNode.Name == "category")
+            System.Action<s3pi.Interfaces.IResource> addPatternsByCategory = (s3pi.Interfaces.IResource patternListResource) =>
                 {
-                    var category = categoryNode.Attributes["name"].Value;
-                    patternsByCategory.Add(category, new List<string>());
-                    foreach (var patternNodeObject in categoryNode.ChildNodes)
+                    var xmlDocument = new XmlDocument();
+                    xmlDocument.LoadXml(new System.IO.StreamReader(patternListResource.Stream).ReadToEnd());
+                    foreach (var categoryNodeObject in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
                     {
-                        var patternNode = (XmlElement)patternNodeObject;
-                        if (patternNode.Name == "pattern")
+                        var categoryNode = (XmlNode)categoryNodeObject;
+                        if (categoryNode.Name == "category")
                         {
-                            var key = "";
-                            if (patternNode.HasAttribute("reskey"))
+                            var category = categoryNode.Attributes["name"].Value;
+                            patternsByCategory.Add(category, new List<string>());
+                            foreach (var patternNodeObject in categoryNode.ChildNodes)
                             {
-                                key = patternNode.Attributes["reskey"].Value;
+                                var patternNode = (XmlElement)patternNodeObject;
+                                if (patternNode.Name == "pattern")
+                                {
+                                    var key = "";
+                                    if (patternNode.HasAttribute("reskey"))
+                                    {
+                                        key = patternNode.Attributes["reskey"].Value;
+                                    }
+                                    else if (patternNode.HasAttribute("name"))
+                                    {
+                                        key = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(patternNode.Attributes["name"].Value).ToString("X16");
+                                    }
+                                    else
+                                    {
+                                        throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
+                                    }
+                                    //package.EvaluateResourceKey(key);
+                                    patternsByCategory[category].Add(key);
+                                    patternsByCategory[category].Add(patternNode.HasAttribute("name") ? "Materials\\" + category + "\\" + patternNode.Attributes["name"].Value : key);
+                                }
                             }
-                            else if (patternNode.HasAttribute("name"))
-                            {
-                                key = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(patternNode.Attributes["name"].Value).ToString("X16");
-                            }
-                            else
-                            {
-                                throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
-                            }
-                            //package.EvaluateResourceKey(key);
-                            patternsByCategory[category].Add(key);
-                            patternsByCategory[category].Add(patternNode.HasAttribute("name") ? "Materials\\" + category + "\\" + patternNode.Attributes["name"].Value : key);
                         }
                     }
-                }
-            }
+                };
             System.Action setPatternKeysAndPaths = delegate
                 {
                     patternKeys.Clear();
@@ -106,6 +109,11 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     DataTypeComboBox.Active = 0;
                 };
+            addPatternsByCategory(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry));
+            foreach (var patternListResourceIndexEntry in package.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("PTRN")))
+            {
+                addPatternsByCategory(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, patternListResourceIndexEntry));
+            }
             categories.AddRange(patternsByCategory.Keys);
             categories.Sort();
             if (categories.Contains("Old"))
