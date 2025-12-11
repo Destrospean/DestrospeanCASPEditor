@@ -133,7 +133,6 @@
                 <property name="MemberName" />
                 <node name="MainMenuBar" type="Menubar">
                   <node type="Menu" action="FileAction">
-                    <node type="Menuitem" action="NewAction" />
                     <node type="Menuitem" action="OpenAction" />
                     <node type="Menuitem" action="SaveAction" />
                     <node type="Menuitem" action="SaveAsAction" />

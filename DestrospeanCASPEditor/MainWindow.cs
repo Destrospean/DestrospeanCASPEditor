@@ -1021,10 +1021,6 @@ public partial class MainWindow : Window
         fileChooserDialog.Destroy();
     }
 
-    protected void OnNewActionActivated(object sender, EventArgs e)
-    {
-    }
-
     protected void OnOpenActionActivated(object sender, EventArgs e)
     {
         if (HasUnsavedChanges)

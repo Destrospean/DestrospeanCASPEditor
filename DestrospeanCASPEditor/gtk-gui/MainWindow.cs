@@ -124,7 +124,7 @@ public partial class MainWindow
 		this.MainVBox.Name = "MainVBox";
 		this.MainVBox.Spacing = 6;
 		// Container child MainVBox.Gtk.Box+BoxChild
-		this.UIManager.AddUiFromString ("<ui><menubar name='MainMenuBar'><menu name='FileAction' action='FileAction'><menuitem name='NewAction' action='NewAction'/><menuitem name='OpenAction' action='OpenAction'/><menuitem name='SaveAction' action='SaveAction'/><menuitem name='SaveAsAction' action='SaveAsAction'/><menuitem name='CloseAction' action='CloseAction'/><menuitem name='QuitAction' action='QuitAction'/></menu><menu name='ResourceAction' action='ResourceAction'><menuitem name='ImportResourceAction' action='ImportResourceAction'/><menuitem name='ReplaceResourceAction' action='ReplaceResourceAction'/><menuitem name='DeleteResourceAction' action='DeleteResourceAction'/></menu><menu name='SettingsAction' action='SettingsAction'><menuitem name='GameFoldersAction' action='GameFoldersAction'/><menuitem name='UseAdvancedShadersAction' action='UseAdvancedShadersAction'/></menu></menubar></ui>");
+		this.UIManager.AddUiFromString ("<ui><menubar name='MainMenuBar'><menu name='FileAction' action='FileAction'><menuitem name='OpenAction' action='OpenAction'/><menuitem name='SaveAction' action='SaveAction'/><menuitem name='SaveAsAction' action='SaveAsAction'/><menuitem name='CloseAction' action='CloseAction'/><menuitem name='QuitAction' action='QuitAction'/></menu><menu name='ResourceAction' action='ResourceAction'><menuitem name='ImportResourceAction' action='ImportResourceAction'/><menuitem name='ReplaceResourceAction' action='ReplaceResourceAction'/><menuitem name='DeleteResourceAction' action='DeleteResourceAction'/></menu><menu name='SettingsAction' action='SettingsAction'><menuitem name='GameFoldersAction' action='GameFoldersAction'/><menuitem name='UseAdvancedShadersAction' action='UseAdvancedShadersAction'/></menu></menubar></ui>");
 		this.MainMenuBar = ((global::Gtk.MenuBar)(this.UIManager.GetWidget ("/MainMenuBar")));
 		this.MainMenuBar.Name = "MainMenuBar";
 		this.MainVBox.Add (this.MainMenuBar);
@@ -206,7 +206,6 @@ public partial class MainWindow
 		this.OpenAction.Activated += new global::System.EventHandler (this.OnOpenActionActivated);
 		this.SaveAction.Activated += new global::System.EventHandler (this.OnSaveActionActivated);
 		this.SaveAsAction.Activated += new global::System.EventHandler (this.OnSaveAsActionActivated);
-		this.NewAction.Activated += new global::System.EventHandler (this.OnNewActionActivated);
 		this.CloseAction.Activated += new global::System.EventHandler (this.OnCloseActionActivated);
 		this.QuitAction.Activated += new global::System.EventHandler (this.OnQuitActionActivated);
 		this.GameFoldersAction.Activated += new global::System.EventHandler (this.OnGameFoldersActionActivated);
