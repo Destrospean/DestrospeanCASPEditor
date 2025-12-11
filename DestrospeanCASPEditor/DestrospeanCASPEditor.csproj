@@ -126,6 +126,7 @@
     </Reference>
     <Reference Include="s3pi.RigResource">
       <HintPath>..\libs\s3pi.RigResource.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.ScriptResource">
       <HintPath>..\libs\s3pi.ScriptResource.dll</HintPath>
