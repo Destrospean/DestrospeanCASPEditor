@@ -741,12 +741,18 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 if (controlMapArray != null && highlightColor != null && rootColor != null && tipColor != null)
                                 {
-                                    diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
+                                    try
+                                    {
+                                        diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
                                         {
                                             rootColor,
                                             highlightColor,
                                             tipColor
                                         }, false);
+                                    }
+                                    catch (IndexOutOfRangeException)
+                                    {
+                                    }
                                 }
                             }
                         }
@@ -755,11 +761,23 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             if (multiplier != null)
                             {
-                                multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
+                                try
+                                {
+                                    multiplier = multiplier.GetWithPatternsApplied(maskArray, patternImages, false);
+                                }
+                                catch (IndexOutOfRangeException)
+                                {
+                                }
                             }
                             if (overlay != null)
                             {
-                                overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
+                                try
+                                {
+                                    overlay = overlay.GetWithPatternsApplied(maskArray, patternImages, true);
+                                }
+                                catch (IndexOutOfRangeException)
+                                {
+                                }
                             }
                         }
                         var texture = new Bitmap(width, height);
