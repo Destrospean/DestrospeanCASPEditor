@@ -52,9 +52,9 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             installDirs += ";" + installDirectoryKvp.Key + "=" + installDirectoryKvp.Value;
                         }
+                        s3pi.Filetable.GameFolders.InstallDirs = installDirs.Substring(1);
                     }
                 }
-                s3pi.Filetable.GameFolders.InstallDirs = installDirs.Substring(1);
                 return;
             }
             Settings = new Dictionary<string, object>();

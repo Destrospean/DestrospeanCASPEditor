@@ -43,7 +43,6 @@
         <property name="Label" translatable="yes">New</property>
         <property name="ShortLabel" translatable="yes">New</property>
         <property name="StockId">gtk-new</property>
-        <signal name="Activated" handler="OnNewActionActivated" />
       </action>
       <action id="CloseAction">
         <property name="Type">Action</property>

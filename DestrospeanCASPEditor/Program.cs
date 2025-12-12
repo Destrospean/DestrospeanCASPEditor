@@ -4,9 +4,18 @@
     {
         public static void Main(string[] args)
         {
-            Gtk.Application.Init();
-            new MainWindow().Show();
-            Gtk.Application.Run();
+            try
+            {
+                Gtk.Application.Init();
+                new MainWindow().Show();
+                Gtk.Application.Run();
+            }
+            catch (System.Exception ex)
+            {
+                var directoryPath = System.IO.Path.GetDirectoryName(ApplicationSpecificSettings.SettingsFilePath);
+                System.IO.Directory.CreateDirectory(directoryPath);
+                System.IO.File.WriteAllText(directoryPath + System.IO.Path.DirectorySeparatorChar + "crash-" + System.DateTime.Now.ToString("yyyyMMddHHmmss") + ".txt", ex.ToString());
+            }
         }
     }
 }
