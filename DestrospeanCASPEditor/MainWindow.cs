@@ -132,7 +132,8 @@ public partial class MainWindow : Window
         }
         flagPageVBox.PackStart(buttonHBox, false, false, 0);
         flagPageVBox.PackStart(flagNotebook, true, true, 0);
-        Button nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
+        Button exportTextureButton = new Button("Export Texture"),
+        nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
             {
                 Xalign = .5f
             }),
@@ -141,6 +142,21 @@ public partial class MainWindow : Window
                 Xalign = .5f
             }),
         resetViewButton = new Button("Reset View");
+        exportTextureButton.Clicked += (sender, e) =>
+            {
+                var fileChooserDialog = new FileChooserDialog("Export Texture", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+                var fileFilter = new FileFilter
+                    {
+                        Name = "Windows Bitmap"
+                    };
+                fileFilter.AddPattern("*.bmp");
+                fileChooserDialog.AddFilter(fileFilter);
+                if (fileChooserDialog.Run() == (int)ResponseType.Accept)
+                {
+                    casPart.AllPresets[mPresetNotebook.CurrentPage].Texture.Save(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".bmp") ? "" : ".bmp"));
+                }
+                fileChooserDialog.Destroy();
+            };
         nextButton.Clicked += (sender, e) => flagNotebook.NextPage();
         prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
         resetViewButton.Clicked += (sender, e) =>
@@ -161,7 +177,8 @@ public partial class MainWindow : Window
         prevButtonAlignment.Add(prevButton);
         flagPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
         flagPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
-        flagPageButtonHBox.PackEnd(resetViewButton, false, true, 0);
+        flagPageButtonHBox.PackEnd(resetViewButton, false, true, 4);
+        flagPageButtonHBox.PackEnd(exportTextureButton, false, true, 4);
         buttonHBox.PackStart(flagPageButtonHBox, false, true, 0);
         System.Action additionalToggleAction = delegate
             {
@@ -772,7 +789,11 @@ public partial class MainWindow : Window
                     switch ((string)model.GetValue(iter, 0))
                     {
                         case "_IMG":
-                            Image.Pixbuf = ImageUtils.PreloadedImagePixbufs[key][0];
+                            List<Gdk.Pixbuf> pixbufs;
+                            if (ImageUtils.PreloadedImagePixbufs.TryGetValue(key, out pixbufs))
+                            {
+                                Image.Pixbuf = pixbufs[0];
+                            }
                             break;
                         case "CASP":
                             mGLWidget.Show();
@@ -878,8 +899,10 @@ public partial class MainWindow : Window
                 case "_IMG":
                     if (!ImageUtils.PreloadedImagePixbufs.ContainsKey(key) || missingResourceKeyIndex > -1)
                     {
-                        CurrentPackage.PreloadImage(resourceIndexEntry, Image);
-                        ImageUtils.PreloadedImagePixbufs[key].Add(ImageUtils.PreloadedImagePixbufs[key][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
+                        if (CurrentPackage.PreloadImage(resourceIndexEntry, Image))
+                        {
+                            ImageUtils.PreloadedImagePixbufs[key].Add(ImageUtils.PreloadedImagePixbufs[key][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, Gdk.InterpType.Bilinear));
+                        }
                     }
                     break;
                 case "CASP":

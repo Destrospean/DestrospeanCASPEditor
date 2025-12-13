@@ -179,6 +179,9 @@
     <Reference Include="OpenTK">
       <HintPath>..\libs\OpenTK.dll</HintPath>
     </Reference>
+    <Reference Include="TeximpNet">
+      <HintPath>..\libs\TeximpNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">

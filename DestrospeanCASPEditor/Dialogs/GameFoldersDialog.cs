@@ -55,8 +55,8 @@ namespace Destrospean.DestrospeanCASPEditor
             var outputDictionary = new Dictionary<string, string>();
             foreach (var installDirectoryKvp in installDirectories)
             {
-                output += ";" + installDirectoryKvp.Key.Name + "=" + installDirectoryKvp.Value;
-                outputDictionary.Add(installDirectoryKvp.Key.Name, installDirectoryKvp.Value);
+                output += ";" + installDirectoryKvp.Key.Name + "=" + installDirectoryKvp.Value.Replace('\\', '/');
+                outputDictionary.Add(installDirectoryKvp.Key.Name, installDirectoryKvp.Value.Replace('\\', '/'));
             }
             GameFolders.InstallDirs = output.Substring(1);
             ApplicationSpecificSettings.Settings[ApplicationSpecificSettings.JSONNodeNames.GameFolders] = outputDictionary;

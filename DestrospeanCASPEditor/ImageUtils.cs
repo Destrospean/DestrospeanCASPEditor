@@ -3,6 +3,7 @@ using System.Drawing;
 using Destrospean.S3PIAbstractions;
 using Gdk;
 using s3pi.Interfaces;
+using TeximpNet;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -18,7 +19,25 @@ namespace Destrospean.DestrospeanCASPEditor
 
         static System.Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
-            return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), GDImageLibrary._DDS.LoadImage(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry).AsBytes), System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest));
+            Bitmap bitmap;
+            var resource = s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
+            try
+            {
+                bitmap = GDImageLibrary._DDS.LoadImage(resource.AsBytes);
+            }
+            catch (System.ArgumentNullException)
+            {
+                var dds = TeximpNet.DDS.DDSFile.Read(resource.Stream);
+                var mipmap = dds.MipChains[0][0];
+                var pixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppArgb;
+                bitmap = new Bitmap(mipmap.Width, mipmap.Height, pixelFormat);
+                var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, mipmap.Width, mipmap.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, pixelFormat);
+                var byteArray = new byte[mipmap.SizeInBytes];
+                System.Runtime.InteropServices.Marshal.Copy(mipmap.Data, byteArray, 0, mipmap.SizeInBytes);
+                System.Runtime.InteropServices.Marshal.Copy(byteArray, 0, bitmapData.Scan0, mipmap.SizeInBytes);
+                bitmap.UnlockBits(bitmapData);
+            }
+            return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), bitmap, System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest));
         }
 
         public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
@@ -41,24 +60,40 @@ namespace Destrospean.DestrospeanCASPEditor
             return checkerboard;
         }
 
-        public static void PreloadGameImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        public static bool PreloadGameImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
-            var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
-            PreloadedGameImages[variables.Item1] = variables.Item2;
-            PreloadedGameImagePixbufs[variables.Item1] = new List<Pixbuf>
-                {
-                    variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
-                };
+            try
+            {
+                var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
+                PreloadedGameImages[variables.Item1] = variables.Item2;
+                PreloadedGameImagePixbufs[variables.Item1] = new List<Pixbuf>
+                    {
+                        variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                    };
+                return true;
+            }
+            catch (System.ArgumentNullException)
+            {
+                return false;
+            }
         }
 
-        public static void PreloadImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        public static bool PreloadImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
-            var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
-            PreloadedImages[variables.Item1] = variables.Item2;
-            PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
-                {
-                    variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
-                };
+            try
+            {
+                var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
+                PreloadedImages[variables.Item1] = variables.Item2;
+                PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
+                    {
+                        variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                    };
+                return true;
+            }
+            catch (System.ArgumentNullException)
+            {
+                return false;
+            }
         }
 
         public static unsafe void SetPixel(this Pixbuf pixbuf, int x, int y, byte r, byte g, byte b, byte a)
