@@ -72,7 +72,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     };
                 return true;
             }
-            catch (System.ArgumentNullException)
+            catch
             {
                 return false;
             }
@@ -90,7 +90,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     };
                 return true;
             }
-            catch (System.ArgumentNullException)
+            catch
             {
                 return false;
             }

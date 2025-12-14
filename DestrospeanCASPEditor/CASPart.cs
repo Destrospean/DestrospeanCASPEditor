@@ -558,7 +558,14 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 get
                 {
-                    return new StringReader(mXmlDocument.InnerXml);
+                    var stream = new MemoryStream();
+                    mXmlDocument.Save(new XmlTextWriter(stream, System.Text.Encoding.UTF8)
+                        {
+                            Formatting = Formatting.Indented
+                        });
+                    stream.Position = 0;
+                    var text = new StreamReader(stream).ReadToEnd();
+                    return new StringReader(text.Substring(text.IndexOf("<preset>")));
                 }
             }
 
@@ -1093,6 +1100,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public void SavePreset(int index)
         {
             CASPartResource.Presets[index].XmlFile = Presets[index].XmlFile;
+            CASPartResource.Presets[index].Unknown1 = (uint)index;
         }
 
         public void SavePresets()

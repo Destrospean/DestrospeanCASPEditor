@@ -63,6 +63,8 @@ public partial class MainWindow : Window
         }
     }
 
+    public readonly string OriginalWindowTitle;
+
     public readonly Dictionary<string, CASPart> PreloadedCASParts = new Dictionary<string, CASPart>();
 
     public readonly Dictionary<string, GeometryResource> PreloadedGeometryResources = new Dictionary<string, GeometryResource>();
@@ -93,6 +95,7 @@ public partial class MainWindow : Window
         HasUnsavedChanges = false;
         Singleton = this;
         Build();
+        OriginalWindowTitle = Title;
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
@@ -200,6 +203,12 @@ public partial class MainWindow : Window
         ResourcePropertyTable.Attach(mPresetNotebook, 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
         BuildLODNotebook(casPart);
+    }
+
+    void AddFilePathToWindowTitle(string path)
+    {
+        var directoryPath = System.IO.Path.GetDirectoryName(path);
+        Title = OriginalWindowTitle + " \u2013 " + (directoryPath.Length > 40 ? "..." + directoryPath.Substring(directoryPath.Length - 40) : directoryPath) + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(path);
     }
 
     void BuildLODNotebook(CASPart casPart, int startLODPageIndex = 0, int startGEOMPageIndex = 0)
@@ -989,6 +998,7 @@ public partial class MainWindow : Window
         ResourceUtils.MissingResourceKeys.Clear();
         RefreshWidgets();
         NextState = NextStateOptions.NoUnsavedChanges;
+        Title = OriginalWindowTitle;
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -1074,6 +1084,7 @@ public partial class MainWindow : Window
                 ResourceUtils.MissingResourceKeys.Clear();
                 RefreshWidgets();
                 NextState = NextStateOptions.NoUnsavedChanges;
+                AddFilePathToWindowTitle(fileChooserDialog.Filename);
             }
             catch (InvalidDataException ex)
             {
@@ -1167,6 +1178,7 @@ public partial class MainWindow : Window
         if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
             SavePackage(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".package") ? "" : ".package"));
+            AddFilePathToWindowTitle(fileChooserDialog.Filename);
         }
         fileChooserDialog.Destroy();
     }
