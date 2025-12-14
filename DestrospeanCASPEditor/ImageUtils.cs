@@ -38,9 +38,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 System.Runtime.InteropServices.Marshal.Copy(mipmap.Data, byteArray, 0, mipmap.SizeInBytes);
                 for (var i = 0; i < byteArray.Length && isGrayscale; i += 2)
                 {
-                    byteArrayFromGrayscale[i * 2] = byteArray[i];
-                    byteArrayFromGrayscale[i * 2 + 1] = byteArray[i];
-                    byteArrayFromGrayscale[i * 2 + 2] = byteArray[i];
+                    byteArrayFromGrayscale[i * 2] = byteArrayFromGrayscale[i * 2 + 1] = byteArrayFromGrayscale[i * 2 + 2] = byteArray[i];
                     byteArrayFromGrayscale[i * 2 + 3] = byteArray[i + 1];
                 }
                 System.Runtime.InteropServices.Marshal.Copy(isGrayscale ? byteArrayFromGrayscale : byteArray, 0, bitmapData.Scan0, mipmap.SizeInBytes << (isGrayscale ? 1 : 0));
