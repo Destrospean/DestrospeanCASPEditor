@@ -23,9 +23,9 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.DestroyWithParent = true;
 			// Internal child Destrospean.DestrospeanCASPEditor.GameFoldersDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;
-			w1.Name = "VBox";
+			w1.Name = "MainVBox";
 			w1.BorderWidth = ((uint)(2));
-			// Container child VBox.Gtk.Box+BoxChild
+			// Container child MainVBox.Gtk.Box+BoxChild
 			this.ScrolledWindow = new global::Gtk.ScrolledWindow ();
 			this.ScrolledWindow.CanFocus = true;
 			this.ScrolledWindow.Name = "ScrolledWindow";

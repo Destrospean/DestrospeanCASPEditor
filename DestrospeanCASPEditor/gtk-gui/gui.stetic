@@ -282,7 +282,7 @@
     <property name="Buttons">1</property>
     <property name="HelpButton">False</property>
     <child internal-child="VBox">
-      <widget class="Gtk.VBox" id="VBox">
+      <widget class="Gtk.VBox" id="MainVBox">
         <property name="MemberName" />
         <property name="BorderWidth">2</property>
         <child>
