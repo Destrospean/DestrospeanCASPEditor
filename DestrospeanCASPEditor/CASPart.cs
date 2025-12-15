@@ -1075,11 +1075,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         LODs[entry00.EntryID].Add(geometryResource);
                     }
-                    continue;
-                }
-                var entry01 = entry as s3pi.GenericRCOLResource.VPXY.Entry01;
-                if (entry01 != null)
-                {
                 }
             }
         }

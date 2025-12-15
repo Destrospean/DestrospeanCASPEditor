@@ -20,7 +20,7 @@ namespace Destrospean.DestrospeanCASPEditor
 		{
 			global::Stetic.Gui.Initialize (this);
 			// Widget Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog
-			this.WidthRequest = 270;
+			this.WidthRequest = 280;
 			this.HeightRequest = 120;
 			this.Name = "Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog";
 			this.Title = global::Mono.Unix.Catalog.GetString ("Unsaved Changes");
@@ -37,12 +37,11 @@ namespace Destrospean.DestrospeanCASPEditor
 			// Container child WarningAreaHBox.Gtk.Box+BoxChild
 			this.WarningImage = new global::Gtk.Image ();
 			this.WarningImage.Name = "WarningImage";
+			this.WarningImage.Xalign = 1F;
 			this.WarningImage.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-dialog-warning", global::Gtk.IconSize.Dialog);
 			this.WarningAreaHBox.Add (this.WarningImage);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningImage]));
 			w2.Position = 0;
-			w2.Expand = false;
-			w2.Fill = false;
 			// Container child WarningAreaHBox.Gtk.Box+BoxChild
 			this.WarningLabel = new global::Gtk.Label ();
 			this.WarningLabel.Name = "WarningLabel";
@@ -105,7 +104,7 @@ namespace Destrospean.DestrospeanCASPEditor
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 270;
+			this.DefaultWidth = 280;
 			this.DefaultHeight = 120;
 			this.Show ();
 		}

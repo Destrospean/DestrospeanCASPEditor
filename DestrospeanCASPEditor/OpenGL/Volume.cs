@@ -5,7 +5,7 @@ using OpenTK;
 
 namespace Destrospean.DestrospeanCASPEditor.OpenGL
 {
-    public abstract class AVolume
+    public abstract class VolumeBase
     {
         public virtual Vector3[] ColorData
         {
@@ -111,7 +111,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
         public abstract int[] GetIndices(int offset = 0);
     }
 
-    public class Volume : AVolume
+    public class Volume : VolumeBase
     {
         protected Vector3[] mColorData, mVertices;
 

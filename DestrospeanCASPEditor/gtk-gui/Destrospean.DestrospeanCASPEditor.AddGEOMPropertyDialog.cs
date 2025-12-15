@@ -4,6 +4,8 @@ namespace Destrospean.DestrospeanCASPEditor
 {
 	public partial class AddGEOMPropertyDialog
 	{
+		private global::Gtk.Alignment Alignment;
+		
 		private global::Gtk.Table ComboBoxTable;
 		
 		private global::Gtk.ComboBox mDataTypeComboBox;
@@ -22,8 +24,8 @@ namespace Destrospean.DestrospeanCASPEditor
 		{
 			global::Stetic.Gui.Initialize (this);
 			// Widget Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog
-			this.WidthRequest = 400;
-			this.HeightRequest = 160;
+			this.WidthRequest = 320;
+			this.HeightRequest = 128;
 			this.Name = "Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog";
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Resizable = false;
@@ -32,6 +34,9 @@ namespace Destrospean.DestrospeanCASPEditor
 			w1.Name = "VBox";
 			w1.BorderWidth = ((uint)(2));
 			// Container child VBox.Gtk.Box+BoxChild
+			this.Alignment = new global::Gtk.Alignment (0.5F, 0.5F, 0.5F, 1F);
+			this.Alignment.Name = "Alignment";
+			// Container child Alignment.Gtk.Container+ContainerChild
 			this.ComboBoxTable = new global::Gtk.Table (((uint)(2)), ((uint)(2)), false);
 			this.ComboBoxTable.Name = "ComboBoxTable";
 			this.ComboBoxTable.RowSpacing = ((uint)(6));
@@ -55,7 +60,6 @@ namespace Destrospean.DestrospeanCASPEditor
 			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mDataTypeLabel]));
 			w3.TopAttach = ((uint)(1));
 			w3.BottomAttach = ((uint)(2));
-			w3.XOptions = ((global::Gtk.AttachOptions)(4));
 			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child ComboBoxTable.Gtk.Table+TableChild
 			this.mFieldComboBox = global::Gtk.ComboBox.NewText ();
@@ -74,15 +78,17 @@ namespace Destrospean.DestrospeanCASPEditor
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mFieldLabel]));
 			w5.XOptions = ((global::Gtk.AttachOptions)(4));
 			w5.YOptions = ((global::Gtk.AttachOptions)(4));
-			w1.Add (this.ComboBoxTable);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(w1 [this.ComboBoxTable]));
-			w6.Position = 0;
+			this.Alignment.Add (this.ComboBoxTable);
+			w1.Add (this.Alignment);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(w1 [this.Alignment]));
+			w7.Position = 0;
+			w7.Fill = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.ActionArea
-			global::Gtk.HButtonBox w7 = this.ActionArea;
-			w7.Name = "ActionArea";
-			w7.Spacing = 10;
-			w7.BorderWidth = ((uint)(5));
-			w7.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(4));
+			global::Gtk.HButtonBox w8 = this.ActionArea;
+			w8.Name = "ActionArea";
+			w8.Spacing = 10;
+			w8.BorderWidth = ((uint)(5));
+			w8.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(4));
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.CancelButton = new global::Gtk.Button ();
 			this.CancelButton.CanDefault = true;
@@ -92,9 +98,9 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.CancelButton.UseUnderline = true;
 			this.CancelButton.Label = "gtk-cancel";
 			this.AddActionWidget (this.CancelButton, -6);
-			global::Gtk.ButtonBox.ButtonBoxChild w8 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w7 [this.CancelButton]));
-			w8.Expand = false;
-			w8.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w9 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w8 [this.CancelButton]));
+			w9.Expand = false;
+			w9.Fill = false;
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.OKButton = new global::Gtk.Button ();
 			this.OKButton.CanDefault = true;
@@ -104,15 +110,15 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.OKButton.UseUnderline = true;
 			this.OKButton.Label = "gtk-ok";
 			this.AddActionWidget (this.OKButton, -5);
-			global::Gtk.ButtonBox.ButtonBoxChild w9 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w7 [this.OKButton]));
-			w9.Position = 1;
-			w9.Expand = false;
-			w9.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w10 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w8 [this.OKButton]));
+			w10.Position = 1;
+			w10.Expand = false;
+			w10.Fill = false;
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 400;
-			this.DefaultHeight = 160;
+			this.DefaultWidth = 320;
+			this.DefaultHeight = 128;
 			this.Show ();
 		}
 	}

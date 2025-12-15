@@ -216,8 +216,14 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     alignment.Xscale = 1;
                     var comboBox = ImageResourceComboBox.CreateInstance(package, element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey(), imageWidget);
+                    var comboBoxLastActive = comboBox.Active;
                     comboBox.Changed += (sender, e) =>
                         {
+                            if (comboBox.Active == comboBox.EntryCount - 1 || comboBox.Active == comboBoxLastActive)
+                            {
+                                return;
+                            }
+                            comboBoxLastActive = comboBox.Active;
                             var key = comboBox[comboBox.Active].Label;
                             var index = element.ParentTGIBlocks.FindIndex(x => x.ReverseEvaluateResourceKey() == key);
                             if (index == -1)

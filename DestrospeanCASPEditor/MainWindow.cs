@@ -983,11 +983,13 @@ public partial class MainWindow : Window
         {
             switch (GetUnsavedChangesDialogResponseType())
             {
-                case ResponseType.Cancel:
-                    return;
+                case ResponseType.No:
+                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
+                default:
+                    return;
             }
         }
         s3pi.Package.Package.ClosePackage(0, CurrentPackage);
@@ -1004,12 +1006,14 @@ public partial class MainWindow : Window
         {
             switch (GetUnsavedChangesDialogResponseType())
             {
-                case ResponseType.Cancel:
-                    a.RetVal = true;
-                    return;
+                case ResponseType.No:
+                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
+                default:
+                    a.RetVal = true;
+                    return;
             }
         }
         Application.Quit();
@@ -1057,11 +1061,13 @@ public partial class MainWindow : Window
         {
             switch (GetUnsavedChangesDialogResponseType())
             {
-                case ResponseType.Cancel:
-                    return;
+                case ResponseType.No:
+                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
+                default:
+                    return;
             }
         }
         var fileChooserDialog = new FileChooserDialog("Open Package", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
@@ -1097,11 +1103,13 @@ public partial class MainWindow : Window
         {
             switch (GetUnsavedChangesDialogResponseType())
             {
-                case ResponseType.Cancel:
-                    return;
+                case ResponseType.No:
+                    break;
                 case ResponseType.Yes:
                     SavePackage();
                     break;
+                default:
+                    return;
             }
         }
         Application.Quit();

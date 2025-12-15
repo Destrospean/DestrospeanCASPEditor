@@ -7,18 +7,6 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public sealed class ChangePatternDialog : AddGEOMPropertyDialog
     {
-        new System.Type DataType
-        {
-            get;
-            set;
-        }
-
-        new s3pi.GenericRCOLResource.FieldType Field
-        {
-            get;
-            set;
-        }
-
         public string PatternPath
         {
             get;

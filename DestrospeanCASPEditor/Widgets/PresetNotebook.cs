@@ -155,7 +155,15 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "texture":
                         var comboBox = ImageResourceComboBox.CreateInstance(complate.ParentPackage, value, Image);
-                        comboBox.Changed += (sender, e) => complate[propertyName] = comboBox[comboBox.Active].Label;
+                        var comboBoxLastActive = comboBox.Active;
+                        comboBox.Changed += (sender, e) =>
+                            {
+                                if (comboBox.Active < comboBox.EntryCount - 1 && comboBoxLastActive != comboBox.Active)
+                                {
+                                    comboBoxLastActive = comboBox.Active;
+                                    complate[propertyName] = comboBox[comboBox.Active].Label;
+                                }
+                            };
                         valueWidget = comboBox;
                         break;
                     case "vec2":
