@@ -33,7 +33,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 bitmap = new Bitmap(mipmap.Width, mipmap.Height, pixelFormat);
                 var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, pixelFormat);
                 var byteArray = new byte[mipmap.SizeInBytes];
-                System.Runtime.InteropServices.Marshal.Copy(mipmap.Data, byteArray, 0, mipmap.SizeInBytes);
+                System.Runtime.InteropServices.Marshal.Copy(mipmap.Data, byteArray, 0, byteArray.Length);
                 if (dds.Format == TeximpNet.DDS.DXGIFormat.R8G8_UNorm)
                 {
                     var tempByteArray = new byte[byteArray.Length * 2];
