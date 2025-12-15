@@ -28,20 +28,23 @@ namespace Destrospean.DestrospeanCASPEditor
             catch (System.ArgumentNullException)
             {
                 var dds = TeximpNet.DDS.DDSFile.Read(resource.Stream);
-                var isGrayscale = dds.Format == TeximpNet.DDS.DXGIFormat.R8G8_UNorm;
                 var mipmap = dds.MipChains[0][0];
                 var pixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppArgb;
                 bitmap = new Bitmap(mipmap.Width, mipmap.Height, pixelFormat);
                 var bitmapData = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, pixelFormat);
-                byte[] byteArray = new byte[mipmap.SizeInBytes],
-                byteArrayFromGrayscale = new byte[mipmap.SizeInBytes << 1];
+                var byteArray = new byte[mipmap.SizeInBytes];
                 System.Runtime.InteropServices.Marshal.Copy(mipmap.Data, byteArray, 0, mipmap.SizeInBytes);
-                for (var i = 0; i < byteArray.Length && isGrayscale; i += 2)
+                if (dds.Format == TeximpNet.DDS.DXGIFormat.R8G8_UNorm)
                 {
-                    byteArrayFromGrayscale[i * 2] = byteArrayFromGrayscale[i * 2 + 1] = byteArrayFromGrayscale[i * 2 + 2] = byteArray[i];
-                    byteArrayFromGrayscale[i * 2 + 3] = byteArray[i + 1];
+                    var tempByteArray = new byte[byteArray.Length * 2];
+                    for (var i = 0; i < byteArray.Length; i += 2)
+                    {
+                        tempByteArray[i * 2] = tempByteArray[i * 2 + 1] = tempByteArray[i * 2 + 2] = byteArray[i];
+                        tempByteArray[i * 2 + 3] = byteArray[i + 1];
+                    }
+                    byteArray = tempByteArray;
                 }
-                System.Runtime.InteropServices.Marshal.Copy(isGrayscale ? byteArrayFromGrayscale : byteArray, 0, bitmapData.Scan0, mipmap.SizeInBytes << (isGrayscale ? 1 : 0));
+                System.Runtime.InteropServices.Marshal.Copy(byteArray, 0, bitmapData.Scan0, byteArray.Length);
                 bitmap.UnlockBits(bitmapData);
             }
             return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), bitmap, System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest));
