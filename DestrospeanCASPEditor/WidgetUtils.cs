@@ -293,11 +293,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             table.Remove(child);
                         }
-                        var element = addGEOMPropertyDialog.DataType == typeof(ElementTextureRef) ? new ElementTextureRef(0, (sender1, e1) =>
-                            {
-                            }, null, "GEOM") : (ShaderData)Activator.CreateInstance(addGEOMPropertyDialog.DataType, 0, new EventHandler((sender1, e1) => 
-                                {
-                                }));
+                        var element = addGEOMPropertyDialog.DataType == typeof(ElementTextureRef) ? new ElementTextureRef(0, null, null, "GEOM") : (ShaderData)Activator.CreateInstance(addGEOMPropertyDialog.DataType, 0, null);
                         element.Field = addGEOMPropertyDialog.Field;
                         geom.Mtnf.SData.Add(element);
                         table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);

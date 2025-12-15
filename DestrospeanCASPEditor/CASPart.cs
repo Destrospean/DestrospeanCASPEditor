@@ -751,11 +751,11 @@ namespace Destrospean.DestrospeanCASPEditor
                                     try
                                     {
                                         diffuseMap = diffuseMap.GetWithPatternsApplied(controlMapArray, new List<object>
-                                        {
-                                            rootColor,
-                                            highlightColor,
-                                            tipColor
-                                        }, false);
+                                            {
+                                                rootColor,
+                                                highlightColor,
+                                                tipColor
+                                            }, false);
                                     }
                                     catch (IndexOutOfRangeException)
                                     {
@@ -1034,9 +1034,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             while (CASPartResource.Presets.Count < Presets.Count)
             {
-                CASPartResource.Presets.Add((CASPartResource.CASPartResource.Preset)CASPartResource.Presets[0].Clone((sender, e) =>
-                    {
-                    }));
+                CASPartResource.Presets.Add((CASPartResource.CASPartResource.Preset)CASPartResource.Presets[0].Clone(null));
             }
             while (CASPartResource.Presets.Count > Presets.Count)
             {
