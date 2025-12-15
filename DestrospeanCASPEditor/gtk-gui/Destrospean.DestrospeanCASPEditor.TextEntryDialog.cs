@@ -33,6 +33,7 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.Label.Yalign = 1F;
 			this.Label.LabelProp = global::Mono.Unix.Catalog.GetString ("Label");
 			this.Label.Wrap = true;
+			this.Label.Justify = ((global::Gtk.Justification)(2));
 			w1.Add (this.Label);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(w1 [this.Label]));
 			w2.Position = 0;
@@ -44,7 +45,7 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.Entry.CanFocus = true;
 			this.Entry.Name = "Entry";
 			this.Entry.IsEditable = true;
-			this.Entry.WidthChars = 40;
+			this.Entry.WidthChars = 44;
 			this.Entry.MaxLength = 38;
 			this.Entry.InvisibleChar = '•';
 			this.Alignment.Add (this.Entry);

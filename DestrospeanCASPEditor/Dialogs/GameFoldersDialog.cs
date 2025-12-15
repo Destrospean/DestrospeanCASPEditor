@@ -32,17 +32,25 @@ namespace Destrospean.DestrospeanCASPEditor
                 var path = "";
                 var entry = new Entry
                     {
-                        Text = InstallDirectories.TryGetValue(game, out path) ? path : ""
+                        Text = InstallDirectories.TryGetValue(game, out path) ? path.Replace('/', System.IO.Path.DirectorySeparatorChar) : ""
                     };
                 entry.Changed += (sender, e) => SetInstallDirectory(game, entry.Text);
-                var alignment = new Alignment(0, .5f, 1, 0);
-                alignment.Add(entry);
-                GameFolderTable.Attach(new Label(game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""))
+                Alignment entryAlignment = new Alignment(0, .5f, 1, 0)
+                    {
+                        LeftPadding = (uint)WidgetUtils.SmallImageSize,
+                    },
+                labelAlignment = new Alignment(0, .5f, 1, 0)
+                    {
+                        LeftPadding = (uint)WidgetUtils.SmallImageSize
+                    };
+                entryAlignment.Add(entry);
+                labelAlignment.Add(new Label(game.Name == "base" ? "Base Game" : game.Longname.Replace("The Sims 3 ", ""))
                     {
                         UseUnderline = false,
                         Xalign = 0
-                    }, 0, 1, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Fill | AttachOptions.Shrink, 0, 0, 0);
-                GameFolderTable.Attach(alignment, 1, 2, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
+                    });
+                GameFolderTable.Attach(labelAlignment, 0, 1, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Fill | AttachOptions.Shrink, 0, 0, 0);
+                GameFolderTable.Attach(entryAlignment, 1, 2, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 GameFolderTable.NRows++;
             }
         }

@@ -22,6 +22,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public ChangePatternDialog(string title, Window parent, s3pi.Interfaces.IPackage package) : base(title, parent, true)
         {
             Build();
+            Alignment.LeftPadding = (uint)WidgetUtils.SmallImageSize;
             DataTypeLabel.Text = "Pattern";
             FieldLabel.Text = "Category";
             this.RescaleAndReposition(parent);

@@ -4,7 +4,7 @@ namespace Destrospean.DestrospeanCASPEditor
 {
 	public partial class AddGEOMPropertyDialog
 	{
-		private global::Gtk.Alignment Alignment;
+		private global::Gtk.Alignment mAlignment;
 		
 		private global::Gtk.Table ComboBoxTable;
 		
@@ -34,9 +34,9 @@ namespace Destrospean.DestrospeanCASPEditor
 			w1.Name = "VBox";
 			w1.BorderWidth = ((uint)(2));
 			// Container child VBox.Gtk.Box+BoxChild
-			this.Alignment = new global::Gtk.Alignment (0.5F, 0.5F, 0.5F, 1F);
-			this.Alignment.Name = "Alignment";
-			// Container child Alignment.Gtk.Container+ContainerChild
+			this.mAlignment = new global::Gtk.Alignment (0.5F, 0.5F, 1F, 1F);
+			this.mAlignment.Name = "mAlignment";
+			// Container child mAlignment.Gtk.Container+ContainerChild
 			this.ComboBoxTable = new global::Gtk.Table (((uint)(2)), ((uint)(2)), false);
 			this.ComboBoxTable.Name = "ComboBoxTable";
 			this.ComboBoxTable.RowSpacing = ((uint)(6));
@@ -78,9 +78,9 @@ namespace Destrospean.DestrospeanCASPEditor
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.mFieldLabel]));
 			w5.XOptions = ((global::Gtk.AttachOptions)(4));
 			w5.YOptions = ((global::Gtk.AttachOptions)(4));
-			this.Alignment.Add (this.ComboBoxTable);
-			w1.Add (this.Alignment);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(w1 [this.Alignment]));
+			this.mAlignment.Add (this.ComboBoxTable);
+			w1.Add (this.mAlignment);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(w1 [this.mAlignment]));
 			w7.Position = 0;
 			w7.Fill = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.ActionArea

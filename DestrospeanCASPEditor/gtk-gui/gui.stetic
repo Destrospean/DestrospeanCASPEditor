@@ -334,7 +334,6 @@
             <property name="Type">StockItem</property>
             <property name="StockId">gtk-ok</property>
             <property name="ResponseId">-5</property>
-            <signal name="Clicked" handler="OnOKButtonClicked" />
             <property name="label">gtk-ok</property>
           </widget>
           <packing>
@@ -358,9 +357,8 @@
         <property name="MemberName" />
         <property name="BorderWidth">2</property>
         <child>
-          <widget class="Gtk.Alignment" id="Alignment">
+          <widget class="Gtk.Alignment" id="mAlignment">
             <property name="MemberName" />
-            <property name="Xscale">0.5</property>
             <child>
               <widget class="Gtk.Table" id="ComboBoxTable">
                 <property name="MemberName" />
@@ -624,6 +622,7 @@
             <property name="Yalign">1</property>
             <property name="LabelProp" translatable="yes">Label</property>
             <property name="Wrap">True</property>
+            <property name="Justify">Center</property>
           </widget>
           <packing>
             <property name="Position">0</property>
@@ -640,7 +639,7 @@
                 <property name="MemberName" />
                 <property name="CanFocus">True</property>
                 <property name="IsEditable">True</property>
-                <property name="WidthChars">40</property>
+                <property name="WidthChars">44</property>
                 <property name="MaxLength">38</property>
                 <property name="InvisibleChar">•</property>
               </widget>

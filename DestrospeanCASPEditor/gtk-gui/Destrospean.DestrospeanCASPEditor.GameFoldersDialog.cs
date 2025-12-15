@@ -67,7 +67,6 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.DefaultWidth = 480;
 			this.DefaultHeight = 584;
 			this.Show ();
-			this.OKButton.Clicked += new global::System.EventHandler (this.OnOKButtonClicked);
 		}
 	}
 }

@@ -18,6 +18,14 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
+        protected Alignment Alignment
+        {
+            get
+            {
+                return mAlignment;
+            }
+        }
+
         protected ComboBox DataTypeComboBox
         {
             get
@@ -54,6 +62,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             Build();
             this.RescaleAndReposition(parent);
+            Alignment.LeftPadding = (uint)WidgetUtils.SmallImageSize;
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(ShaderData));
             CellRendererText dataTypeCell = new CellRendererText(),
             fieldCell = new CellRendererText();
