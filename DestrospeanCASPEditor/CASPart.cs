@@ -68,15 +68,13 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public readonly Preset DefaultPreset;
 
-        public readonly IResourceIndexEntry DefaultPresetResourceIndexEntry;
+        public readonly string DefaultPresetKey;
 
         public readonly Dictionary<int, List<GeometryResource>> LODs = new Dictionary<int, List<GeometryResource>>();
 
         public readonly IPackage ParentPackage;
 
         public readonly List<Preset> Presets;
-
-        public readonly IResourceIndexEntry ResourceIndexEntry;
 
         public abstract class Complate
         {
@@ -1017,16 +1015,15 @@ namespace Destrospean.DestrospeanCASPEditor
             var defaultPresetResourceIndexEntries = ParentPackage.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("_XML") && x.ResourceGroup == resourceIndexEntry.ResourceGroup && x.Instance == resourceIndexEntry.Instance);
             if (defaultPresetResourceIndexEntries.Count == 0)
             {
-                DefaultPresetResourceIndexEntry = null;
+                DefaultPresetKey = null;
                 DefaultPreset = null;
             }
             else
             {
-                DefaultPresetResourceIndexEntry = defaultPresetResourceIndexEntries[0];
-                DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, DefaultPresetResourceIndexEntry).Stream));
+                DefaultPresetKey = defaultPresetResourceIndexEntries[0].ReverseEvaluateResourceKey();
+                DefaultPreset = new Preset(this, new StreamReader(WrapperDealer.GetResource(0, ParentPackage, defaultPresetResourceIndexEntries[0]).Stream));
             }
             Presets = CASPartResource.Presets.ConvertAll(x => new Preset(this, x));
-            ResourceIndexEntry = resourceIndexEntry;
             LoadLODs(geometryResources, vpxyResources);
         }
 
@@ -1081,12 +1078,13 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public void SaveDefaultPreset()
         {   
-            if (DefaultPreset == null || DefaultPresetResourceIndexEntry == null)
+            if (DefaultPreset == null || DefaultPresetKey == null)
             {
                 return;
             }
-            var tempResourceIndexEntry = ParentPackage.AddResource(DefaultPresetResourceIndexEntry, new MemoryStream(System.Text.Encoding.UTF8.GetBytes(AllPresets[0].XmlFile.ReadToEnd())), false);
-            ParentPackage.ReplaceResource(DefaultPresetResourceIndexEntry, WrapperDealer.GetResource(0, ParentPackage, tempResourceIndexEntry));
+            var defaultPresetResourceIndexEntry = ParentPackage.EvaluateResourceKey(DefaultPresetKey).ResourceIndexEntry;
+            var tempResourceIndexEntry = ParentPackage.AddResource(defaultPresetResourceIndexEntry, new MemoryStream(System.Text.Encoding.UTF8.GetBytes(AllPresets[0].XmlFile.ReadToEnd())), false);
+            ParentPackage.ReplaceResource(defaultPresetResourceIndexEntry, WrapperDealer.GetResource(0, ParentPackage, tempResourceIndexEntry));
             ParentPackage.DeleteResource(tempResourceIndexEntry);
         }
 

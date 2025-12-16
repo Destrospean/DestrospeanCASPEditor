@@ -406,6 +406,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             propertyInfo.SetValue(property, value, null);
                         }
+                        enumInstance = propertyInfo.GetValue(property, null);
                         additionalToggleAction();
                     };
                 vBox.PackStart(checkButton, false, false, 0);
