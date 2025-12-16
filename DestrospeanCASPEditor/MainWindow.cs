@@ -378,7 +378,7 @@ public partial class MainWindow : Window
                                 {
                                     geom.Write(new BinaryWriter(fileStream));
                                 }
-                                for (var i = 0; i < morphs.Length; i++)
+                                for (var i = 0; i < Array.FindAll(morphs, x => x.IsValid).Length; i++)
                                 {
                                     if (morphs[i] != null)
                                     {
@@ -392,7 +392,7 @@ public partial class MainWindow : Window
                             case MeshFileType.OBJ:
                                 using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".obj") ? "" : ".obj")))
                                 {
-                                    new OBJ(geom, morphs).Write(new StreamWriter(fileStream));
+                                    new OBJ(geom, Array.ConvertAll(morphs, x => x.IsValid ? x : null)).Write(new StreamWriter(fileStream));
                                 }
                                 break;
                             case MeshFileType.WSO:
