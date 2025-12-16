@@ -226,7 +226,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 };
             var hBox = new HBox(false, 0);
             hBox.PackStart(new Label(isDefault ? "Default" : "Preset " + pageIndex.ToString()), true, true, 0);
-            if (CASPart.Presets.Count > 1 && CASPart.DefaultPreset == null || !isDefault)
+            if (CASPart.DefaultPreset == null ? CASPart.Presets.Count > 1 : !isDefault)
             {
                 hBox.PackEnd(deleteButton, false, true, 0);
             }
