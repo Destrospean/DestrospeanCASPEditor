@@ -85,7 +85,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "color":
                         alignment.Xscale = 0;
-                        var rgba = new List<string>(value.Split(',')).ConvertAll(new System.Converter<string, ushort>(x => (ushort)(float.Parse(x) * ushort.MaxValue)));
+                        var rgba = System.Array.ConvertAll(value.Split(','), x => (ushort)(float.Parse(x) * ushort.MaxValue));
                         var colorButton = new ColorButton
                             {
                                 Alpha = rgba[3],
@@ -97,17 +97,13 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                     },
                                 UseAlpha = true
                             };
-                        colorButton.ColorSet += (sender, e) =>
+                        colorButton.ColorSet += (sender, e) => complate[propertyName] = string.Join(",", System.Array.ConvertAll(new ushort[]
                             {
-                                rgba = new List<ushort>
-                                    {
-                                        colorButton.Color.Red,
-                                        colorButton.Color.Green,
-                                        colorButton.Color.Blue,
-                                        colorButton.Alpha
-                                    };
-                                complate[propertyName] = string.Join(",", rgba.ConvertAll(new System.Converter<ushort, float>(x => (float)x / ushort.MaxValue)));
-                            };
+                                colorButton.Color.Red,
+                                colorButton.Color.Green,
+                                colorButton.Color.Blue,
+                                colorButton.Alpha
+                            }, x => (float)x / ushort.MaxValue));
                         valueWidget = colorButton;
                         break;
                     case "float":
@@ -168,7 +164,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "vec2":
                         var hBox = new HBox();
-                        var coordinates = new List<string>(value.Split(',')).ConvertAll(new System.Converter<string, float>(float.Parse));
+                        var coordinates = System.Array.ConvertAll(value.Split(','), float.Parse);
                         var spinButtons = new List<SpinButton>
                             {
                                 new SpinButton(new Adjustment(coordinates[0], -1, 1, .0001, 10, 0), 0, 4),

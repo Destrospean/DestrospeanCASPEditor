@@ -6,7 +6,7 @@
     <ProjectGuid>{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF24}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Destrospean.DestrospeanCASPEditor</RootNamespace>
-    <AssemblyName>DestrospeanCASPEditor</AssemblyName>
+    <AssemblyName>CASDesignerToolkit</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,6 +28,11 @@
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe CASDesignerToolkit.exe --set-icon ../../Icons/CASDesignerToolkit.ico" workingdir="bin/Release" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
@@ -190,6 +195,7 @@
     <EmbeddedResource Include="Icons\BabyBump.png" />
     <EmbeddedResource Include="Icons\Fatness.png" />
     <EmbeddedResource Include="Icons\Fitness.png" />
+    <EmbeddedResource Include="Icons\CASDesignerToolkit.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -291,6 +297,7 @@
             </Rules>
           </NameConventionPolicy>
         </Policies>
+        <Deployment.LinuxDeployData scriptName="CASDesignerToolkit" />
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
@@ -303,5 +310,12 @@
       <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
       <Name>Destrospean.S3PIAbstractions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="GameFolders.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Icons\CASDesignerToolkit.svg" />
+    <None Include="Icons\CASDesignerToolkit.ico" />
   </ItemGroup>
 </Project>

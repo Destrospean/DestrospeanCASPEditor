@@ -101,10 +101,9 @@ public partial class MainWindow : Window
         ApplicationSpecificSettings.LoadSettings();
         UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
-        MainTable.Attach(new Gtk.Image
+        MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
             {
                 HeightRequest = Image.HeightRequest,
-                Pixbuf = ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)),
                 WidthRequest = Image.WidthRequest,
                 Xalign = 0,
                 Yalign = 0
@@ -708,23 +707,12 @@ public partial class MainWindow : Window
             geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
             geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fatness.png")
-                {
-                    HeightRequest = WidgetUtils.SmallImageSize,
-                    WidthRequest = WidgetUtils.SmallImageSize
-                }, false, true, 4);
+            var iconSize = WidgetUtils.SmallImageSize << 1;
+            geomPageButtonHBox.PackStart(new Image(new Gdk.Pixbuf(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fatness.png", iconSize, iconSize)), false, true, 4);
             geomPageButtonHBox.PackStart(fatnessHScale, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fitness.png")
-                {
-                    HeightRequest = WidgetUtils.SmallImageSize,
-                    WidthRequest = WidgetUtils.SmallImageSize
-                }, false, true, 4);
+            geomPageButtonHBox.PackStart(new Image(new Gdk.Pixbuf(assembly, "Destrospean.DestrospeanCASPEditor.Icons.Fitness.png", iconSize, iconSize)), false, true, 4);
             geomPageButtonHBox.PackStart(fitnessHScale, true, true, 4);
-            geomPageButtonHBox.PackStart(new Image(assembly, "Destrospean.DestrospeanCASPEditor.Icons.BabyBump.png")
-                {
-                    HeightRequest = WidgetUtils.SmallImageSize,
-                    WidthRequest = WidgetUtils.SmallImageSize
-                }, false, true, 4);
+            geomPageButtonHBox.PackStart(new Image(new Gdk.Pixbuf(assembly, "Destrospean.DestrospeanCASPEditor.Icons.BabyBump.png", iconSize, iconSize)), false, true, 4);
             geomPageButtonHBox.PackStart(specialHScale, true, true, 4);
             geomPageButtonHBox.ShowAll();
             var lodPageVBox = new VBox(false, 0);
@@ -1028,7 +1016,7 @@ public partial class MainWindow : Window
         CurrentPackage.DeleteResource(resourceIndexEntry);
         ResourceUtils.MissingResourceKeys.Add(resourceIndexEntry.ReverseEvaluateResourceKey());
         RefreshWidgets(false);
-        NextState = NextStateOptions.NoUnsavedChanges;
+        NextState = NextStateOptions.UnsavedChanges;
     }
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)

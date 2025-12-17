@@ -110,7 +110,8 @@ public partial class MainWindow
 		this.WidthRequest = 1080;
 		this.HeightRequest = 540;
 		this.Name = "MainWindow";
-		this.Title = global::Mono.Unix.Catalog.GetString ("Destrospean's CASP Editor");
+		this.Title = global::Mono.Unix.Catalog.GetString ("CAS Designer Toolkit");
+		this.Icon = global::Gdk.Pixbuf.LoadFromResource ("Destrospean.DestrospeanCASPEditor.Icons.CASDesignerToolkit.png");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 		this.DefaultWidth = 1080;
 		this.DefaultHeight = 540;

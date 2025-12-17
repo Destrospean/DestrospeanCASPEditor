@@ -194,6 +194,22 @@ namespace Destrospean.DestrospeanCASPEditor
                             elementFloat4.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
                             elementFloat4.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
                             elementFloat4.Data3 = (float)colorButton.Alpha / ushort.MaxValue;
+                            var color = new OpenTK.Vector3(elementFloat4.Data0, elementFloat4.Data1, elementFloat4.Data2);
+                            var material = mainWindow.Materials[geometryResourceKey];
+                            switch (element.Field)
+                            {
+#pragma warning disable 0618
+                                case FieldType.Ambient:
+#pragma warning restore 0618
+                                    material.AmbientColor = color;
+                                    break;
+                                case FieldType.Diffuse:
+                                    material.DiffuseColor = color;
+                                    break;
+                                case FieldType.Specular:
+                                    material.SpecularColor = color;
+                                    break;
+                            };
                             mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = colorButton;
