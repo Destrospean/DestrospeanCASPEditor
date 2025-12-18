@@ -117,11 +117,11 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             });
                         button.Clicked += (sender, e) =>
                             {
-                                var changePatternDialog = new ChangePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
-                                if (changePatternDialog.Run() == (int)ResponseType.Ok)
+                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
+                                if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
-                                    ((CASPart.Preset)complate).ReplacePattern(propertyName, changePatternDialog.ResourceKey);
-                                    complate[propertyName] = changePatternDialog.PatternPath;
+                                    ((CASPart.Preset)complate).ReplacePattern(propertyName, choosePatternDialog.ResourceKey);
+                                    complate[propertyName] = choosePatternDialog.PatternPath;
                                     for (var i = 0; i < (mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).NPages; i++)
                                     {
                                         var patternTable = (Table)((Viewport)((ScrolledWindow)(mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).GetNthPage(i)).Child).Child;
@@ -133,7 +133,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                         AddPropertiesToTable(patternTable, i == 0 ? complate : ((CASPart.Preset)complate).Patterns[i - 1]);
                                     }
                                 }
-                                changePatternDialog.Destroy();
+                                choosePatternDialog.Destroy();
                             };
                         valueWidget = button;
                         break;

@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml;
 using Destrospean.S3PIAbstractions;
 using Gtk;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
-    public sealed class ChangePatternDialog : AddGEOMPropertyDialog
+    public partial class ChoosePatternDialog : Gtk.Dialog
     {
         public string PatternPath
         {
@@ -19,20 +20,20 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
-        public ChangePatternDialog(string title, Window parent, s3pi.Interfaces.IPackage package) : base(title, parent, true)
+        public ChoosePatternDialog(Window parent, s3pi.Interfaces.IPackage package) : this("Choose Pattern", parent, package)
+        {
+        }
+
+        public ChoosePatternDialog(string title, Window parent, s3pi.Interfaces.IPackage package) : base(title, parent, DialogFlags.Modal)
         {
             Build();
-            Alignment.LeftPadding = (uint)WidgetUtils.SmallImageSize;
-            DataTypeLabel.Text = "Pattern";
-            FieldLabel.Text = "Category";
             this.RescaleAndReposition(parent);
             List<string> categories = new List<string>(),
             patternKeys = new List<string>(),
             patternPaths = new List<string>();
-            CellRendererText categoryCell = new CellRendererText(),
-            patternNameCell = new CellRendererText();
+            var categoryCell = new CellRendererText();
             ListStore categoryListStore = new ListStore(typeof(string)),
-            patternNameListStore = new ListStore(typeof(string));
+            patternListStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
             var patternsByCategory = new Dictionary<string, List<string>>();
             System.Action<s3pi.Interfaces.IResource> addPatternsByCategory = (s3pi.Interfaces.IResource patternListResource) =>
@@ -64,7 +65,6 @@ namespace Destrospean.DestrospeanCASPEditor
                                     {
                                         throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                                     }
-                                    //package.EvaluateResourceKey(key);
                                     patternsByCategory[category].Add(key);
                                     patternsByCategory[category].Add(patternNode.HasAttribute("name") ? "Materials\\" + category + "\\" + patternNode.Attributes["name"].Value : key);
                                 }
@@ -76,27 +76,35 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     patternKeys.Clear();
                     patternPaths.Clear();
-                    patternNameListStore.Clear();
-                    var patternKeysAndPaths = patternsByCategory[categories[FieldComboBox.Active == -1 ? 0 : FieldComboBox.Active]];
+                    patternListStore.Clear();
+                    var patternKeysPaths = patternsByCategory[categories[CategoryComboBox.Active == -1 ? 0 : CategoryComboBox.Active]];
                     var patternNamesKeysPaths = new List<string[]>();
-                    for (var i = 0; i < patternKeysAndPaths.Count; i += 2)
+                    for (var i = 0; i < patternKeysPaths.Count; i += 2)
                     {
                         patternNamesKeysPaths.Add(new string[]
                             {
-                                patternKeysAndPaths[i + 1].Substring(patternKeysAndPaths[i + 1].LastIndexOf("\\") + 1),
-                                patternKeysAndPaths[i],
-                                patternKeysAndPaths[i + 1]
+                                patternKeysPaths[i + 1].Substring(patternKeysPaths[i + 1].LastIndexOf("\\") + 1),
+                                patternKeysPaths[i],
+                                patternKeysPaths[i + 1],
                             });
-
                     }
                     patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        patternNameListStore.AppendValues(patternNameKeyPath[0]);
-                        patternKeys.Add(patternNameKeyPath[1]);
+                        List<Gdk.Pixbuf> pixbufs = null;
+                        var key = patternNameKeyPath[1];
+                        var rgbMaskKey = GetRGBMaskKey(package, key);
+                        if (rgbMaskKey != null && !ImageUtils.PreloadedPatternImagePixbufs.TryGetValue(rgbMaskKey, out pixbufs))
+                        {
+                            var evaluated = package.EvaluateImageResourceKey(rgbMaskKey);
+                            evaluated.Package.PreloadPatternImage(evaluated.ResourceIndexEntry, WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1);
+                            pixbufs = ImageUtils.PreloadedPatternImagePixbufs[rgbMaskKey];
+                        }
+                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs == null ? ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color(byte.MaxValue, 0, 0), new Gdk.Color(byte.MaxValue, 0, 0)) : pixbufs[0]);
+                        patternKeys.Add(key);
                         patternPaths.Add(patternNameKeyPath[2]);
                     }
-                    DataTypeComboBox.Active = 0;
+                    PatternIconView.SelectPath(new TreePath("0"));
                 };
             addPatternsByCategory(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry));
             foreach (var patternListResourceIndexEntry in package.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("PTRN")))
@@ -108,28 +116,53 @@ namespace Destrospean.DestrospeanCASPEditor
             if (categories.Contains("Old"))
             {
                 categories.Remove("Old");
-                categories.Add("Old");
+                //categories.Add("Old");
             }
             categories.ForEach(x => categoryListStore.AppendValues(x));
-            FieldComboBox.Model = categoryListStore;
-            FieldComboBox.PackStart(categoryCell, true);
-            FieldComboBox.Active = 0;
-            FieldComboBox.Changed += (sender, e) => setPatternKeysAndPaths();
-            DataTypeComboBox.Model = patternNameListStore;
-            DataTypeComboBox.PackStart(patternNameCell, true);
+            CategoryComboBox.Model = categoryListStore;
+            CategoryComboBox.PackStart(categoryCell, true);
+            CategoryComboBox.Active = 0;
+            CategoryComboBox.Changed += (sender, e) => setPatternKeysAndPaths();
+            PatternIconView.Model = patternListStore;
+            PatternIconView.SelectionChanged += (sender, e) => OKButton.Sensitive = PatternIconView.SelectedItems.Length > 0;
+            PatternIconView.PixbufColumn = 1;
+            //PatternIconView.TextColumn = 0;
             setPatternKeysAndPaths();
             Response += (o, args) =>
                 {
                     if (args.ResponseId == ResponseType.Ok)
                     {
-                        PatternPath = patternPaths[DataTypeComboBox.Active];
-                        ResourceKey = patternKeys[DataTypeComboBox.Active];
+                        PatternPath = patternPaths[PatternIconView.SelectedItems[0].Indices[0]];
+                        ResourceKey = patternKeys[PatternIconView.SelectedItems[0].Indices[0]];
                     }
                 };
         }
 
-        public ChangePatternDialog(Window parent, s3pi.Interfaces.IPackage package) : this("Change Pattern", parent, package)
+        public string GetRGBMaskKey(s3pi.Interfaces.IPackage package, string patternResourceKey)
         {
+            var evaluated = package.EvaluateResourceKey(patternResourceKey);
+            var patternXmlDocument = new XmlDocument();
+            patternXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            foreach (var patternChild in patternXmlDocument.SelectSingleNode("complate").ChildNodes)
+            {
+                var patternChildNode = (XmlNode)patternChild;
+                if (patternChildNode.Name == "variables")
+                {
+                    foreach (var patternGrandchild in patternChildNode.ChildNodes)
+                    {
+                        var patternGrandchildNode = (XmlNode)patternGrandchild;
+                        if (patternGrandchildNode.Name == "param")
+                        {
+                            var defaultValue = patternGrandchildNode.Attributes["default"].Value;
+                            if (patternGrandchildNode.Attributes["name"].Value.ToLower() == "rgbmask")
+                            {
+                                return defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : patternGrandchildNode.Attributes["default"].Value;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

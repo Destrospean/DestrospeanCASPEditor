@@ -18,44 +18,8 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
-        protected Alignment Alignment
+        public AddGEOMPropertyDialog(Window parent) : this("Add Property", parent)
         {
-            get
-            {
-                return mAlignment;
-            }
-        }
-
-        protected ComboBox DataTypeComboBox
-        {
-            get
-            {
-                return mDataTypeComboBox;
-            }
-        }
-
-        protected Label DataTypeLabel
-        {
-            get
-            {
-                return mDataTypeLabel;
-            }
-        }
-
-        protected ComboBox FieldComboBox
-        {
-            get
-            {
-                return mFieldComboBox;
-            }
-        }
-
-        protected Label FieldLabel
-        {
-            get
-            {
-                return mFieldLabel;
-            }
         }
 
         public AddGEOMPropertyDialog(string title, Window parent) : base(title, parent, DialogFlags.Modal)
@@ -97,14 +61,6 @@ namespace Destrospean.DestrospeanCASPEditor
                         Field = (FieldType)System.Enum.Parse(typeof(FieldType), fields[FieldComboBox.Active]);
                     }
                 };
-        }
-
-        public AddGEOMPropertyDialog(Window parent) : this("Add Property", parent)
-        {
-        }
-
-        protected AddGEOMPropertyDialog(string title, Window parent, bool isCleanSlate) : base(title, parent, DialogFlags.Modal)
-        {
         }
     }
 }

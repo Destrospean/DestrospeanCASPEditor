@@ -9,15 +9,20 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ImageUtils
     {
-        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImagePixbufs = new Dictionary<string, List<Pixbuf>>();
+        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImagePixbufs = new Dictionary<string, List<Pixbuf>>(),
+        PreloadedImagePixbufs = new Dictionary<string, List<Pixbuf>>(),
+        PreloadedPatternImagePixbufs = new Dictionary<string, List<Pixbuf>>();
 
-        public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>();
-
-        public static readonly Dictionary<string, List<Pixbuf>> PreloadedImagePixbufs = new Dictionary<string, List<Pixbuf>>();
-
-        public static readonly Dictionary<string, Bitmap> PreloadedImages = new Dictionary<string, Bitmap>();
+        public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>(),
+        PreloadedImages = new Dictionary<string, Bitmap>(),
+        PreloadedPatternImages = new Dictionary<string, Bitmap>();
 
         static System.Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        {
+            return package.GetPreloadVariables(resourceIndexEntry, imageWidget.WidthRequest, imageWidget.HeightRequest);
+        }
+
+        static System.Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, int width, int height)
         {
             Bitmap bitmap;
             var resource = s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, resourceIndexEntry);
@@ -47,7 +52,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 System.Runtime.InteropServices.Marshal.Copy(byteArray, 0, bitmapData.Scan0, byteArray.Length);
                 bitmap.UnlockBits(bitmapData);
             }
-            return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), bitmap, System.Math.Min(imageWidget.HeightRequest, imageWidget.WidthRequest));
+            return new System.Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), bitmap, System.Math.Min(width, height));
         }
 
         public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
@@ -95,6 +100,24 @@ namespace Destrospean.DestrospeanCASPEditor
                 var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
                 PreloadedImages[variables.Item1] = variables.Item2;
                 PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
+                    {
+                        variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                    };
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static bool PreloadPatternImage(this IPackage package, IResourceIndexEntry resourceIndexEntry, int width, int height)
+        {
+            try
+            {
+                var variables = package.GetPreloadVariables(resourceIndexEntry, width, height);
+                PreloadedPatternImages[variables.Item1] = variables.Item2;
+                PreloadedPatternImagePixbufs[variables.Item1] = new List<Pixbuf>
                     {
                         variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
                     };

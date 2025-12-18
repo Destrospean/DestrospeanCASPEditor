@@ -836,6 +836,8 @@ public partial class MainWindow : Window
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImagePixbufs.Clear();
         ImageUtils.PreloadedImages.Clear();
+        ImageUtils.PreloadedPatternImagePixbufs.Clear();
+        ImageUtils.PreloadedPatternImages.Clear();
     }
 
     public ResponseType GetUnsavedChangesDialogResponseType()

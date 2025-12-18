@@ -220,11 +220,12 @@
     <Compile Include="OpenGL\Shader.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
     <Compile Include="ApplicationSpecificSettings.cs" />
-    <Compile Include="Dialogs\ChangePatternDialog.cs" />
     <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
     <Compile Include="Dialogs\TextEntryDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
+    <Compile Include="Dialogs\ChoosePatternDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
