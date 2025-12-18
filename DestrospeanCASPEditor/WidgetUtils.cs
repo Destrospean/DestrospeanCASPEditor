@@ -13,8 +13,6 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class WidgetUtils
     {
-        public static float Scale, WineScaleDenominator;
-
         public static int DefaultTableCellHeight
         {
             get
@@ -30,6 +28,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 return (uint)(6 * Scale);
             }
         }
+
+        public static float Scale, WineScaleDenominator;
 
         public static int SmallImageSize
         {
