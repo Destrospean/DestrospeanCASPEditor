@@ -17,7 +17,7 @@
                 {
                     if (args.ResponseId == Gtk.ResponseType.Ok)
                     {
-                        this.TextEntryValue = Entry.Text;
+                        TextEntryValue = Entry.Text;
                     }
                 };
         }
