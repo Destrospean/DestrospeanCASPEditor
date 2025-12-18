@@ -67,10 +67,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     continue;
                 }
                 Widget valueWidget = null;
-                var alignment = new Alignment(0, .5f, 1, 0)
-                    {
-                        HeightRequest = WidgetUtils.DefaultTableCellHeight
-                    };
+                var alignment = new Alignment(0, .5f, 1, 0);
                 var value = complate[propertyName];
                 switch (type)
                 {
@@ -134,7 +131,6 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                         }
                                         patternTable.NRows = 1;
                                         AddPropertiesToTable(patternTable, i == 0 ? complate : ((CASPart.Preset)complate).Patterns[i - 1]);
-                                        patternTable.ShowAll();
                                     }
                                 }
                                 changePatternDialog.Destroy();
@@ -187,6 +183,19 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 table.Attach(alignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 table.NRows++;
             }
+            table.SizeAllocated += (o, args) =>
+                {
+                    var maxHeight = 0;
+                    foreach (var child in table.Children)
+                    {
+                        maxHeight = System.Math.Max(child.Allocation.Height, maxHeight);
+                    }
+                    foreach (var child in table.Children)
+                    {
+                        child.HeightRequest = maxHeight;
+                    }
+                };
+            table.ShowAll();
         }
 
         protected HBox GetPageLabelHBox(int pageIndexOffset = 0, bool isDefault = false)

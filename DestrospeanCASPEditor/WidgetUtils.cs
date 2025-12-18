@@ -13,14 +13,6 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class WidgetUtils
     {
-        public static int DefaultTableCellHeight
-        {
-            get
-            {
-                return (int)(24 * Scale);
-            }
-        }
-
         public static uint DefaultTableColumnSpacing
         {
             get
@@ -49,6 +41,18 @@ namespace Destrospean.DestrospeanCASPEditor
             scrolledWindow.AddWithViewport(table);
             notebook.AppendPage(scrolledWindow, new Label("GEOM " + (notebook.NPages + pageIndexOffset).ToString()));
             table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
+            table.SizeAllocated += (o, args) =>
+                {
+                    var maxHeight = 0;
+                    foreach (var child in table.Children)
+                    {
+                        maxHeight = Math.Max(child.Allocation.Height, maxHeight);
+                    }
+                    foreach (var child in table.Children)
+                    {
+                        child.HeightRequest = maxHeight;
+                    }
+                };
             notebook.ShowAll();
         }
 
@@ -71,10 +75,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 shaders.Add(string.Format("{0} ({1})", shader, (uint)shader));
             }
             shaders.Sort();
-            var shaderComboBoxAlignment = new Alignment(0, .5f, 1, 0)
-                {
-                    HeightRequest = DefaultTableCellHeight
-                };
+            var shaderComboBoxAlignment = new Alignment(0, .5f, 1, 0);
             var shaderComboBox = new ComboBox(shaders.ToArray())
                 {
                     Active = shaders.IndexOf(string.Format("{0} ({1})", (Shader)geom.Shader, (uint)geom.Shader))
@@ -94,10 +95,7 @@ namespace Destrospean.DestrospeanCASPEditor
             foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
             {
                 Widget valueWidget = null;
-                var alignment = new Alignment(0, .5f, 0, 0)
-                    {
-                        HeightRequest = DefaultTableCellHeight
-                    };
+                var alignment = new Alignment(0, .5f, 0, 0);
                 var elementFloat = element as ElementFloat;
                 if (elementFloat != null)
                 {

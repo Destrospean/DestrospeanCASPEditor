@@ -804,7 +804,7 @@ public partial class MainWindow : Window
     void RescaleAndReposition()
     {
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
-        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASP_EDITOR_SCALE");
+        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASDT_SCALE");
         WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
         WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
         SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
@@ -821,7 +821,6 @@ public partial class MainWindow : Window
         }
         Resize(DefaultWidth, DefaultHeight);
         Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
-        Resizable = !Platform.IsRunningUnderWine;
     }
 
     public void ClearTemporaryData()

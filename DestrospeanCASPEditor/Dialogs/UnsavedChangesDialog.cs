@@ -6,6 +6,7 @@
         {
             Build();
             this.RescaleAndReposition(parent);
+            WarningIconAlignment.LeftPadding = (uint)WidgetUtils.SmallImageSize >> 1;
         }
     }
 }

@@ -6,7 +6,9 @@ namespace Destrospean.DestrospeanCASPEditor
 	{
 		private global::Gtk.HBox WarningAreaHBox;
 		
-		private global::Gtk.Image WarningImage;
+		private global::Gtk.Alignment WarningIconAlignment;
+		
+		private global::Gtk.Image WarningIcon;
 		
 		private global::Gtk.Label WarningLabel;
 		
@@ -35,31 +37,36 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.WarningAreaHBox.Name = "WarningAreaHBox";
 			this.WarningAreaHBox.Spacing = 6;
 			// Container child WarningAreaHBox.Gtk.Box+BoxChild
-			this.WarningImage = new global::Gtk.Image ();
-			this.WarningImage.Name = "WarningImage";
-			this.WarningImage.Xalign = 1F;
-			this.WarningImage.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-dialog-warning", global::Gtk.IconSize.Dialog);
-			this.WarningAreaHBox.Add (this.WarningImage);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningImage]));
-			w2.Position = 0;
+			this.WarningIconAlignment = new global::Gtk.Alignment (1F, 0.5F, 1F, 1F);
+			this.WarningIconAlignment.Name = "WarningIconAlignment";
+			// Container child WarningIconAlignment.Gtk.Container+ContainerChild
+			this.WarningIcon = new global::Gtk.Image ();
+			this.WarningIcon.Name = "WarningIcon";
+			this.WarningIcon.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-dialog-warning", global::Gtk.IconSize.Dialog);
+			this.WarningIconAlignment.Add (this.WarningIcon);
+			this.WarningAreaHBox.Add (this.WarningIconAlignment);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningIconAlignment]));
+			w3.Position = 0;
+			w3.Expand = false;
 			// Container child WarningAreaHBox.Gtk.Box+BoxChild
 			this.WarningLabel = new global::Gtk.Label ();
 			this.WarningLabel.Name = "WarningLabel";
 			this.WarningLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("The current package has unsaved changes.");
 			this.WarningLabel.Wrap = true;
-			this.WarningLabel.Justify = ((global::Gtk.Justification)(2));
 			this.WarningAreaHBox.Add (this.WarningLabel);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningLabel]));
-			w3.Position = 1;
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningLabel]));
+			w4.Position = 1;
+			w4.Expand = false;
+			w4.Fill = false;
 			w1.Add (this.WarningAreaHBox);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(w1 [this.WarningAreaHBox]));
-			w4.Position = 0;
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(w1 [this.WarningAreaHBox]));
+			w5.Position = 0;
 			// Internal child Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.ActionArea
-			global::Gtk.HButtonBox w5 = this.ActionArea;
-			w5.Name = "ActionArea";
-			w5.Spacing = 10;
-			w5.BorderWidth = ((uint)(5));
-			w5.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(1));
+			global::Gtk.HButtonBox w6 = this.ActionArea;
+			w6.Name = "ActionArea";
+			w6.Spacing = 10;
+			w6.BorderWidth = ((uint)(5));
+			w6.LayoutStyle = ((global::Gtk.ButtonBoxStyle)(1));
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.CancelButton = new global::Gtk.Button ();
 			this.CancelButton.CanDefault = true;
@@ -69,23 +76,23 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.CancelButton.UseUnderline = true;
 			this.CancelButton.Label = "gtk-cancel";
 			this.AddActionWidget (this.CancelButton, -6);
-			global::Gtk.ButtonBox.ButtonBoxChild w6 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w5 [this.CancelButton]));
-			w6.Expand = false;
-			w6.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w7 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.CancelButton]));
+			w7.Expand = false;
+			w7.Fill = false;
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.NoSaveButton = new global::Gtk.Button ();
 			this.NoSaveButton.CanFocus = true;
 			this.NoSaveButton.Name = "NoSaveButton";
 			this.NoSaveButton.UseUnderline = true;
 			this.NoSaveButton.Label = global::Mono.Unix.Catalog.GetString ("Don't Save");
-			global::Gtk.Image w7 = new global::Gtk.Image ();
-			w7.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-no", global::Gtk.IconSize.Menu);
-			this.NoSaveButton.Image = w7;
+			global::Gtk.Image w8 = new global::Gtk.Image ();
+			w8.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-no", global::Gtk.IconSize.Menu);
+			this.NoSaveButton.Image = w8;
 			this.AddActionWidget (this.NoSaveButton, -9);
-			global::Gtk.ButtonBox.ButtonBoxChild w8 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w5 [this.NoSaveButton]));
-			w8.Position = 1;
-			w8.Expand = false;
-			w8.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w9 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.NoSaveButton]));
+			w9.Position = 1;
+			w9.Expand = false;
+			w9.Fill = false;
 			// Container child ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.SaveButton = new global::Gtk.Button ();
 			this.SaveButton.CanDefault = true;
@@ -93,18 +100,18 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.SaveButton.Name = "SaveButton";
 			this.SaveButton.UseUnderline = true;
 			this.SaveButton.Label = global::Mono.Unix.Catalog.GetString ("Save");
-			global::Gtk.Image w9 = new global::Gtk.Image ();
-			w9.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-save", global::Gtk.IconSize.Menu);
-			this.SaveButton.Image = w9;
+			global::Gtk.Image w10 = new global::Gtk.Image ();
+			w10.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-save", global::Gtk.IconSize.Menu);
+			this.SaveButton.Image = w10;
 			this.AddActionWidget (this.SaveButton, -8);
-			global::Gtk.ButtonBox.ButtonBoxChild w10 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w5 [this.SaveButton]));
-			w10.Position = 2;
-			w10.Expand = false;
-			w10.Fill = false;
+			global::Gtk.ButtonBox.ButtonBoxChild w11 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.SaveButton]));
+			w11.Position = 2;
+			w11.Expand = false;
+			w11.Fill = false;
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 280;
+			this.DefaultWidth = 320;
 			this.DefaultHeight = 120;
 			this.Show ();
 		}
