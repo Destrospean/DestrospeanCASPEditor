@@ -213,10 +213,10 @@ namespace Destrospean.DestrospeanCASPEditor
                         switch (PatternInfo.Type)
                         {
                             case PatternType.Colored:
-                                mPatternImage = ParentPackage.GetRGBPatternImage(PatternInfo);
+                                mPatternImage = ParentPackage.GetRGBPatternImage(PatternInfo, ImageUtils.GetTexture);
                                 break;
                             case PatternType.HSV:
-                                mPatternImage = ParentPackage.GetHSVPatternImage(PatternInfo);
+                                mPatternImage = ParentPackage.GetHSVPatternImage(PatternInfo, ImageUtils.GetTexture);
                                 break;
                             case PatternType.Solid:
                                 mPatternImage = PatternInfo.SolidColor;
@@ -629,14 +629,14 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 else if (key.EndsWith("texture"))
                                 {
-                                    logos.Add(ParentPackage.GetTexture(value, width, height));
+                                    logos.Add(ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height));
                                 }
                             }
                             else if (key.StartsWith("stencil"))
                             {
                                 if (key.Length == 9)
                                 {
-                                    stencils.Add(ParentPackage.GetTexture(value, width, height));
+                                    stencils.Add(ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height));
                                 }
                                 else if (key.EndsWith("enabled"))
                                 {
@@ -658,25 +658,25 @@ namespace Destrospean.DestrospeanCASPEditor
                                         SpecularMap = value;
                                         break;
                                     case "control map":
-                                        controlMapArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        controlMapArray = ParentPackage.GetTextureARGBArray(value, ImageUtils.GetTexture, width, height);
                                         break;
                                     case "diffuse color":
                                         diffuseColor = ParseCommaSeparatedValues(value);
                                         break;
                                     case "diffuse map":
-                                        diffuseMap = ParentPackage.GetTexture(value, width, height);
+                                        diffuseMap = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
                                         break;
                                     case "highlight color":
                                         highlightColor = ParseCommaSeparatedValues(value);
                                         break;
                                     case "mask":
-                                        maskArray = ParentPackage.GetTextureARGBArray(value, width, height);
+                                        maskArray = ParentPackage.GetTextureARGBArray(value, ImageUtils.GetTexture, width, height);
                                         break;
                                     case "multiplier":
-                                        multiplier = ParentPackage.GetTexture(value, width, height);
+                                        multiplier = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
                                         break;
                                     case "overlay":
-                                        overlay = ParentPackage.GetTexture(value, width, height);
+                                        overlay = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
                                         break;
                                     case "root color":
                                         rootColor = ParseCommaSeparatedValues(value);
@@ -981,7 +981,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                         var defaultValue = patternGrandchildNode.Attributes["default"].Value;
                                         var valueElement = mXmlDocument.CreateElement("value");
                                         valueElement.SetAttribute("key", patternGrandchildNode.Attributes["name"].Value);
-                                        valueElement.SetAttribute("value", patternGrandchildNode.Attributes["type"].Value == "texture" && defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : patternGrandchildNode.Attributes["default"].Value);
+                                        valueElement.SetAttribute("value", patternGrandchildNode.Attributes["type"].Value == "texture" && defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : defaultValue);
                                         presetChildNode.AppendChild(valueElement);
                                     }
                                 }

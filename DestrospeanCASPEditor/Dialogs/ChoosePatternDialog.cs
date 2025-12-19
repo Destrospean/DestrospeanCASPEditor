@@ -4,6 +4,7 @@ using System.Xml;
 using Destrospean.S3PIAbstractions;
 using Gtk;
 using s3pi.Interfaces;
+using Destrospean.CmarNYCBorrowed;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -14,6 +15,10 @@ namespace Destrospean.DestrospeanCASPEditor
             get;
             private set;
         }
+
+        public static readonly Dictionary<string, List<Gdk.Pixbuf>> PreloadedPatternImagePixbufs = new Dictionary<string, List<Gdk.Pixbuf>>();
+
+        public static readonly Dictionary<string, PatternInfo> PreloadedPatterns = new Dictionary<string, PatternInfo>();
 
         public string ResourceKey
         {
@@ -67,6 +72,10 @@ namespace Destrospean.DestrospeanCASPEditor
                                     {
                                         throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                                     }
+                                    if (!PreloadedPatterns.ContainsKey(key))
+                                    {
+                                        PreloadedPatterns.Add(key, GetPatternInfo(package, key));
+                                    }
                                     patternsByCategory[category].Add(key);
                                     patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);
                                 }
@@ -74,12 +83,12 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                 };
-            System.Action setPatternKeysAndPaths = delegate
+            System.Action<int> setPatternKeysAndPaths = (int categoryIndex) =>
                 {
                     patternKeys.Clear();
                     patternPaths.Clear();
                     patternListStore.Clear();
-                    var patternKeysPaths = patternsByCategory[categories[CategoryComboBox.Active == -1 ? 0 : CategoryComboBox.Active]];
+                    var patternKeysPaths = patternsByCategory[categories[categoryIndex]];
                     var patternNamesKeysPaths = new List<string[]>();
                     for (var i = 0; i < patternKeysPaths.Count; i += 2)
                     {
@@ -87,23 +96,37 @@ namespace Destrospean.DestrospeanCASPEditor
                             {
                                 patternKeysPaths[i + 1].Substring(patternKeysPaths[i + 1].LastIndexOf("\\") + 1),
                                 patternKeysPaths[i],
-                                patternKeysPaths[i + 1],
+                                patternKeysPaths[i + 1]
                             });
                     }
                     patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        var maskKey = GetMaskKey(package, patternNameKeyPath[1]);
+                        var patternInfo = PreloadedPatterns[patternNameKeyPath[1]];
                         List<Gdk.Pixbuf> pixbufs = null;
-                        if (maskKey != null && !ImageUtils.PreloadedPatternImagePixbufs.TryGetValue(maskKey, out pixbufs))
+                        if (!PreloadedPatternImagePixbufs.TryGetValue(patternNameKeyPath[1], out pixbufs))
                         {
-                            var evaluated = package.EvaluateImageResourceKey(maskKey);
-                            evaluated.Package.PreloadPatternImage(evaluated.ResourceIndexEntry, WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1);
-                            pixbufs = ImageUtils.PreloadedPatternImagePixbufs[maskKey];
+                            System.Drawing.Bitmap patternImage = null;
+                            switch (patternInfo.Type)
+                            {
+                                case PatternType.Colored:
+                                    patternImage = package.GetRGBPatternImage(patternInfo, ImageUtils.GetTexture);
+                                    break;
+                                case PatternType.HSV:
+                                    patternImage = package.GetHSVPatternImage(patternInfo, ImageUtils.GetTexture);
+                                    break;
+                            }
+                            if (patternImage != null)
+                            {
+                                pixbufs = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = new List<Gdk.Pixbuf>
+                                    {
+                                        patternImage.ToPixbuf().ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear)
+                                    };
+                            }
                         }
-                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs == null ? ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color(byte.MaxValue, 0, 0), new Gdk.Color(byte.MaxValue, 0, 0)) : pixbufs[0]);
+                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs == null ? patternInfo.Type == PatternType.Solid ? ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue))) : null : pixbufs[0]);
                         patternKeys.Add(patternNameKeyPath[1]);
-                        patternPaths.Add(patternNameKeyPath[2]);
+                        patternPaths.Add((string)patternNameKeyPath[2]);
                     }
                     PatternIconView.SelectPath(new TreePath("0"));
                 };
@@ -123,12 +146,18 @@ namespace Destrospean.DestrospeanCASPEditor
             CategoryComboBox.Model = categoryListStore;
             CategoryComboBox.PackStart(categoryCell, true);
             CategoryComboBox.Active = 0;
-            CategoryComboBox.Changed += (sender, e) => setPatternKeysAndPaths();
+            CategoryComboBox.Changed += (sender, e) => setPatternKeysAndPaths(CategoryComboBox.Active);
             PatternIconView.Model = patternListStore;
             PatternIconView.PixbufColumn = 1;
             PatternIconView.TooltipColumn = 0;
             PatternIconView.SelectionChanged += (sender, e) => OKButton.Sensitive = PatternIconView.SelectedItems.Length > 0;
-            setPatternKeysAndPaths();
+            /*
+            for (var i = categories.Count - 1; i > -1; i--)
+            {
+                setPatternKeysAndPaths(i);
+            }
+            */
+            setPatternKeysAndPaths(0);
             Response += (o, args) =>
                 {
                     if (args.ResponseId == ResponseType.Ok)
@@ -139,11 +168,12 @@ namespace Destrospean.DestrospeanCASPEditor
                 };
         }
 
-        public static string GetMaskKey(IPackage package, string patternKey)
+        public static PatternInfo GetPatternInfo(IPackage package, string patternKey)
         {
             var evaluated = package.EvaluateResourceKey(patternKey);
             var xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            var propertiesXmlNodes = new Dictionary<string, string>();
             foreach (XmlNode childNode in xmlDocument.SelectSingleNode("complate").ChildNodes)
             {
                 if (childNode.Name == "variables")
@@ -153,15 +183,190 @@ namespace Destrospean.DestrospeanCASPEditor
                         if (grandchildNode.Name == "param")
                         {
                             var defaultValue = grandchildNode.Attributes["default"].Value;
-                            if (grandchildNode.Attributes["name"].Value.ToLower() == "rgbmask")
-                            {
-                                return defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : grandchildNode.Attributes["default"].Value;
-                            }
+                            propertiesXmlNodes.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value == "texture" && defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : defaultValue);
                         }
                     }
                 }
             }
-            return null;
+            string background = null,
+            rgbMask = null;
+            float baseHueBackground = float.MinValue,
+            baseSaturationBackground = float.MinValue,
+            baseValueBackground = float.MinValue,
+            hueBackground = float.MinValue,
+            saturationBackground = float.MinValue,
+            valueBackground = float.MinValue;
+            List<float> baseHues = new List<float>(),
+            baseSaturations = new List<float>(),
+            baseValues = new List<float>(),
+            hues = new List<float>(),
+            saturations = new List<float>(),
+            values = new List<float>();
+            var channels = new List<string>();
+            var channelsEnabled = new List<bool>();
+            List<float[]> baseHSVColors = new List<float[]>(),
+            hsvColors = new List<float[]>(),
+            hsvShift = new List<float[]>(),
+            rgbColors = new List<float[]>();
+            float[] hsvShiftBackground = null;
+            foreach (var propertyXmlNodeKvp in propertiesXmlNodes)
+            {
+                string key = propertyXmlNodeKvp.Key.ToLower(),
+                value = propertyXmlNodeKvp.Value;
+                if (key.StartsWith("channel"))
+                {
+                    if (key.EndsWith("enabled"))
+                    {
+                        channelsEnabled.Add(bool.Parse(value));
+                    }
+                    else
+                    {
+                        channels.Add(value);
+                    }
+                }
+                else if (key.StartsWith("color"))
+                {
+                    var color = CASPart.Pattern.ParseCommaSeparatedValues(value);
+                    rgbColors.Add(new float[]
+                        {
+                            color[0],
+                            color[1],
+                            color[2]
+                        });
+                }
+                else if (key.StartsWith("base h"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseHueBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        baseHues.Add(float.Parse(value));
+                    }
+                }
+                else if (key.StartsWith("base s"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseSaturationBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        baseSaturations.Add(float.Parse(value));
+                    }
+                }
+                else if (key.StartsWith("base v"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseValueBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        baseValues.Add(float.Parse(value));
+                    }
+                }
+                else if (key.StartsWith("h "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        hueBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        hues.Add(float.Parse(value));
+                    }
+                }
+                else if (key.StartsWith("hsvshift"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        hsvShiftBackground = CASPart.Pattern.ParseCommaSeparatedValues(value);
+                    }
+                    else
+                    {
+                        hsvShift.Add(CASPart.Pattern.ParseCommaSeparatedValues(value));
+                    }
+                }
+                else if (key.StartsWith("s "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        saturationBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        saturations.Add(float.Parse(value));
+                    }
+                }
+                else if (key.StartsWith("v "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        valueBackground = float.Parse(value);
+                    }
+                    else
+                    {
+                        values.Add(float.Parse(value));
+                    }
+                }
+                else
+                {
+                    switch (key)
+                    {
+                        case "background image":
+                            background = value;
+                            break;
+                        case "rgbmask":
+                            rgbMask = value;
+                            break;
+                    }
+                }
+            }
+            for (var i = 0; i < baseHues.Count && baseHues.Count == baseSaturations.Count && baseHues.Count == baseValues.Count; i++)
+            {
+                baseHSVColors.Add(new float[]
+                    {
+                        baseHues[i],
+                        baseSaturations[i],
+                        baseValues[i]
+                    });
+            }
+            for (var i = 0; i < hues.Count && hues.Count == saturations.Count && hues.Count == values.Count; i++)
+            {
+                hsvColors.Add(new float[]
+                    {
+                        hues[i],
+                        saturations[i],
+                        values[i]
+                    });
+            }
+            return new PatternInfo
+                {
+                    Background = background,
+                    Channels = channels.Count == 0 ? null : channels.ToArray(),
+                    ChannelsEnabled = channelsEnabled.Count == 0 ? null : channelsEnabled.ToArray(),
+                    HSV = hsvColors.Count == 0 ? null : hsvColors.ToArray(),
+                    HSVBase = baseHSVColors.Count == 0 ? null : baseHSVColors.ToArray(),
+                    HSVBaseBG = baseHueBackground == float.MinValue || baseSaturationBackground == float.MinValue || baseValueBackground == float.MinValue ? null : new float[]
+                        {
+                            baseHueBackground,
+                            baseSaturationBackground,
+                            baseValueBackground
+                        },
+                    HSVBG = hueBackground == float.MinValue || saturationBackground == float.MinValue || valueBackground == float.MinValue ? null : new float[]
+                        {
+                            hueBackground,
+                            saturationBackground,
+                            valueBackground
+                        },
+                    HSVShift = hsvShift.Count == 0 ? null : hsvShift.ToArray(),
+                    HSVShiftBG = hsvShiftBackground,
+                    RGBColors = rgbColors.ToArray(),
+                    RGBMask = rgbMask,
+                    SolidColor = rgbColors.Count == 1 ? rgbColors[0] : null
+                };
         }
     }
 }
