@@ -4,7 +4,7 @@ namespace Destrospean.DestrospeanCASPEditor
 {
 	public partial class ChoosePatternDialog
 	{
-		private global::Gtk.Table ComboBoxTable;
+		private global::Gtk.Table MainTable;
 		
 		private global::Gtk.ComboBox CategoryComboBox;
 		
@@ -34,37 +34,37 @@ namespace Destrospean.DestrospeanCASPEditor
 			w1.Name = "MainVBox";
 			w1.BorderWidth = ((uint)(2));
 			// Container child MainVBox.Gtk.Box+BoxChild
-			this.ComboBoxTable = new global::Gtk.Table (((uint)(4)), ((uint)(1)), false);
-			this.ComboBoxTable.Name = "ComboBoxTable";
-			this.ComboBoxTable.RowSpacing = ((uint)(6));
-			this.ComboBoxTable.ColumnSpacing = ((uint)(6));
-			// Container child ComboBoxTable.Gtk.Table+TableChild
+			this.MainTable = new global::Gtk.Table (((uint)(4)), ((uint)(1)), false);
+			this.MainTable.Name = "MainTable";
+			this.MainTable.RowSpacing = ((uint)(6));
+			this.MainTable.ColumnSpacing = ((uint)(6));
+			// Container child MainTable.Gtk.Table+TableChild
 			this.CategoryComboBox = global::Gtk.ComboBox.NewText ();
 			this.CategoryComboBox.Name = "CategoryComboBox";
-			this.ComboBoxTable.Add (this.CategoryComboBox);
-			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.CategoryComboBox]));
+			this.MainTable.Add (this.CategoryComboBox);
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.MainTable [this.CategoryComboBox]));
 			w2.TopAttach = ((uint)(1));
 			w2.BottomAttach = ((uint)(2));
 			w2.YOptions = ((global::Gtk.AttachOptions)(4));
-			// Container child ComboBoxTable.Gtk.Table+TableChild
+			// Container child MainTable.Gtk.Table+TableChild
 			this.CategoryLabel = new global::Gtk.Label ();
 			this.CategoryLabel.Name = "CategoryLabel";
 			this.CategoryLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Category:");
-			this.ComboBoxTable.Add (this.CategoryLabel);
-			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.CategoryLabel]));
+			this.MainTable.Add (this.CategoryLabel);
+			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.MainTable [this.CategoryLabel]));
 			w3.XOptions = ((global::Gtk.AttachOptions)(4));
 			w3.YOptions = ((global::Gtk.AttachOptions)(4));
-			// Container child ComboBoxTable.Gtk.Table+TableChild
+			// Container child MainTable.Gtk.Table+TableChild
 			this.PatternLabel = new global::Gtk.Label ();
 			this.PatternLabel.Name = "PatternLabel";
 			this.PatternLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Pattern:");
-			this.ComboBoxTable.Add (this.PatternLabel);
-			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.PatternLabel]));
+			this.MainTable.Add (this.PatternLabel);
+			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.MainTable [this.PatternLabel]));
 			w4.TopAttach = ((uint)(2));
 			w4.BottomAttach = ((uint)(3));
 			w4.XOptions = ((global::Gtk.AttachOptions)(4));
 			w4.YOptions = ((global::Gtk.AttachOptions)(4));
-			// Container child ComboBoxTable.Gtk.Table+TableChild
+			// Container child MainTable.Gtk.Table+TableChild
 			this.ScrolledWindow = new global::Gtk.ScrolledWindow ();
 			this.ScrolledWindow.CanFocus = true;
 			this.ScrolledWindow.Name = "ScrolledWindow";
@@ -73,15 +73,17 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.PatternIconView = new global::Gtk.IconView ();
 			this.PatternIconView.CanFocus = true;
 			this.PatternIconView.Name = "PatternIconView";
-			this.PatternIconView.Orientation = ((global::Gtk.Orientation)(0));
+			this.PatternIconView.ColumnSpacing = 3;
+			this.PatternIconView.Margin = 3;
+			this.PatternIconView.RowSpacing = 3;
 			this.ScrolledWindow.Add (this.PatternIconView);
-			this.ComboBoxTable.Add (this.ScrolledWindow);
-			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.ComboBoxTable [this.ScrolledWindow]));
+			this.MainTable.Add (this.ScrolledWindow);
+			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ScrolledWindow]));
 			w6.TopAttach = ((uint)(3));
 			w6.BottomAttach = ((uint)(4));
 			w6.XOptions = ((global::Gtk.AttachOptions)(4));
-			w1.Add (this.ComboBoxTable);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(w1 [this.ComboBoxTable]));
+			w1.Add (this.MainTable);
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(w1 [this.MainTable]));
 			w7.Position = 0;
 			// Internal child Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.ActionArea
 			global::Gtk.HButtonBox w8 = this.ActionArea;

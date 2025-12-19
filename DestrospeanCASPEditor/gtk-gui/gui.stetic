@@ -717,7 +717,7 @@
         <property name="MemberName" />
         <property name="BorderWidth">2</property>
         <child>
-          <widget class="Gtk.Table" id="ComboBoxTable">
+          <widget class="Gtk.Table" id="MainTable">
             <property name="MemberName" />
             <property name="NRows">4</property>
             <property name="RowSpacing">6</property>
@@ -786,7 +786,9 @@
                   <widget class="Gtk.IconView" id="PatternIconView">
                     <property name="MemberName" />
                     <property name="CanFocus">True</property>
-                    <property name="Orientation">Horizontal</property>
+                    <property name="ColumnSpacing">3</property>
+                    <property name="Margin">3</property>
+                    <property name="RowSpacing">3</property>
                   </widget>
                 </child>
               </widget>

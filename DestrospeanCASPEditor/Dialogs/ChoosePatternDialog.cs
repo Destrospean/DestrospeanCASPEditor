@@ -28,6 +28,9 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             Build();
             this.RescaleAndReposition(parent);
+            PatternIconView.ColumnSpacing = (int)(PatternIconView.ColumnSpacing * WidgetUtils.Scale);
+            PatternIconView.Margin = (int)(PatternIconView.Margin * WidgetUtils.Scale);
+            PatternIconView.RowSpacing = (int)(PatternIconView.RowSpacing * WidgetUtils.Scale);
             List<string> categories = new List<string>(),
             patternKeys = new List<string>(),
             patternPaths = new List<string>();
@@ -124,9 +127,9 @@ namespace Destrospean.DestrospeanCASPEditor
             CategoryComboBox.Active = 0;
             CategoryComboBox.Changed += (sender, e) => setPatternKeysAndPaths();
             PatternIconView.Model = patternListStore;
-            PatternIconView.SelectionChanged += (sender, e) => OKButton.Sensitive = PatternIconView.SelectedItems.Length > 0;
             PatternIconView.PixbufColumn = 1;
-            //PatternIconView.TextColumn = 0;
+            PatternIconView.TooltipColumn = 0;
+            PatternIconView.SelectionChanged += (sender, e) => OKButton.Sensitive = PatternIconView.SelectedItems.Length > 0;
             setPatternKeysAndPaths();
             Response += (o, args) =>
                 {
