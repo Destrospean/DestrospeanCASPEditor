@@ -251,22 +251,19 @@ namespace Destrospean.DestrospeanCASPEditor
                 Preset = preset;
                 var evaluated = ParentPackage.EvaluateResourceKey(patternXmlNode);
                 mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
-                foreach (var child in patternXmlNode.ChildNodes)
+                foreach (XmlNode childNode in patternXmlNode.ChildNodes)
                 {
-                    var childNode = (XmlNode)child;
                     if (childNode.Name == "value")
                     {
                         mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
                     }
                 }
-                foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+                foreach (XmlNode childNode in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                 {
-                    var childNode = (XmlNode)child;
                     if (childNode.Name == "variables")
                     {
-                        foreach (var grandchild in childNode.ChildNodes)
+                        foreach (XmlNode grandchildNode in childNode.ChildNodes)
                         {
-                            var grandchildNode = (XmlNode)grandchild;
                             if (grandchildNode.Name == "param")
                             {
                                 PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
@@ -869,9 +866,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
                     mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
                     Patterns = new List<Pattern>();
-                    foreach (var child in complateXmlNode.ChildNodes)
+                    foreach (XmlNode childNode in complateXmlNode.ChildNodes)
                     {
-                        var childNode = (XmlNode)child;
                         if (childNode.Name == "value")
                         {
                             mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
@@ -881,14 +877,12 @@ namespace Destrospean.DestrospeanCASPEditor
                             Patterns.Add(new Pattern(Preset, childNode));
                         }
                     }
-                    foreach (var child in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+                    foreach (XmlNode childNode in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                     {
-                        var childNode = (XmlNode)child;
                         if (childNode.Name == "variables")
                         {
-                            foreach (var grandchild in childNode.ChildNodes)
+                            foreach (XmlNode grandchildNode in childNode.ChildNodes)
                             {
-                                var grandchildNode = (XmlNode)grandchild;
                                 if (grandchildNode.Name == "param")
                                 {
                                     PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
@@ -951,20 +945,19 @@ namespace Destrospean.DestrospeanCASPEditor
                     }).Start();
             }
 
-            public void ReplacePattern(string patternSlotName, string patternResourceKey)
+            public void ReplacePattern(string patternSlotName, string patternKey)
             {
                 int i = 0,
                 patternIndex = Patterns.FindIndex(x => x.SlotName == patternSlotName);
-                var evaluated = ParentPackage.EvaluateResourceKey(patternResourceKey);
+                var evaluated = ParentPackage.EvaluateResourceKey(patternKey);
                 var patternXmlDocument = new XmlDocument();
                 patternXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
-                foreach (var presetChild in mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate").ChildNodes)
+                foreach (XmlNode presetChildNode in mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate").ChildNodes)
                 {
-                    var presetChildNode = (XmlNode)presetChild;
                     if (presetChildNode.Name == "pattern" && i++ == patternIndex)
                     {
                         presetChildNode.Attributes["name"].Value = patternXmlDocument.SelectSingleNode("complate").Attributes["name"].Value;
-                        presetChildNode.Attributes["reskey"].Value = patternResourceKey;
+                        presetChildNode.Attributes["reskey"].Value = patternKey;
                         for (var j = presetChildNode.ChildNodes.Count - 1; j > -1; j--)
                         {
                             switch (presetChildNode.ChildNodes[j].Attributes["key"].Value.ToLower())
@@ -977,14 +970,12 @@ namespace Destrospean.DestrospeanCASPEditor
                                     break;
                             }
                         }
-                        foreach (var patternChild in patternXmlDocument.SelectSingleNode("complate").ChildNodes)
+                        foreach (XmlNode patternChildNode in patternXmlDocument.SelectSingleNode("complate").ChildNodes)
                         {
-                            var patternChildNode = (XmlNode)patternChild;
                             if (patternChildNode.Name == "variables")
                             {
-                                foreach (var patternGrandchild in patternChildNode.ChildNodes)
+                                foreach (XmlNode patternGrandchildNode in patternChildNode.ChildNodes)
                                 {
-                                    var patternGrandchildNode = (XmlNode)patternGrandchild;
                                     if (patternGrandchildNode.Name == "param")
                                     {
                                         var defaultValue = patternGrandchildNode.Attributes["default"].Value;

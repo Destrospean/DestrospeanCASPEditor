@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using Destrospean.S3PIAbstractions;
 using Gtk;
+using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -20,11 +21,11 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
-        public ChoosePatternDialog(Window parent, s3pi.Interfaces.IPackage package) : this("Choose Pattern", parent, package)
+        public ChoosePatternDialog(Window parent, IPackage package) : this("Choose Pattern", parent, package)
         {
         }
 
-        public ChoosePatternDialog(string title, Window parent, s3pi.Interfaces.IPackage package) : base(title, parent, DialogFlags.Modal)
+        public ChoosePatternDialog(string title, Window parent, IPackage package) : base(title, parent, DialogFlags.Modal)
         {
             Build();
             this.RescaleAndReposition(parent);
@@ -39,37 +40,35 @@ namespace Destrospean.DestrospeanCASPEditor
             patternListStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
             var patternsByCategory = new Dictionary<string, List<string>>();
-            System.Action<s3pi.Interfaces.IResource> addPatternsByCategory = (s3pi.Interfaces.IResource patternListResource) =>
+            System.Action<IResource> addPatternsByCategory = (IResource patternListResource) =>
                 {
                     var xmlDocument = new XmlDocument();
                     xmlDocument.LoadXml(new System.IO.StreamReader(patternListResource.Stream).ReadToEnd());
-                    foreach (var categoryNodeObject in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
+                    foreach (XmlNode childNode in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
                     {
-                        var categoryNode = (XmlNode)categoryNodeObject;
-                        if (categoryNode.Name == "category")
+                        if (childNode.Name == "category")
                         {
-                            var category = categoryNode.Attributes["name"].Value;
+                            var category = childNode.Attributes["name"].Value;
                             patternsByCategory.Add(category, new List<string>());
-                            foreach (var patternNodeObject in categoryNode.ChildNodes)
+                            foreach (XmlElement grandchildNode in childNode.ChildNodes)
                             {
-                                var patternNode = (XmlElement)patternNodeObject;
-                                if (patternNode.Name == "pattern")
+                                if (grandchildNode.Name == "pattern")
                                 {
                                     var key = "";
-                                    if (patternNode.HasAttribute("reskey"))
+                                    if (grandchildNode.HasAttribute("reskey"))
                                     {
-                                        key = patternNode.Attributes["reskey"].Value;
+                                        key = grandchildNode.Attributes["reskey"].Value;
                                     }
-                                    else if (patternNode.HasAttribute("name"))
+                                    else if (grandchildNode.HasAttribute("name"))
                                     {
-                                        key = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(patternNode.Attributes["name"].Value).ToString("X16");
+                                        key = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(grandchildNode.Attributes["name"].Value).ToString("X16");
                                     }
                                     else
                                     {
                                         throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                                     }
                                     patternsByCategory[category].Add(key);
-                                    patternsByCategory[category].Add(patternNode.HasAttribute("name") ? "Materials\\" + category + "\\" + patternNode.Attributes["name"].Value : key);
+                                    patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);
                                 }
                             }
                         }
@@ -95,16 +94,15 @@ namespace Destrospean.DestrospeanCASPEditor
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
                         List<Gdk.Pixbuf> pixbufs = null;
-                        var key = patternNameKeyPath[1];
-                        var rgbMaskKey = GetRGBMaskKey(package, key);
-                        if (rgbMaskKey != null && !ImageUtils.PreloadedPatternImagePixbufs.TryGetValue(rgbMaskKey, out pixbufs))
+                        var maskKey = GetMaskKey(package, patternNameKeyPath[1]);
+                        if (maskKey != null && !ImageUtils.PreloadedPatternImagePixbufs.TryGetValue(maskKey, out pixbufs))
                         {
-                            var evaluated = package.EvaluateImageResourceKey(rgbMaskKey);
+                            var evaluated = package.EvaluateImageResourceKey(maskKey);
                             evaluated.Package.PreloadPatternImage(evaluated.ResourceIndexEntry, WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1);
-                            pixbufs = ImageUtils.PreloadedPatternImagePixbufs[rgbMaskKey];
+                            pixbufs = ImageUtils.PreloadedPatternImagePixbufs[maskKey];
                         }
                         patternListStore.AppendValues(patternNameKeyPath[0], pixbufs == null ? ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color(byte.MaxValue, 0, 0), new Gdk.Color(byte.MaxValue, 0, 0)) : pixbufs[0]);
-                        patternKeys.Add(key);
+                        patternKeys.Add(patternNameKeyPath[1]);
                         patternPaths.Add(patternNameKeyPath[2]);
                     }
                     PatternIconView.SelectPath(new TreePath("0"));
@@ -141,25 +139,23 @@ namespace Destrospean.DestrospeanCASPEditor
                 };
         }
 
-        public string GetRGBMaskKey(s3pi.Interfaces.IPackage package, string patternResourceKey)
+        public static string GetMaskKey(IPackage package, string patternKey)
         {
-            var evaluated = package.EvaluateResourceKey(patternResourceKey);
-            var patternXmlDocument = new XmlDocument();
-            patternXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
-            foreach (var patternChild in patternXmlDocument.SelectSingleNode("complate").ChildNodes)
+            var evaluated = package.EvaluateResourceKey(patternKey);
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            foreach (XmlNode childNode in xmlDocument.SelectSingleNode("complate").ChildNodes)
             {
-                var patternChildNode = (XmlNode)patternChild;
-                if (patternChildNode.Name == "variables")
+                if (childNode.Name == "variables")
                 {
-                    foreach (var patternGrandchild in patternChildNode.ChildNodes)
+                    foreach (XmlNode grandchildNode in childNode.ChildNodes)
                     {
-                        var patternGrandchildNode = (XmlNode)patternGrandchild;
-                        if (patternGrandchildNode.Name == "param")
+                        if (grandchildNode.Name == "param")
                         {
-                            var defaultValue = patternGrandchildNode.Attributes["default"].Value;
-                            if (patternGrandchildNode.Attributes["name"].Value.ToLower() == "rgbmask")
+                            var defaultValue = grandchildNode.Attributes["default"].Value;
+                            if (grandchildNode.Attributes["name"].Value.ToLower() == "rgbmask")
                             {
-                                return defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : patternGrandchildNode.Attributes["default"].Value;
+                                return defaultValue.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(defaultValue.Substring(defaultValue.LastIndexOf("\\") + 1, defaultValue.LastIndexOf(".tga") - defaultValue.LastIndexOf("\\") - 1)).ToString("X16") : grandchildNode.Attributes["default"].Value;
                             }
                         }
                     }
