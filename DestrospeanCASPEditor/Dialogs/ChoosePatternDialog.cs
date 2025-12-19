@@ -93,8 +93,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        List<Gdk.Pixbuf> pixbufs = null;
                         var maskKey = GetMaskKey(package, patternNameKeyPath[1]);
+                        List<Gdk.Pixbuf> pixbufs = null;
                         if (maskKey != null && !ImageUtils.PreloadedPatternImagePixbufs.TryGetValue(maskKey, out pixbufs))
                         {
                             var evaluated = package.EvaluateImageResourceKey(maskKey);
