@@ -414,7 +414,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternImageCache[patternImageMipmapsKvp.Key].Add(Convert.ToBase64String(patternImageMipmapsKvp.Value[0].SaveToBuffer("png")));
                 }
             }
-            System.IO.File.WriteAllText(CacheFilePath, Newtonsoft.Json.JsonConvert.SerializeObject(patternImageCache, Newtonsoft.Json.Formatting.Indented));
+            System.IO.File.WriteAllText(CacheFilePath, Newtonsoft.Json.JsonConvert.SerializeObject(patternImageCache));
         }
     }
 }
