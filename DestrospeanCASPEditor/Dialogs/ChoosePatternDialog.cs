@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIAbstractions;
@@ -10,7 +11,7 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public partial class ChoosePatternDialog : Gtk.Dialog
     {
-        public static readonly string CacheFilePath = System.IO.Path.GetDirectoryName(ApplicationSpecificSettings.SettingsFilePath) + System.IO.Path.DirectorySeparatorChar + "PatternImageCache.json";
+        public static readonly string CacheFilePath = System.IO.Path.GetDirectoryName(ApplicationSpecificSettings.SettingsFilePath) + System.IO.Path.DirectorySeparatorChar + "PatternThumbnailCache";
 
         public string PatternPath
         {
@@ -50,7 +51,7 @@ namespace Destrospean.DestrospeanCASPEditor
             System.Action<IResource> addPatternsByCategory = (IResource patternListResource) =>
                 {
                     var xmlDocument = new XmlDocument();
-                    xmlDocument.LoadXml(new System.IO.StreamReader(patternListResource.Stream).ReadToEnd());
+                    xmlDocument.LoadXml(new StreamReader(patternListResource.Stream).ReadToEnd());
                     foreach (XmlNode childNode in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
                     {
                         if (childNode.Name == "category")
@@ -187,7 +188,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             var evaluated = package.EvaluateResourceKey(patternKey);
             var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            xmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
             var propertiesXmlNodes = new Dictionary<string, string>();
             foreach (XmlNode childNode in xmlDocument.SelectSingleNode("complate").ChildNodes)
             {
@@ -386,11 +387,11 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static void LoadCache()
         {
-            if (System.IO.File.Exists(CacheFilePath))
+            if (File.Exists(CacheFilePath))
             {
-                using (var stream = System.IO.File.OpenText(CacheFilePath))
+                using (var reader = new Newtonsoft.Json.Bson.BsonReader(new FileStream(CacheFilePath, FileMode.Open)))
                 {
-                    foreach (var patternImageMipmapsKvp in Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(stream.ReadToEnd()))
+                    foreach (var patternImageMipmapsKvp in new Newtonsoft.Json.JsonSerializer().Deserialize<Dictionary<string, object>>(reader))
                     {
                         PreloadedPatternImagePixbufs.Add(patternImageMipmapsKvp.Key, new List<Gdk.Pixbuf>());
                         foreach (var patternImageBase64 in (Newtonsoft.Json.Linq.JArray)patternImageMipmapsKvp.Value)
@@ -404,17 +405,20 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static void SaveCache()
         {
-            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(CacheFilePath));
-            var patternImageCache = new Dictionary<string, List<string>>();
-            foreach (var patternImageMipmapsKvp in PreloadedPatternImagePixbufs)
+            var patternThumbnailCache = new Dictionary<string, List<string>>();
+            foreach (var patternThumbnailMipmapsKvp in PreloadedPatternImagePixbufs)
             {
-                patternImageCache.Add(patternImageMipmapsKvp.Key, new List<string>());
-                foreach (var patternImage in patternImageMipmapsKvp.Value)
+                patternThumbnailCache.Add(patternThumbnailMipmapsKvp.Key, new List<string>());
+                foreach (var patternImage in patternThumbnailMipmapsKvp.Value)
                 {
-                    patternImageCache[patternImageMipmapsKvp.Key].Add(Convert.ToBase64String(patternImageMipmapsKvp.Value[0].SaveToBuffer("png")));
+                    patternThumbnailCache[patternThumbnailMipmapsKvp.Key].Add(Convert.ToBase64String(patternThumbnailMipmapsKvp.Value[0].SaveToBuffer("png")));
                 }
             }
-            System.IO.File.WriteAllText(CacheFilePath, Newtonsoft.Json.JsonConvert.SerializeObject(patternImageCache));
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(CacheFilePath));
+            using (var writer = new Newtonsoft.Json.Bson.BsonWriter(new FileStream(CacheFilePath, FileMode.Create)))
+            {
+                new Newtonsoft.Json.JsonSerializer().Serialize(writer, patternThumbnailCache);
+            }
         }
     }
 }

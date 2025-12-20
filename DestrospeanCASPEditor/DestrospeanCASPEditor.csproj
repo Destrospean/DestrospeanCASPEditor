@@ -318,5 +318,9 @@
     </None>
     <None Include="Icons\CASDesignerToolkit.svg" />
     <None Include="Icons\CASDesignerToolkit.ico" />
+    <None Include="..\LICENSE.md">
+      <Link>LICENSE.md</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
