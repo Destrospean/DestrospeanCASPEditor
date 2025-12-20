@@ -856,7 +856,7 @@
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Window" id="Destrospean.DestrospeanCASPEditor.MessageFramelessWindow" design-size="320 128">
+  <widget class="Gtk.Window" id="Destrospean.DestrospeanCASPEditor.PatternCacheGenerationWindow" design-size="320 128">
     <property name="MemberName" />
     <property name="WidthRequest">320</property>
     <property name="HeightRequest">128</property>

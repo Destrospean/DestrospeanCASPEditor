@@ -102,7 +102,7 @@ public partial class MainWindow : Window
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(ChoosePatternDialog.CacheFilePath))
         {
-            new MessageFramelessWindow("Please wait as caches are being generated...", this);
+            new PatternCacheGenerationWindow("Please wait as caches are being generated...", this);
         }
         UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);

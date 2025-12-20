@@ -1,8 +1,8 @@
 ﻿namespace Destrospean.DestrospeanCASPEditor
 {
-    public partial class MessageFramelessWindow : Gtk.Window
+    public partial class PatternCacheGenerationWindow : Gtk.Window
     {
-        public MessageFramelessWindow(string label, Gtk.Window parent) : base(Gtk.WindowType.Toplevel)
+        public PatternCacheGenerationWindow(string label, Gtk.Window parent) : base(Gtk.WindowType.Toplevel)
         {
             Build();
             Label.Text = label;
