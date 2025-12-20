@@ -140,6 +140,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     case "string":
                         var entry = new Entry
                             {
+                                Sensitive = false,
                                 Text = value
                             };
                         entry.Changed += (sender, e) => complate[propertyName] = entry.Text;
