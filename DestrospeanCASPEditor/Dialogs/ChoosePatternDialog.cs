@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIAbstractions;
 using Gtk;
 using s3pi.Interfaces;
-using Destrospean.CmarNYCBorrowed;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
