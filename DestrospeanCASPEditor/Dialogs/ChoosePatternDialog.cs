@@ -136,7 +136,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                             uncachedPatternExists = true;
                         }
-                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs[0]);
+                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear));
                         patternKeys.Add(patternNameKeyPath[1]);
                         patternPaths.Add(patternNameKeyPath[2]);
                     }
