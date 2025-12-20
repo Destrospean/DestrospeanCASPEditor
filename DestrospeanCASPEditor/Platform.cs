@@ -33,7 +33,7 @@ public static class Platform
         }
     }
 
-    public static bool IsMac
+    public static bool IsMacOS
     {
         get
         {

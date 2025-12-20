@@ -11,7 +11,7 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public partial class ChoosePatternDialog : Gtk.Dialog
     {
-        public static readonly string CacheFilePath = System.IO.Path.GetDirectoryName(ApplicationSpecificSettings.SettingsFilePath) + System.IO.Path.DirectorySeparatorChar + "PatternThumbnailCache";
+        public static readonly string CacheFilePath = string.Format("{0}{1}Destrospean{1}PatternThumbnailCache", Platform.IsMacOS ? Environment.GetFolderPath(Environment.SpecialFolder.InternetCache) : Platform.IsUnix ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.cache" : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.IO.Path.DirectorySeparatorChar);
 
         public string PatternPath
         {
@@ -19,7 +19,7 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
-        public static readonly Dictionary<string, List<Gdk.Pixbuf>> PreloadedPatternImagePixbufs = new Dictionary<string, List<Gdk.Pixbuf>>();
+        public static readonly Dictionary<string, Gdk.Pixbuf> PreloadedPatternImagePixbufs = new Dictionary<string, Gdk.Pixbuf>();
 
         public static readonly Dictionary<string, PatternInfo> PreloadedPatterns = new Dictionary<string, PatternInfo>();
 
@@ -36,7 +36,10 @@ namespace Destrospean.DestrospeanCASPEditor
         public ChoosePatternDialog(string title, Window parent, IPackage package) : base(title, parent, DialogFlags.Modal)
         {
             Build();
-            this.RescaleAndReposition(parent);
+            if (parent != null)
+            {
+                this.RescaleAndReposition(parent);
+            }
             PatternIconView.ColumnSpacing = (int)(PatternIconView.ColumnSpacing * WidgetUtils.Scale);
             PatternIconView.Margin = (int)(PatternIconView.Margin * WidgetUtils.Scale);
             PatternIconView.RowSpacing = (int)(PatternIconView.RowSpacing * WidgetUtils.Scale);
@@ -102,8 +105,8 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        List<Gdk.Pixbuf> pixbufs = null;
-                        if (!PreloadedPatternImagePixbufs.TryGetValue(patternNameKeyPath[1], out pixbufs))
+                        Gdk.Pixbuf pixbuf = null;
+                        if (!PreloadedPatternImagePixbufs.TryGetValue(patternNameKeyPath[1], out pixbuf))
                         {
                             System.Drawing.Bitmap patternImage = null;
                             PatternInfo patternInfo;
@@ -122,21 +125,15 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                             if (patternImage != null)
                             {
-                                pixbufs = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = new List<Gdk.Pixbuf>
-                                    {
-                                        patternImage.ToPixbuf().ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear)
-                                    };
+                                pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = patternImage.ToPixbuf().ScaleSimple(64, 64, Gdk.InterpType.Bilinear);
                             }
                             else if (patternInfo.Type == PatternType.Solid)
                             {
-                                pixbufs = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = new List<Gdk.Pixbuf>
-                                    {
-                                        ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)))
-                                    };
+                                pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = ImageUtils.CreateCheckerboard(64, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)));
                             }
                             uncachedPatternExists = true;
                         }
-                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear));
+                        patternListStore.AppendValues(patternNameKeyPath[0], pixbuf.ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear));
                         patternKeys.Add(patternNameKeyPath[1]);
                         patternPaths.Add(patternNameKeyPath[2]);
                     }
@@ -156,7 +153,6 @@ namespace Destrospean.DestrospeanCASPEditor
             if (categories.Contains("Old"))
             {
                 categories.Remove("Old");
-                //categories.Add("Old");
             }
             categories.ForEach(x => categoryListStore.AppendValues(x));
             CategoryComboBox.Model = categoryListStore;
@@ -167,12 +163,6 @@ namespace Destrospean.DestrospeanCASPEditor
             PatternIconView.PixbufColumn = 1;
             PatternIconView.TooltipColumn = 0;
             PatternIconView.SelectionChanged += (sender, e) => OKButton.Sensitive = PatternIconView.SelectedItems.Length > 0;
-            /*
-            for (var i = categories.Count - 1; i > -1; i--)
-            {
-                setPatternKeysAndPaths(i);
-            }
-            */
             setPatternKeysAndPaths(0);
             Response += (o, args) =>
                 {
@@ -182,6 +172,101 @@ namespace Destrospean.DestrospeanCASPEditor
                         ResourceKey = patternKeys[PatternIconView.SelectedItems[0].Indices[0]];
                     }
                 };
+        }
+
+        public static void GenerateCache(IPackage package)
+        {
+            List<string> categories = new List<string>();
+            var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
+            var patternsByCategory = new Dictionary<string, List<string>>();
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            foreach (XmlNode childNode in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
+            {
+                if (childNode.Name == "category")
+                {
+                    var category = childNode.Attributes["name"].Value;
+                    patternsByCategory.Add(category, new List<string>());
+                    foreach (XmlElement grandchildNode in childNode.ChildNodes)
+                    {
+                        if (grandchildNode.Name == "pattern")
+                        {
+                            var key = "";
+                            if (grandchildNode.HasAttribute("reskey"))
+                            {
+                                key = grandchildNode.Attributes["reskey"].Value;
+                            }
+                            else if (grandchildNode.HasAttribute("name"))
+                            {
+                                key = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(grandchildNode.Attributes["name"].Value).ToString("X16");
+                            }
+                            else
+                            {
+                                throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
+                            }
+                            patternsByCategory[category].Add(key);
+                            patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);
+                        }
+                    }
+                }
+            }
+            categories.AddRange(patternsByCategory.Keys);
+            categories.Sort();
+            if (categories.Contains("Old"))
+            {
+                categories.Remove("Old");
+            }
+            for (var i = categories.Count - 1; i > -1; i--)
+            {
+                var patternKeysPaths = patternsByCategory[categories[i]];
+                var patternNamesKeysPaths = new List<string[]>();
+                var uncachedPatternExists = false;
+                for (var j = 0; j < patternKeysPaths.Count; j += 2)
+                {
+                    patternNamesKeysPaths.Add(new string[]
+                        {
+                            patternKeysPaths[j + 1].Substring(patternKeysPaths[j + 1].LastIndexOf("\\") + 1),
+                            patternKeysPaths[j],
+                            patternKeysPaths[j + 1]
+                        });
+                }
+                patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
+                foreach (var patternNameKeyPath in patternNamesKeysPaths)
+                {
+                    Gdk.Pixbuf pixbuf = null;
+                    if (!PreloadedPatternImagePixbufs.TryGetValue(patternNameKeyPath[1], out pixbuf))
+                    {
+                        System.Drawing.Bitmap patternImage = null;
+                        PatternInfo patternInfo;
+                        if (!PreloadedPatterns.TryGetValue(patternNameKeyPath[1], out patternInfo))
+                        {
+                            patternInfo = PreloadedPatterns[patternNameKeyPath[1]] = GetPatternInfo(package, patternNameKeyPath[1]);
+                        }
+                        switch (patternInfo.Type)
+                        {
+                            case PatternType.Colored:
+                                patternImage = package.GetRGBPatternImage(patternInfo, ImageUtils.GetTexture);
+                                break;
+                            case PatternType.HSV:
+                                patternImage = package.GetHSVPatternImage(patternInfo, ImageUtils.GetTexture);
+                                break;
+                        }
+                        if (patternImage != null)
+                        {
+                            pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = patternImage.ToPixbuf().ScaleSimple(64, 64, Gdk.InterpType.Bilinear);
+                        }
+                        else if (patternInfo.Type == PatternType.Solid)
+                        {
+                            pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = ImageUtils.CreateCheckerboard(64, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)));
+                        }
+                        uncachedPatternExists = true;
+                    }
+                }
+                if (uncachedPatternExists)
+                {
+                    SaveCache();
+                }
+            }
         }
 
         public static PatternInfo GetPatternInfo(IPackage package, string patternKey)
@@ -391,13 +476,9 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 using (var reader = new Newtonsoft.Json.Bson.BsonReader(new FileStream(CacheFilePath, FileMode.Open)))
                 {
-                    foreach (var patternThumbnailMipmapsKvp in new Newtonsoft.Json.JsonSerializer().Deserialize<Dictionary<string, object>>(reader))
+                    foreach (var patternImageBase64StringKvp in new Newtonsoft.Json.JsonSerializer().Deserialize<Dictionary<string, string>>(reader))
                     {
-                        PreloadedPatternImagePixbufs.Add(patternThumbnailMipmapsKvp.Key, new List<Gdk.Pixbuf>());
-                        foreach (var patternThumbnailBase64 in (Newtonsoft.Json.Linq.JArray)patternThumbnailMipmapsKvp.Value)
-                        {
-                            PreloadedPatternImagePixbufs[patternThumbnailMipmapsKvp.Key].Add(ImageUtils.Base64StringToBitmap(patternThumbnailBase64.ToString()).ToPixbuf());
-                        }
+                        PreloadedPatternImagePixbufs.Add(patternImageBase64StringKvp.Key, ImageUtils.Base64StringToBitmap(patternImageBase64StringKvp.Value).ToPixbuf());
                     }
                 }
             }
@@ -405,14 +486,10 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static void SaveCache()
         {
-            var patternThumbnailCache = new Dictionary<string, List<string>>();
-            foreach (var patternThumbnailMipmapsKvp in PreloadedPatternImagePixbufs)
+            var patternThumbnailCache = new Dictionary<string, string>();
+            foreach (var patternImagePixbufKvp in PreloadedPatternImagePixbufs)
             {
-                patternThumbnailCache.Add(patternThumbnailMipmapsKvp.Key, new List<string>());
-                foreach (var patternImage in patternThumbnailMipmapsKvp.Value)
-                {
-                    patternThumbnailCache[patternThumbnailMipmapsKvp.Key].Add(Convert.ToBase64String(patternThumbnailMipmapsKvp.Value[0].SaveToBuffer("png")));
-                }
+                patternThumbnailCache.Add(patternImagePixbufKvp.Key, Convert.ToBase64String(patternImagePixbufKvp.Value.SaveToBuffer("png")));
             }
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(CacheFilePath));
             using (var writer = new Newtonsoft.Json.Bson.BsonWriter(new FileStream(CacheFilePath, FileMode.Create)))

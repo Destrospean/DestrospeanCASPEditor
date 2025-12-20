@@ -226,6 +226,8 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
     <Compile Include="Dialogs\ChoosePatternDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
+    <Compile Include="Dialogs\MessageFramelessWindow.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.MessageFramelessWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

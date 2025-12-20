@@ -7,7 +7,7 @@
             try
             {
                 Gtk.Application.Init();
-                new MainWindow().Show();
+                new MainWindow();
                 Gtk.Application.Run();
             }
             catch (System.Exception ex)

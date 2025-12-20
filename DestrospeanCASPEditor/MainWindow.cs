@@ -100,6 +100,10 @@ public partial class MainWindow : Window
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
+        if (!File.Exists(ChoosePatternDialog.CacheFilePath))
+        {
+            new MessageFramelessWindow("Please wait as caches are being generated...", this);
+        }
         UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
         MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
@@ -802,25 +806,28 @@ public partial class MainWindow : Window
             };
     }
 
-    void RescaleAndReposition()
+    void RescaleAndReposition(bool skipRescale = false)
     {
         var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASDT_SCALE");
-        WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
-        WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
-        SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
-        foreach (var widget in new Widget[]
-            {
-                Image,
-                MainTable,
-                ResourcePropertyNotebook,
-                ResourcePropertyTable,
-                this
-            })
+        if (!skipRescale)
         {
-            widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
+            WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
+            WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
+            SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
+            foreach (var widget in new Widget[]
+                {
+                    Image,
+                    MainTable,
+                    ResourcePropertyNotebook,
+                    ResourcePropertyTable,
+                    this
+                })
+            {
+                widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
+            }
+            Resize(DefaultWidth, DefaultHeight);
         }
-        Resize(DefaultWidth, DefaultHeight);
         Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
     }
 
