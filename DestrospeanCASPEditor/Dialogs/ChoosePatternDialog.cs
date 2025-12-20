@@ -40,9 +40,6 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 this.RescaleAndReposition(parent);
             }
-            PatternIconView.ColumnSpacing = (int)(PatternIconView.ColumnSpacing * WidgetUtils.Scale);
-            PatternIconView.Margin = (int)(PatternIconView.Margin * WidgetUtils.Scale);
-            PatternIconView.RowSpacing = (int)(PatternIconView.RowSpacing * WidgetUtils.Scale);
             List<string> categories = new List<string>(),
             patternKeys = new List<string>(),
             patternPaths = new List<string>();

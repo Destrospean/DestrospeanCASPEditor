@@ -10,9 +10,10 @@
             Reposition();
             new System.Threading.Thread(() =>
                 {
-                    MainWindow.Singleton.Hide();
+                    MainWindow.Singleton.RescaleAndReposition(true);
+                    MainWindow.Singleton.Sensitive = false;
                     ChoosePatternDialog.GenerateCache(s3pi.Package.Package.NewPackage(0));
-                    MainWindow.Singleton.Show();
+                    MainWindow.Singleton.Sensitive = true;
                     Destroy();
                 }).Start();
         }

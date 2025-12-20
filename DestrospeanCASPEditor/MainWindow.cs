@@ -806,31 +806,6 @@ public partial class MainWindow : Window
             };
     }
 
-    void RescaleAndReposition(bool skipRescale = false)
-    {
-        var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
-        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASDT_SCALE");
-        if (!skipRescale)
-        {
-            WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
-            WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
-            SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
-            foreach (var widget in new Widget[]
-                {
-                    Image,
-                    MainTable,
-                    ResourcePropertyNotebook,
-                    ResourcePropertyTable,
-                    this
-                })
-            {
-                widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
-            }
-            Resize(DefaultWidth, DefaultHeight);
-        }
-        Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
-    }
-
     public void ClearTemporaryData()
     {
         mSaveAsPath = null;
@@ -935,6 +910,31 @@ public partial class MainWindow : Window
             AddCASPartWidgets(casPart);
         }
         ResourceTreeView.Selection.SelectPath(new TreePath("0"));
+    }
+
+    public void RescaleAndReposition(bool skipRescale = false)
+    {
+        var monitorGeometry = Screen.GetMonitorGeometry(Screen.GetMonitorAtWindow(GdkWindow));
+        var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASDT_SCALE");
+        if (!skipRescale)
+        {
+            WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
+            WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
+            SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
+            foreach (var widget in new Widget[]
+                {
+                    Image,
+                    MainTable,
+                    ResourcePropertyNotebook,
+                    ResourcePropertyTable,
+                    this
+                })
+            {
+                widget.SetSizeRequest(widget.WidthRequest == -1 ? -1 : (int)(widget.WidthRequest * WidgetUtils.Scale), widget.HeightRequest == -1 ? -1 : (int)(widget.HeightRequest * WidgetUtils.Scale));
+            }
+            Resize(DefaultWidth, DefaultHeight);
+        }
+        Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
     }
 
     public void SavePackage(string path = null)

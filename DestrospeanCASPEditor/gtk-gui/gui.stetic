@@ -786,9 +786,6 @@
                   <widget class="Gtk.IconView" id="PatternIconView">
                     <property name="MemberName" />
                     <property name="CanFocus">True</property>
-                    <property name="ColumnSpacing">3</property>
-                    <property name="Margin">3</property>
-                    <property name="RowSpacing">3</property>
                   </widget>
                 </child>
               </widget>
@@ -860,7 +857,8 @@
     <property name="MemberName" />
     <property name="WidthRequest">320</property>
     <property name="HeightRequest">128</property>
-    <property name="Title" translatable="yes">MessageFramelessWindow</property>
+    <property name="Title" translatable="yes">Generating Cache...</property>
+    <property name="Icon">resource:Destrospean.DestrospeanCASPEditor.Icons.CASDesignerToolkit.png</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="Resizable">False</property>
     <property name="Decorated">False</property>

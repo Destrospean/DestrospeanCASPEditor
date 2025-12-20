@@ -15,7 +15,8 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.WidthRequest = 320;
 			this.HeightRequest = 128;
 			this.Name = "Destrospean.DestrospeanCASPEditor.PatternCacheGenerationWindow";
-			this.Title = global::Mono.Unix.Catalog.GetString ("MessageFramelessWindow");
+			this.Title = global::Mono.Unix.Catalog.GetString ("Generating Cache...");
+			this.Icon = global::Gdk.Pixbuf.LoadFromResource ("Destrospean.DestrospeanCASPEditor.Icons.CASDesignerToolkit.png");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Resizable = false;
 			this.Decorated = false;

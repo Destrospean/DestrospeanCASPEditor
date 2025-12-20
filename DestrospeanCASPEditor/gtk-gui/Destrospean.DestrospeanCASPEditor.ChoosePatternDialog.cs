@@ -73,9 +73,6 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.PatternIconView = new global::Gtk.IconView ();
 			this.PatternIconView.CanFocus = true;
 			this.PatternIconView.Name = "PatternIconView";
-			this.PatternIconView.ColumnSpacing = 3;
-			this.PatternIconView.Margin = 3;
-			this.PatternIconView.RowSpacing = 3;
 			this.ScrolledWindow.Add (this.PatternIconView);
 			this.MainTable.Add (this.ScrolledWindow);
 			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ScrolledWindow]));
