@@ -391,12 +391,12 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 using (var reader = new Newtonsoft.Json.Bson.BsonReader(new FileStream(CacheFilePath, FileMode.Open)))
                 {
-                    foreach (var patternImageMipmapsKvp in new Newtonsoft.Json.JsonSerializer().Deserialize<Dictionary<string, object>>(reader))
+                    foreach (var patternThumbnailMipmapsKvp in new Newtonsoft.Json.JsonSerializer().Deserialize<Dictionary<string, object>>(reader))
                     {
-                        PreloadedPatternImagePixbufs.Add(patternImageMipmapsKvp.Key, new List<Gdk.Pixbuf>());
-                        foreach (var patternImageBase64 in (Newtonsoft.Json.Linq.JArray)patternImageMipmapsKvp.Value)
+                        PreloadedPatternImagePixbufs.Add(patternThumbnailMipmapsKvp.Key, new List<Gdk.Pixbuf>());
+                        foreach (var patternThumbnailBase64 in (Newtonsoft.Json.Linq.JArray)patternThumbnailMipmapsKvp.Value)
                         {
-                            PreloadedPatternImagePixbufs[patternImageMipmapsKvp.Key].Add(ImageUtils.Base64StringToBitmap(patternImageBase64.ToString()).ToPixbuf());
+                            PreloadedPatternImagePixbufs[patternThumbnailMipmapsKvp.Key].Add(ImageUtils.Base64StringToBitmap(patternThumbnailBase64.ToString()).ToPixbuf());
                         }
                     }
                 }
