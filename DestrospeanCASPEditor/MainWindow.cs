@@ -99,7 +99,7 @@ public partial class MainWindow : Window
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
-        ChoosePatternDialog.LoadCache();
+        new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
         MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
