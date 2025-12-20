@@ -28,6 +28,14 @@ namespace Destrospean.DestrospeanCASPEditor
             return new Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), package.GetTexture(resourceIndexEntry), Math.Min(width, height));
         }
 
+        public static Bitmap Base64StringToBitmap(string base64String)
+        {
+            using (var stream = new System.IO.MemoryStream(Convert.FromBase64String(base64String)))
+            {
+                return (Bitmap)Bitmap.FromStream(stream);
+            }
+        }
+
         public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
         {
             var checkerboard = new Pixbuf(Colorspace.Rgb, true, 8, size, size);

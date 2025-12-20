@@ -10,6 +10,8 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public partial class ChoosePatternDialog : Gtk.Dialog
     {
+        public static readonly string CacheFilePath = System.IO.Path.GetDirectoryName(ApplicationSpecificSettings.SettingsFilePath) + System.IO.Path.DirectorySeparatorChar + "PatternImageCache.json";
+
         public string PatternPath
         {
             get;
@@ -72,10 +74,6 @@ namespace Destrospean.DestrospeanCASPEditor
                                     {
                                         throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                                     }
-                                    if (!PreloadedPatterns.ContainsKey(key))
-                                    {
-                                        PreloadedPatterns.Add(key, GetPatternInfo(package, key));
-                                    }
                                     patternsByCategory[category].Add(key);
                                     patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);
                                 }
@@ -90,6 +88,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternListStore.Clear();
                     var patternKeysPaths = patternsByCategory[categories[categoryIndex]];
                     var patternNamesKeysPaths = new List<string[]>();
+                    var uncachedPatternExists = false;
                     for (var i = 0; i < patternKeysPaths.Count; i += 2)
                     {
                         patternNamesKeysPaths.Add(new string[]
@@ -102,11 +101,15 @@ namespace Destrospean.DestrospeanCASPEditor
                     patternNamesKeysPaths.Sort((a, b) => a[0].CompareTo(b[0]));
                     foreach (var patternNameKeyPath in patternNamesKeysPaths)
                     {
-                        var patternInfo = PreloadedPatterns[patternNameKeyPath[1]];
                         List<Gdk.Pixbuf> pixbufs = null;
                         if (!PreloadedPatternImagePixbufs.TryGetValue(patternNameKeyPath[1], out pixbufs))
                         {
                             System.Drawing.Bitmap patternImage = null;
+                            PatternInfo patternInfo;
+                            if (!PreloadedPatterns.TryGetValue(patternNameKeyPath[1], out patternInfo))
+                            {
+                                patternInfo = PreloadedPatterns[patternNameKeyPath[1]] = GetPatternInfo(package, patternNameKeyPath[1]);
+                            }
                             switch (patternInfo.Type)
                             {
                                 case PatternType.Colored:
@@ -123,10 +126,22 @@ namespace Destrospean.DestrospeanCASPEditor
                                         patternImage.ToPixbuf().ScaleSimple(WidgetUtils.SmallImageSize << 1, WidgetUtils.SmallImageSize << 1, Gdk.InterpType.Bilinear)
                                     };
                             }
+                            else if (patternInfo.Type == PatternType.Solid)
+                            {
+                                pixbufs = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = new List<Gdk.Pixbuf>
+                                    {
+                                        ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)))
+                                    };
+                            }
+                            uncachedPatternExists = true;
                         }
-                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs == null ? patternInfo.Type == PatternType.Solid ? ImageUtils.CreateCheckerboard(WidgetUtils.SmallImageSize << 1, 1, new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)), new Gdk.Color((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue))) : null : pixbufs[0]);
+                        patternListStore.AppendValues(patternNameKeyPath[0], pixbufs[0]);
                         patternKeys.Add(patternNameKeyPath[1]);
-                        patternPaths.Add((string)patternNameKeyPath[2]);
+                        patternPaths.Add(patternNameKeyPath[2]);
+                    }
+                    if (uncachedPatternExists)
+                    {
+                        SaveCache();
                     }
                     PatternIconView.SelectPath(new TreePath("0"));
                 };
@@ -367,6 +382,39 @@ namespace Destrospean.DestrospeanCASPEditor
                     RGBMask = rgbMask,
                     SolidColor = rgbColors.Count == 1 ? rgbColors[0] : null
                 };
+        }
+
+        public static void LoadCache()
+        {
+            if (System.IO.File.Exists(CacheFilePath))
+            {
+                using (var stream = System.IO.File.OpenText(CacheFilePath))
+                {
+                    foreach (var patternImageMipmapsKvp in Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(stream.ReadToEnd()))
+                    {
+                        PreloadedPatternImagePixbufs.Add(patternImageMipmapsKvp.Key, new List<Gdk.Pixbuf>());
+                        foreach (var patternImageBase64 in (Newtonsoft.Json.Linq.JArray)patternImageMipmapsKvp.Value)
+                        {
+                            PreloadedPatternImagePixbufs[patternImageMipmapsKvp.Key].Add(ImageUtils.Base64StringToBitmap(patternImageBase64.ToString()).ToPixbuf());
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void SaveCache()
+        {
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(CacheFilePath));
+            var patternImageCache = new Dictionary<string, List<string>>();
+            foreach (var patternImageMipmapsKvp in PreloadedPatternImagePixbufs)
+            {
+                patternImageCache.Add(patternImageMipmapsKvp.Key, new List<string>());
+                foreach (var patternImage in patternImageMipmapsKvp.Value)
+                {
+                    patternImageCache[patternImageMipmapsKvp.Key].Add(Convert.ToBase64String(patternImageMipmapsKvp.Value[0].SaveToBuffer("png")));
+                }
+            }
+            System.IO.File.WriteAllText(CacheFilePath, Newtonsoft.Json.JsonConvert.SerializeObject(patternImageCache, Newtonsoft.Json.Formatting.Indented));
         }
     }
 }

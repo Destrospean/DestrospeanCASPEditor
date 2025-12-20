@@ -99,6 +99,7 @@ public partial class MainWindow : Window
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
+        ChoosePatternDialog.LoadCache();
         UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
         MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
@@ -149,13 +150,13 @@ public partial class MainWindow : Window
                 var fileChooserDialog = new FileChooserDialog("Export Texture", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
                 var fileFilter = new FileFilter
                     {
-                        Name = "Windows Bitmap"
+                        Name = "Portable Network Graphics"
                     };
-                fileFilter.AddPattern("*.bmp");
+                fileFilter.AddPattern("*.png");
                 fileChooserDialog.AddFilter(fileFilter);
                 if (fileChooserDialog.Run() == (int)ResponseType.Accept)
                 {
-                    casPart.AllPresets[mPresetNotebook.CurrentPage].Texture.Save(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".bmp") ? "" : ".bmp"));
+                    casPart.AllPresets[mPresetNotebook.CurrentPage].Texture.Save(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".png") ? "" : ".png"), System.Drawing.Imaging.ImageFormat.Png);
                 }
                 fileChooserDialog.Destroy();
             };
@@ -836,8 +837,6 @@ public partial class MainWindow : Window
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImagePixbufs.Clear();
         ImageUtils.PreloadedImages.Clear();
-        ChoosePatternDialog.PreloadedPatternImagePixbufs.Clear();
-        ChoosePatternDialog.PreloadedPatterns.Clear();
     }
 
     public ResponseType GetUnsavedChangesDialogResponseType()

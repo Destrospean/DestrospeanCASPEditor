@@ -114,26 +114,12 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
 
         public uint GetBuffer(string name)
         {
-            if (Buffers.ContainsKey(name))
-            {
-                return Buffers[name];
-            }
-            else
-            {
-                return 0;
-            }
+            return Buffers.ContainsKey(name) ? Buffers[name] : 0;
         }
 
         public int GetUniform(string name)
         {
-            if (Uniforms.ContainsKey(name))
-            {
-                return Uniforms[name].Address;
-            }
-            else
-            {
-                return -1;
-            }
+            return Uniforms.ContainsKey(name) ? Uniforms[name].Address : -1;
         }
 
         public void Link()
