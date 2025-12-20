@@ -174,7 +174,15 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void GenerateCache(IPackage package)
         {
             List<string> categories = new List<string>();
-            var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
+            ResourceUtils.EvaluatedResourceKey gamePatternListEvaluated;
+            try
+            {
+                 gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
+            }
+            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+            {
+                return;
+            }
             var patternsByCategory = new Dictionary<string, List<string>>();
             var xmlDocument = new XmlDocument();
             xmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry).Stream).ReadToEnd());
