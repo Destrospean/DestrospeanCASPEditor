@@ -8,6 +8,7 @@ cp ../DestrospeanCASPEditor/bin/Release/GameFolders.xml CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/LICENSE.md CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/Mono.Posix.dll CASDesignerToolkit
+cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
 zip -r CASDesignerToolkit-linux-amd64.zip CASDesignerToolkit/*
 rm -rf CASDesignerToolkit
 mv CASDesignerToolkit-linux-amd64.zip ../DestrospeanCASPEditor/bin/Release
