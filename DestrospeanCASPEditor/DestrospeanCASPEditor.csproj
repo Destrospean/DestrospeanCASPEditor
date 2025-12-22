@@ -210,9 +210,7 @@
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
-    <Compile Include="Dialogs\AddGEOMPropertyDialog.cs" />
     <Compile Include="Dialogs\GameFoldersDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddGEOMPropertyDialog.cs" />
     <Compile Include="OpenGL\Camera.cs" />
     <Compile Include="OpenGL\Light.cs" />
     <Compile Include="OpenGL\Material.cs" />
@@ -227,8 +225,10 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
     <Compile Include="Dialogs\ChoosePatternDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
-    <Compile Include="Dialogs\PatternCacheGenerationWindow.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.PatternCacheGenerationWindow.cs" />
+    <Compile Include="Dialogs\CacheGenerationWindow.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
+    <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

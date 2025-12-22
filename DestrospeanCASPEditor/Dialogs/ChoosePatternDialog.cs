@@ -9,7 +9,7 @@ using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
-    public partial class ChoosePatternDialog : Gtk.Dialog
+    public partial class ChoosePatternDialog : Dialog
     {
         public static readonly string CacheFilePath = string.Format("{0}{1}Destrospean{1}PatternThumbnailCache", Platform.IsMacOS ? Environment.GetFolderPath(Environment.SpecialFolder.InternetCache) : Platform.IsUnix ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.cache" : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.IO.Path.DirectorySeparatorChar);
 
@@ -221,7 +221,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 categories.Remove("Old");
             }
-            for (var i = categories.Count - 1; i > -1; i--)
+            for (var i = 0; i < categories.Count; i++)
             {
                 var patternKeysPaths = patternsByCategory[categories[i]];
                 var patternNamesKeysPaths = new List<string[]>();

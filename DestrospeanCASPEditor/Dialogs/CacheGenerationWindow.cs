@@ -1,11 +1,11 @@
 ﻿namespace Destrospean.DestrospeanCASPEditor
 {
-    public partial class PatternCacheGenerationWindow : Gtk.Window
+    public partial class CacheGenerationWindow : Gtk.Window
     {
-        public PatternCacheGenerationWindow(string label, Gtk.Window parent) : base(Gtk.WindowType.Toplevel)
+        public CacheGenerationWindow(string message, Gtk.Window parent) : base(Gtk.WindowType.Toplevel)
         {
             Build();
-            Label.Text = label;
+            Label.Text = message;
             this.RescaleAndReposition(parent);
             Reposition();
             new System.Threading.Thread(() =>

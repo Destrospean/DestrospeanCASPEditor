@@ -306,22 +306,22 @@ namespace Destrospean.DestrospeanCASPEditor
             var addPropertyButton = new Button(addPropertyButtonHBox);
             addPropertyButton.Clicked += (sender, e) =>
                 {
-                    var addGEOMPropertyDialog = new AddGEOMPropertyDialog(mainWindow);
-                    if (addGEOMPropertyDialog.Run() == (int)ResponseType.Ok)
+                    var addMaterialPropertyDialog = new AddMaterialPropertyDialog(mainWindow);
+                    if (addMaterialPropertyDialog.Run() == (int)ResponseType.Ok)
                     {
                         foreach (var child in table.Children)
                         {
                             table.Remove(child);
                         }
-                        var element = addGEOMPropertyDialog.DataType == typeof(ElementTextureRef) ? new ElementTextureRef(0, null, null, "GEOM") : (ShaderData)Activator.CreateInstance(addGEOMPropertyDialog.DataType, 0, null);
-                        element.Field = addGEOMPropertyDialog.Field;
+                        var element = addMaterialPropertyDialog.DataType == typeof(ElementTextureRef) ? new ElementTextureRef(0, null, null, "GEOM") : (ShaderData)Activator.CreateInstance(addMaterialPropertyDialog.DataType, 0, null);
+                        element.Field = addMaterialPropertyDialog.Field;
                         geom.Mtnf.SData.Add(element);
                         table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
                         scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;
                         mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     }
-                    addGEOMPropertyDialog.Destroy();
+                    addMaterialPropertyDialog.Destroy();
                 };
             table.Attach(addPropertyButton, 0, 2, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.NRows++;

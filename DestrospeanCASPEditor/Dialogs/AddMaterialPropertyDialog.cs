@@ -4,7 +4,7 @@ using s3pi.GenericRCOLResource;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
-    public partial class AddGEOMPropertyDialog : Dialog
+    public partial class AddMaterialPropertyDialog : Dialog
     {
         public System.Type DataType
         {
@@ -18,11 +18,11 @@ namespace Destrospean.DestrospeanCASPEditor
             private set;
         }
 
-        public AddGEOMPropertyDialog(Window parent) : this("Add Property", parent)
+        public AddMaterialPropertyDialog(Window parent) : this("Add Property", parent)
         {
         }
 
-        public AddGEOMPropertyDialog(string title, Window parent) : base(title, parent, DialogFlags.Modal)
+        public AddMaterialPropertyDialog(string title, Window parent) : base(title, parent, DialogFlags.Modal)
         {
             Build();
             this.RescaleAndReposition(parent);

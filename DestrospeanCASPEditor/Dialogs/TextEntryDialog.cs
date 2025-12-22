@@ -8,11 +8,11 @@
             private set;
         }
 
-        public TextEntryDialog(string title, string label, Gtk.Window parent) : base(title, parent, Gtk.DialogFlags.Modal)
+        public TextEntryDialog(string title, string message, Gtk.Window parent) : base(title, parent, Gtk.DialogFlags.Modal)
         {
             Build();
             this.RescaleAndReposition(parent);
-            Label.Text = label;
+            Label.Text = message;
             Response += (o, args) =>
                 {
                     if (args.ResponseId == Gtk.ResponseType.Ok)
