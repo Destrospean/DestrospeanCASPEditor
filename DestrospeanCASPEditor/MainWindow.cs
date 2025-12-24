@@ -50,6 +50,7 @@ public partial class MainWindow : Window
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
+                mPreloadedBBLNs.Clear();
                 Title += HasUnsavedChanges ? "" : " *";
                 HasUnsavedChanges = true;
             }
@@ -846,6 +847,7 @@ public partial class MainWindow : Window
     {
         mSaveAsPath = null;
         mMeshes.Clear();
+        mPreloadedBBLNs.Clear();
         PreloadedCASParts.Clear();
         PreloadedGeometryResources.Clear();
         Materials.Clear();
@@ -1167,6 +1169,10 @@ public partial class MainWindow : Window
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);
                 ResourceUtils.MissingResourceKeys.Add(resourceIndexEntry.ReverseEvaluateResourceKey());
                 RefreshWidgets(false);
+                foreach (var casPartKvp in PreloadedCASParts)
+                {
+                    casPartKvp.Value.AllPresets.ForEach(x => x.RegenerateTexture());
+                }
                 NextState = NextStateOptions.UnsavedChanges;
             }
             catch (InvalidDataException ex)

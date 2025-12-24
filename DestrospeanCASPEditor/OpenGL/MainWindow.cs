@@ -55,6 +55,8 @@ public partial class MainWindow : Window
 
     MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
 
+    readonly Dictionary<string, PreloadedBBLN> mPreloadedBBLNs = new Dictionary<string, PreloadedBBLN>();
+
     readonly Dictionary<string, Shader> mShaders = new Dictionary<string, Shader>();
 
     Vector2[] mTextureCoordinateData;
@@ -74,6 +76,30 @@ public partial class MainWindow : Window
         Left,
         Middle,
         Right = 4,
+    }
+
+    struct PreloadedBBLN
+    {
+        public BBLN BBLN;
+
+        public BGEO BGEO;
+
+        public GEOM[] Morphs;
+
+        public PreloadedBBLN(BBLN bbln, BGEO bgeo) : this(bbln, bgeo, null)
+        {
+        }
+
+        public PreloadedBBLN(BBLN bbln, BGEO bgeo, GEOM[] morphs)
+        {
+            BBLN = bbln;
+            BGEO = bgeo;
+            Morphs = morphs;
+        }
+
+        public PreloadedBBLN(BBLN bbln, GEOM[] morphs) : this(bbln, null, morphs)
+        {
+        }
     }
 
     void InitProgram()
@@ -426,11 +452,21 @@ public partial class MainWindow : Window
             for (var i = 0; i < bblnIndices.Length; i++)
             {
                 BBLN bbln;
+                string bblnKey;
                 ResourceUtils.EvaluatedResourceKey evaluated;
+                PreloadedBBLN preloadedBBLN;
                 try
                 {
-                    evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
-                    bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                    bblnKey = casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey();
+                    if (mPreloadedBBLNs.TryGetValue(bblnKey, out preloadedBBLN))
+                    {
+                        bbln = preloadedBBLN.BBLN;
+                    }
+                    else
+                    {
+                        evaluated = casPart.ParentPackage.EvaluateResourceKey(bblnKey);
+                        bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                    }
                 }
                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                 {
@@ -439,8 +475,17 @@ public partial class MainWindow : Window
                 BGEO bgeo = null;
                 try
                 {
-                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
-                    bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
+                    if (mPreloadedBBLNs.TryGetValue(bblnKey, out preloadedBBLN))
+                    {
+                        bgeo = preloadedBBLN.BGEO;
+                    }
+                    else
+                    {
+                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
+                        bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
+                        preloadedBBLN = new PreloadedBBLN(bbln, bgeo);
+                        mPreloadedBBLNs.Add(bblnKey, preloadedBBLN);
+                    }
                 }
                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                 {
@@ -454,26 +499,32 @@ public partial class MainWindow : Window
                             bgeo.Weight = weights[i] * geomMorph.Amount;
                             geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
                         }
-                        else if (bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
+                        else
                         {
-                            try
+                            if (!mPreloadedBBLNs.TryGetValue(bblnKey, out preloadedBBLN) && bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                             {
-                                var morphs = new List<GEOM>();
-                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
+                                try
                                 {
-                                    try
+
+                                    var morphs = new List<GEOM>();
+                                    foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
                                     {
-                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
+                                        try
+                                        {
+                                            morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
+                                        }
+                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                        {
+                                        }
                                     }
-                                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                                    {
-                                    }
+                                    preloadedBBLN = new PreloadedBBLN(bbln, morphs.ToArray());
+                                    mPreloadedBBLNs.Add(bblnKey, preloadedBBLN);
                                 }
-                                geom = geom.LoadGEOMMorph(morphs.ToArray(), weights[i]);
+                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                {
+                                }
                             }
-                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                            {
-                            }
+                            geom = geom.LoadGEOMMorph(preloadedBBLN.Morphs, weights[i]);
                         }
                     }
                     foreach (var boneMorph in entry.BoneMorphs)
@@ -526,7 +577,7 @@ public partial class MainWindow : Window
             var key = "";
             foreach (var geometryResourceKvp in PreloadedGeometryResources)
             {
-                if (geometryResourceKvp.Value == geometryResource)
+                if (geometryResourceKvp.Value == geom)
                 {
                     key = geometryResourceKvp.Key;
                     break;
@@ -537,17 +588,17 @@ public partial class MainWindow : Window
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var field in geometryResource.Shader.GetFields())
+                foreach (var field in geom.Shader.GetFields())
                 {
                     int valueType;
-                    var element = geometryResource.Shader.GetFieldValue(field, out valueType);
+                    var element = geom.Shader.GetFieldValue(field, out valueType);
                     if (valueType == 1 && (element.Length == 3 || element.Length == 4))
                     {
                         materialColors[(FieldType)field] = new Vector3((float)element[0], (float)element[1], (float)element[2]);
                     }
                     else if (valueType == 4)
                     {
-                        materialMaps[(FieldType)field] = new ResourceUtils.ResourceKey(geometryResource.TGIList[(uint)element[0]].Type, geometryResource.TGIList[(uint)element[0]].Group, geometryResource.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey();
+                        materialMaps[(FieldType)field] = new ResourceUtils.ResourceKey(geom.TGIList[(uint)element[0]].Type, geom.TGIList[(uint)element[0]].Group, geom.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey();
                     }
                 }
                 Vector3 color;
