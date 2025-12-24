@@ -458,7 +458,7 @@ public partial class MainWindow : Window
                         {
                             try
                             {
-                                var morphs = new List<Destrospean.CmarNYCBorrowed.GEOM>();
+                                var morphs = new List<GEOM>();
                                 foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
                                 {
                                     try

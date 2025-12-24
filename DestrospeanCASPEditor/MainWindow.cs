@@ -10,7 +10,6 @@ using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using GEOM = Destrospean.CmarNYCBorrowed.GEOM;
 using VPXY = Destrospean.CmarNYCBorrowed.VPXY;
 
 [Flags]

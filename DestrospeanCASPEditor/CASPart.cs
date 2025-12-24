@@ -69,7 +69,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public readonly string DefaultPresetKey;
 
-        public readonly Dictionary<int, List<CmarNYCBorrowed.GEOM>> LODs = new Dictionary<int, List<CmarNYCBorrowed.GEOM>>();
+        public readonly Dictionary<int, List<GEOM>> LODs = new Dictionary<int, List<GEOM>>();
 
         public readonly IPackage ParentPackage;
 
