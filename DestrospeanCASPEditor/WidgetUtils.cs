@@ -90,9 +90,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
-            var fields = geometryResource.Shader.GetFields();
             var fieldIndex = -1;
-            foreach (var field in fields)
+            foreach (var field in geometryResource.Shader.GetFields())
             {
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 0, 0);
