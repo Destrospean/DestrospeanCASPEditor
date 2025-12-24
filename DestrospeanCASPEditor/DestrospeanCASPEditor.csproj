@@ -145,6 +145,7 @@
     </Reference>
     <Reference Include="s3pi.TxtcResource">
       <HintPath>..\libs\s3pi.TxtcResource.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="s3pi.UserCAStPreset">
       <HintPath>..\libs\s3pi.UserCAStPreset.dll</HintPath>
