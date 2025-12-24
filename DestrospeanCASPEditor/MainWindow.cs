@@ -221,7 +221,11 @@ public partial class MainWindow : Window
             ResourcePropertyNotebook.SwitchPage -= switchPageHandler;
         }
         ResourcePropertyNotebookSwitchPageHandlers.Clear();
-        ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) => LoadGEOMs(casPart));
+        ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
+            {
+                LoadGEOMs(casPart);
+                mPreloadedBBLNs.Clear();
+            });
         ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
         foreach (var lodKvp in casPart.LODs)
         {
