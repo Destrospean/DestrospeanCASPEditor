@@ -6,7 +6,6 @@ using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIAbstractions;
-using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
@@ -70,7 +69,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public readonly string DefaultPresetKey;
 
-        public readonly Dictionary<int, List<GeometryResource>> LODs = new Dictionary<int, List<GeometryResource>>();
+        public readonly Dictionary<int, List<CmarNYCBorrowed.GEOM>> LODs = new Dictionary<int, List<CmarNYCBorrowed.GEOM>>();
 
         public readonly IPackage ParentPackage;
 
@@ -999,7 +998,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<string, GeometryResource> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
+        public CASPart(IPackage package, IResourceIndexEntry resourceIndexEntry, Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
         {
             CASPartResource = (CASPartResource.CASPartResource)WrapperDealer.GetResource(0, package, resourceIndexEntry);
             ParentPackage = package;
@@ -1016,6 +1015,72 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             Presets = CASPartResource.Presets.ConvertAll(x => new Preset(this, x));
             LoadLODs(geometryResources, vpxyResources);
+        }
+
+        public void AddMeshGroup(int lod, Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
+        {
+            var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
+            var vpxyKey = vpxyResourceIndexEntry.ReverseEvaluateResourceKey();
+            GenericRCOLResource vpxyResource;
+            if (!vpxyResources.TryGetValue(vpxyKey, out vpxyResource))
+            {
+                vpxyResources.Add(vpxyKey, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
+                vpxyResource = vpxyResources[vpxyKey];
+            }
+            var vpxy = new CmarNYCBorrowed.VPXY(new BinaryReader(vpxyResource.Stream));
+            var geomTGIs = new TGI[4][];
+            for (var i = 0; i < geomTGIs.GetLength(0); i++)
+            {
+                var geomTGIList = new List<TGI>(vpxy.MeshLinks(i));
+                if (i == lod || lod == -1)
+                {
+                    var temp = "_lod" + i.ToString() + "-" + (geomTGIList.Count + 1).ToString();
+                    var newGEOMTGI = new TGI(ResourceUtils.GetResourceType("GEOM"), geomTGIList[geomTGIList.Count - 1].Group, System.Security.Cryptography.FNV64.GetHash(CASPartResource.Unknown1 + temp + Environment.UserName + Environment.TickCount.ToString() + temp));
+                    var geomStream = new MemoryStream();
+                    var geom = geometryResources[new ResourceUtils.ResourceKey(geomTGIList[geomTGIList.Count - 1].Type, geomTGIList[geomTGIList.Count - 1].Group, geomTGIList[geomTGIList.Count - 1].Instance).ReverseEvaluateResourceKey()];
+                    geom.Write(new BinaryWriter(geomStream));
+                    var newGEOMResourceIndexEntry = ParentPackage.AddResource(new ResourceUtils.ResourceKey(newGEOMTGI.Type, newGEOMTGI.Group, newGEOMTGI.Instance), geomStream, true);
+                    geometryResources.Add(newGEOMResourceIndexEntry.ReverseEvaluateResourceKey(), geom);
+                    geomTGIList.Add(newGEOMTGI);
+                }
+                geomTGIs[i] = geomTGIList.ToArray();
+            }
+            var vpxyStream = new MemoryStream();
+            new CmarNYCBorrowed.VPXY(new TGI(vpxyResourceIndexEntry.ResourceType, vpxyResourceIndexEntry.ResourceGroup, vpxyResourceIndexEntry.Instance), vpxy.BondLinks, geomTGIs).Write(new BinaryWriter(vpxyStream));
+            vpxyResource = new GenericRCOLResource(0, vpxyStream);
+            ParentPackage.ReplaceResource(vpxyResourceIndexEntry, vpxyResource);
+            vpxyResources[vpxyKey] = vpxyResource;
+        }
+
+        public void DeleteMeshGroup(int lod, int groupIndex, Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
+        {
+            var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
+            var vpxyKey = vpxyResourceIndexEntry.ReverseEvaluateResourceKey();
+            GenericRCOLResource vpxyResource;
+            if (!vpxyResources.TryGetValue(vpxyKey, out vpxyResource))
+            {
+                vpxyResources.Add(vpxyKey, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
+                vpxyResource = vpxyResources[vpxyKey];
+            }
+            var vpxy = new CmarNYCBorrowed.VPXY(new BinaryReader(vpxyResource.Stream));
+            var geomTGIs = new TGI[4][];
+            for (var i = 0; i < geomTGIs.GetLength(0); i++)
+            {
+                var geomTGIList = new List<TGI>(vpxy.MeshLinks(i));
+                if (i == lod || lod == -1)
+                {
+                    var geomKey = new ResourceUtils.ResourceKey(geomTGIList[groupIndex].Type, geomTGIList[groupIndex].Group, geomTGIList[groupIndex].Instance).ReverseEvaluateResourceKey();
+                    ParentPackage.DeleteResource(ParentPackage.EvaluateResourceKey(geomKey).ResourceIndexEntry);
+                    geometryResources.Remove(geomKey);
+                    geomTGIList.RemoveAt(groupIndex);
+                }
+                geomTGIs[i] = geomTGIList.ToArray();
+            }
+            var vpxyStream = new MemoryStream();
+            new CmarNYCBorrowed.VPXY(new TGI(vpxyResourceIndexEntry.ResourceType, vpxyResourceIndexEntry.ResourceGroup, vpxyResourceIndexEntry.Instance), vpxy.BondLinks, geomTGIs).Write(new BinaryWriter(vpxyStream));
+            vpxyResource = new GenericRCOLResource(0, vpxyStream);
+            ParentPackage.ReplaceResource(vpxyResourceIndexEntry, vpxyResource);
+            vpxyResources[vpxyKey] = vpxyResource;
         }
 
         public void AdjustPresetCount()
@@ -1035,11 +1100,11 @@ namespace Destrospean.DestrospeanCASPEditor
             CurrentRig = null;
         }
 
-        public void LoadLODs(Dictionary<string, GeometryResource> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
+        public void LoadLODs(Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
         {
             var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
-            GenericRCOLResource vpxyResource;
             var vpxyKey = vpxyResourceIndexEntry.ReverseEvaluateResourceKey();
+            GenericRCOLResource vpxyResource;
             if (!vpxyResources.TryGetValue(vpxyKey, out vpxyResource))
             {
                 vpxyResources.Add(vpxyKey, (GenericRCOLResource)WrapperDealer.GetResource(0, ParentPackage, vpxyResourceIndexEntry));
@@ -1050,15 +1115,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 var entry00 = entry as s3pi.GenericRCOLResource.VPXY.Entry00;
                 if (entry00 != null)
                 {
-                    LODs[entry00.EntryID] = new List<GeometryResource>();
+                    LODs[entry00.EntryID] = new List<GEOM>();
                     foreach (var tgiIndex in entry00.TGIIndexes)
                     {
                         var geometryResourceIndexEntry = ParentPackage.GetResourceIndexEntry(entry00.ParentTGIBlocks[tgiIndex]);
-                        GeometryResource geometryResource;
                         var geometryResourceKey = geometryResourceIndexEntry.ReverseEvaluateResourceKey();
+                        GEOM geometryResource;
                         if (!geometryResources.TryGetValue(geometryResourceKey, out geometryResource))
                         {
-                            geometryResources.Add(geometryResourceKey, (GeometryResource)WrapperDealer.GetResource(0, ParentPackage, geometryResourceIndexEntry));
+                            geometryResources.Add(geometryResourceKey, new GEOM(new BinaryReader((ParentPackage as APackage).GetResource(geometryResourceIndexEntry))));
                             geometryResource = geometryResources[geometryResourceKey];
                         }
                         LODs[entry00.EntryID].Add(geometryResource);

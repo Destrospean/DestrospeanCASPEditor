@@ -8,7 +8,6 @@ using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.OpenGL;
 using Destrospean.S3PIAbstractions;
 using Gtk;
-using meshExpImp.ModelBlocks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
@@ -407,9 +406,9 @@ public partial class MainWindow : Window
             return;
         }
         var lod = new List<int>(casPart.LODs.Keys)[ResourcePropertyNotebook.CurrentPage];
-        foreach (var geometryResource in new List<List<GeometryResource>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
+        foreach (var geometryResource in new List<List<GEOM>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
         {
-            var geom = geometryResource.ToGEOM();
+            var geom = geometryResource;
             byte[] bblnIndices =
                 {
                     casPart.CASPartResource.BlendInfoFatIndex,
@@ -464,7 +463,7 @@ public partial class MainWindow : Window
                                 {
                                     try
                                     {
-                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()].ToGEOM());
+                                        morphs.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
                                     }
                                     catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                     {
@@ -538,18 +537,17 @@ public partial class MainWindow : Window
             {
                 var materialColors = new Dictionary<FieldType, Vector3>();
                 var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var element in ((meshExpImp.ModelBlocks.GEOM)geometryResource.ChunkEntries[0].RCOLBlock).Mtnf.SData)
+                foreach (var field in geometryResource.Shader.GetFields())
                 {
-                    var elementFloat3 = element as ElementFloat3;
-                    if (elementFloat3 != null)
+                    int valueType;
+                    var element = geometryResource.Shader.GetFieldValue(field, out valueType);
+                    if (valueType == 1 && (element.Length == 3 || element.Length == 4))
                     {
-                        materialColors[element.Field] = new Vector3(elementFloat3.Data0, elementFloat3.Data1, elementFloat3.Data2);
-                        continue;
+                        materialColors[(FieldType)field] = new Vector3((float)element[0], (float)element[1], (float)element[2]);
                     }
-                    var elementTextureRef = element as ElementTextureRef;
-                    if (elementTextureRef != null)
+                    else if (valueType == 4)
                     {
-                        materialMaps[element.Field] = element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey();
+                        materialMaps[(FieldType)field] = new ResourceUtils.ResourceKey(geometryResource.TGIList[(uint)element[0]].Type, geometryResource.TGIList[(uint)element[0]].Group, geometryResource.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey();
                     }
                 }
                 Vector3 color;

@@ -6,13 +6,19 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public partial class AddMaterialPropertyDialog : Dialog
     {
-        public System.Type DataType
+        public uint DataType
         {
             get;
             private set;
         }
 
-        public FieldType Field
+        public uint Field
+        {
+            get;
+            private set;
+        }
+
+        public uint ValueCount
         {
             get;
             private set;
@@ -57,8 +63,34 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     if (args.ResponseId == ResponseType.Ok)
                     {
-                        DataType = assembly.GetType("s3pi.GenericRCOLResource." + dataTypes[DataTypeComboBox.Active]);
-                        Field = (FieldType)System.Enum.Parse(typeof(FieldType), fields[FieldComboBox.Active]);
+                        switch (dataTypes[DataTypeComboBox.Active])
+                        {
+                            case "ElementFloat":
+                                DataType = 1;
+                                ValueCount = 1;
+                                break;
+                            case "ElementFloat2":
+                                DataType = 1;
+                                ValueCount = 2;
+                                break;
+                            case "ElementFloat3":
+                                DataType = 1;
+                                ValueCount = 3;
+                                break;
+                            case "ElementFloat4":
+                                DataType = 1;
+                                ValueCount = 4;
+                                break;
+                            case "ElementInt":
+                                DataType = 2;
+                                ValueCount = 1;
+                                break;
+                            case "ElementTextureRef":
+                                DataType = 4;
+                                ValueCount = 1;
+                                break;
+                        }
+                        Field = (uint)System.Enum.Parse(typeof(FieldType), fields[FieldComboBox.Active]);
                     }
                 };
         }

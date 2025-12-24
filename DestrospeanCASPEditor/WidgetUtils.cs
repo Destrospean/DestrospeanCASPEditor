@@ -5,7 +5,6 @@ using Destrospean.DestrospeanCASPEditor.Widgets;
 using Destrospean.S3PIAbstractions;
 using Gdk;
 using Gtk;
-using meshExpImp.ModelBlocks;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 
@@ -31,7 +30,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static void AddProperties(this Notebook notebook, IPackage package, GeometryResource geometryResource, Gtk.Image imageWidget, int pageIndexOffset = 0)
+        public static void AddProperties(this Notebook notebook, IPackage package, GEOM geometryResource, Gtk.Image imageWidget, int pageIndexOffset = 0)
         {
             var scrolledWindow = new ScrolledWindow();
             var table = new Table(1, 2, false)
@@ -56,7 +55,7 @@ namespace Destrospean.DestrospeanCASPEditor
             notebook.ShowAll();
         }
 
-        public static void AddProperties(this Table table, IPackage package, GeometryResource geometryResource, ScrolledWindow scrolledWindow, Gtk.Image imageWidget)
+        public static void AddProperties(this Table table, IPackage package, GEOM geometryResource, ScrolledWindow scrolledWindow, Gtk.Image imageWidget)
         {
             var mainWindow = MainWindow.Singleton;
             var geometryResourceKey = "";
@@ -68,7 +67,6 @@ namespace Destrospean.DestrospeanCASPEditor
                     break;
                 }
             }
-            var geom = (meshExpImp.ModelBlocks.GEOM)geometryResource.ChunkEntries[0].RCOLBlock;
             var shaders = new List<string>();
             foreach (var shader in Enum.GetValues(typeof(Shader)))
             {
@@ -78,12 +76,12 @@ namespace Destrospean.DestrospeanCASPEditor
             var shaderComboBoxAlignment = new Alignment(0, .5f, 1, 0);
             var shaderComboBox = new ComboBox(shaders.ToArray())
                 {
-                    Active = shaders.IndexOf(string.Format("{0} ({1})", (Shader)geom.Shader, (uint)geom.Shader))
+                    Active = shaders.IndexOf(string.Format("{0} ({1})", (Shader)geometryResource.ShaderHash, (uint)geometryResource.ShaderHash))
                 };
             shaderComboBoxAlignment.Add(shaderComboBox);
             shaderComboBox.Changed += (sender, e) =>
                 {
-                    geom.Shader = (ShaderType)Enum.Parse(typeof(Shader), shaderComboBox.ActiveText.Split(' ')[0]);
+                    geometryResource.SetShader((uint)Enum.Parse(typeof(Shader), shaderComboBox.ActiveText.Split(' ')[0]));
                     mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             table.Attach(new Label("Shader")
@@ -92,144 +90,139 @@ namespace Destrospean.DestrospeanCASPEditor
                 }, 0, 1, table.NRows - 1, table.NRows, AttachOptions.Fill, 0, 0, 0);
             table.Attach(shaderComboBoxAlignment, 1, 2, table.NRows - 1, table.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
             table.NRows++;
-            foreach (var element in new List<ShaderData>(geom.Mtnf.SData))
+            var fields = geometryResource.Shader.GetFields();
+            var fieldIndex = -1;
+            foreach (var field in fields)
             {
                 Widget valueWidget = null;
                 var alignment = new Alignment(0, .5f, 0, 0);
-                var elementFloat = element as ElementFloat;
-                if (elementFloat != null)
+                int valueType;
+                geometryResource.Shader.GetFieldValue(field, out valueType);
+                var element = geometryResource.Shader.Data[++fieldIndex];
+                var elementIndex = fieldIndex;
+                if (valueType == 1)
                 {
-                    var spinButton = new SpinButton(new Adjustment(elementFloat.Data, -1, 1, .0001, 10, 0), 0, 4);
-                    spinButton.ValueChanged += (sender, e) =>
-                        {
-                            elementFloat.Data = (float)spinButton.Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
-                        };
-                    valueWidget = spinButton;
-                    goto AttachLabelAndValueWidget;
-                }
-                var elementFloat2 = element as ElementFloat2;
-                if (elementFloat2 != null)
-                {
-                    var hBox = new HBox();
-                    var spinButtons = new SpinButton[]
-                        {
-                            new SpinButton(new Adjustment(elementFloat2.Data0, -1, 1, .0001, 10, 0), 0, 4),
-                            new SpinButton(new Adjustment(elementFloat2.Data1, -1, 1, .0001, 10, 0), 0, 4)
-                        };
-                    spinButtons[0].ValueChanged += (sender, e) =>
-                        {
-                            elementFloat2.Data0 = (float)spinButtons[0].Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
-                        };
-                    spinButtons[1].ValueChanged += (sender, e) =>
-                        {
-                            elementFloat2.Data1 = (float)spinButtons[1].Value;
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
-                        };
-                    foreach (var spinButton in spinButtons)
+                    switch (element.Length)
                     {
-                        hBox.PackStart(spinButton, false, false, 0);
+                        case 1:
+                            var spinButton = new SpinButton(new Adjustment((float)element[0], -1, 1, .0001, 10, 0), 0, 4);
+                            spinButton.ValueChanged += (sender, e) =>
+                                {
+                                    element[0] = (float)spinButton.Value;
+                                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                                };
+                            valueWidget = spinButton;
+                            break;
+                        case 2:
+                            var hBox = new HBox();
+                            var spinButtons = new List<SpinButton>
+                                {
+                                    new SpinButton(new Adjustment((float)element[0], -1, 1, .0001, 10, 0), 0, 4),
+                                    new SpinButton(new Adjustment((float)element[1], -1, 1, .0001, 10, 0), 0, 4)
+                                };
+                            spinButtons[0].ValueChanged += (sender, e) =>
+                                {
+                                    element[0] = (float)spinButtons[0].Value;
+                                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                                };
+                            spinButtons[1].ValueChanged += (sender, e) =>
+                                {
+                                    element[1] = (float)spinButtons[1].Value;
+                                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                                };
+                            spinButtons.ForEach(x => hBox.PackStart(x, false, false, 0));
+                            valueWidget = hBox;
+                            break;
+                        case 3:
+                            var colorButton = new ColorButton
+                                {
+                                    Color = new Color
+                                        {
+                                            Blue = (ushort)((float)element[2] * ushort.MaxValue),
+                                            Green = (ushort)((float)element[1] * ushort.MaxValue),
+                                            Red = (ushort)((float)element[0] * ushort.MaxValue)
+                                        }
+                                };
+                            colorButton.ColorSet += (sender, e) =>
+                                {
+                                    element[0] = (float)colorButton.Color.Red / ushort.MaxValue;
+                                    element[1] = (float)colorButton.Color.Green / ushort.MaxValue;
+                                    element[2] = (float)colorButton.Color.Blue / ushort.MaxValue;
+                                    var color = new OpenTK.Vector3((float)element[0], (float)element[1], (float)element[2]);
+                                    var material = mainWindow.Materials[geometryResourceKey];
+                                    switch ((FieldType)field)
+                                    {
+#pragma warning disable 0618
+                                        case FieldType.Ambient:
+#pragma warning restore 0618
+                                            material.AmbientColor = color;
+                                            break;
+                                        case FieldType.Diffuse:
+                                            material.DiffuseColor = color;
+                                            break;
+                                        case FieldType.Specular:
+                                            material.SpecularColor = color;
+                                            break;
+                                    };
+                                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                                };
+                            valueWidget = colorButton;
+                            break;
+                        case 4:
+                            var colorButtonWithAlpha = new ColorButton
+                                {
+                                    Alpha = (ushort)((float)element[3] * ushort.MaxValue),
+                                    Color = new Color
+                                        {
+                                            Blue = (ushort)((float)element[2] * ushort.MaxValue),
+                                            Green = (ushort)((float)element[1] * ushort.MaxValue),
+                                            Red = (ushort)((float)element[0] * ushort.MaxValue)
+                                        },
+                                    UseAlpha = true
+                                };
+                            colorButtonWithAlpha.ColorSet += (sender, e) =>
+                                {
+                                    element[0] = (float)colorButtonWithAlpha.Color.Red / ushort.MaxValue;
+                                    element[1] = (float)colorButtonWithAlpha.Color.Green / ushort.MaxValue;
+                                    element[2] = (float)colorButtonWithAlpha.Color.Blue / ushort.MaxValue;
+                                    element[3] = (float)colorButtonWithAlpha.Alpha / ushort.MaxValue;
+                                    var color = new OpenTK.Vector3((float)element[0], (float)element[1], (float)element[2]);
+                                    var material = mainWindow.Materials[geometryResourceKey];
+                                    switch ((FieldType)field)
+                                    {
+#pragma warning disable 0618
+                                        case FieldType.Ambient:
+#pragma warning restore 0618
+                                            material.AmbientColor = color;
+                                            break;
+                                        case FieldType.Diffuse:
+                                            material.DiffuseColor = color;
+                                            break;
+                                        case FieldType.Specular:
+                                            material.SpecularColor = color;
+                                            break;
+                                    }
+                                    ;
+                                    mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                                };
+                            valueWidget = colorButtonWithAlpha;
+                            break;
                     }
-                    valueWidget = hBox;
-                    goto AttachLabelAndValueWidget;
                 }
-                var elementFloat3 = element as ElementFloat3;
-                if (elementFloat3 != null)
+                else if (valueType == 2)
                 {
-                    var colorButton = new ColorButton
-                        {
-                            Color = new Color
-                                {
-                                    Blue = (ushort)(elementFloat3.Data2 * ushort.MaxValue),
-                                    Green = (ushort)(elementFloat3.Data1 * ushort.MaxValue),
-                                    Red = (ushort)(elementFloat3.Data0 * ushort.MaxValue)
-                                }
-                        };
-                    colorButton.ColorSet += (sender, e) =>
-                        {
-                            elementFloat3.Data0 = (float)colorButton.Color.Red / ushort.MaxValue;
-                            elementFloat3.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
-                            elementFloat3.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
-                            var color = new OpenTK.Vector3(elementFloat3.Data0, elementFloat3.Data1, elementFloat3.Data2);
-                            var material = mainWindow.Materials[geometryResourceKey];
-                            switch (element.Field)
-                            {
-#pragma warning disable 0618
-                                case FieldType.Ambient:
-#pragma warning restore 0618
-                                    material.AmbientColor = color;
-                                    break;
-                                case FieldType.Diffuse:
-                                    material.DiffuseColor = color;
-                                    break;
-                                case FieldType.Specular:
-                                    material.SpecularColor = color;
-                                    break;
-                            };
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
-                        };
-                    valueWidget = colorButton;
-                    goto AttachLabelAndValueWidget;
-                }
-                var elementFloat4 = element as ElementFloat4;
-                if (elementFloat4 != null)
-                {
-                    var colorButton = new ColorButton
-                        {
-                            Alpha = (ushort)(elementFloat4.Data3 * ushort.MaxValue),
-                            Color = new Color
-                                {
-                                    Blue = (ushort)(elementFloat4.Data2 * ushort.MaxValue),
-                                    Green = (ushort)(elementFloat4.Data1 * ushort.MaxValue),
-                                    Red = (ushort)(elementFloat4.Data0 * ushort.MaxValue)
-                                },
-                            UseAlpha = true
-                        };
-                    colorButton.ColorSet += (sender, e) =>
-                        {
-                            elementFloat4.Data0 = (float)colorButton.Color.Red / ushort.MaxValue;
-                            elementFloat4.Data1 = (float)colorButton.Color.Green / ushort.MaxValue;
-                            elementFloat4.Data2 = (float)colorButton.Color.Blue / ushort.MaxValue;
-                            elementFloat4.Data3 = (float)colorButton.Alpha / ushort.MaxValue;
-                            var color = new OpenTK.Vector3(elementFloat4.Data0, elementFloat4.Data1, elementFloat4.Data2);
-                            var material = mainWindow.Materials[geometryResourceKey];
-                            switch (element.Field)
-                            {
-#pragma warning disable 0618
-                                case FieldType.Ambient:
-#pragma warning restore 0618
-                                    material.AmbientColor = color;
-                                    break;
-                                case FieldType.Diffuse:
-                                    material.DiffuseColor = color;
-                                    break;
-                                case FieldType.Specular:
-                                    material.SpecularColor = color;
-                                    break;
-                            };
-                            mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
-                        };
-                    valueWidget = colorButton;
-                    goto AttachLabelAndValueWidget;
-                }
-                var elementInt = element as ElementInt;
-                if (elementInt != null)
-                {
-                    var spinButton = new SpinButton(new Adjustment(elementInt.Data, int.MinValue, int.MaxValue, 1, 10, 0), 0, 0);
+                    var spinButton = new SpinButton(new Adjustment((int)element[0], int.MinValue, int.MaxValue, 1, 10, 0), 0, 0);
                     spinButton.ValueChanged += (sender, e) =>
                         {
-                            elementInt.Data = spinButton.ValueAsInt;
+                            element[0] = spinButton.ValueAsInt;
                             mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         };
                     valueWidget = spinButton;
-                    goto AttachLabelAndValueWidget;
                 }
-                var elementTextureRef = element as ElementTextureRef;
-                if (elementTextureRef != null)
+                else if (valueType == 4)
                 {
                     alignment.Xscale = 1;
-                    var comboBox = ImageResourceComboBox.CreateInstance(package, element.ParentTGIBlocks[elementTextureRef.Index].ReverseEvaluateResourceKey(), imageWidget);
+                    var comboBox = ImageResourceComboBox.CreateInstance(package, new ResourceUtils.ResourceKey(geometryResource.TGIList[(uint)element[0]].Type, geometryResource.TGIList[(uint)element[0]].Group, geometryResource.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey(), imageWidget);
                     var comboBoxLastActive = comboBox.Active;
                     comboBox.Changed += (sender, e) =>
                         {
@@ -239,15 +232,18 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                             comboBoxLastActive = comboBox.Active;
                             var key = comboBox[comboBox.Active].Label;
-                            var index = element.ParentTGIBlocks.FindIndex(x => x.ReverseEvaluateResourceKey() == key);
+                            var index = Array.FindIndex(geometryResource.TGIList, x => new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey() == key);
                             if (index == -1)
                             {
-                                element.ParentTGIBlocks.Add(new TGIBlock(0, null, package.EvaluateImageResourceKey(key).ResourceIndexEntry));
-                                index = element.ParentTGIBlocks.Count - 1;
+                                var temp = new List<TGI>(geometryResource.TGIList);
+                                var resourceIndexEntry = package.EvaluateImageResourceKey(key).ResourceIndexEntry;
+                                temp.Add(new TGI(resourceIndexEntry.ResourceType, resourceIndexEntry.ResourceGroup, resourceIndexEntry.Instance));
+                                geometryResource.TGIList = temp.ToArray();
+                                index = geometryResource.TGIList.Length - 1;
                             }
-                            elementTextureRef.Index = index;
+                            element[0] = (uint)index;
                             var material = mainWindow.Materials[geometryResourceKey];
-                            switch (element.Field)
+                            switch ((FieldType)field)
                             {
                                 case FieldType.AmbientOcclusionMap:
                                     material.AmbientMap = key;
@@ -266,14 +262,19 @@ namespace Destrospean.DestrospeanCASPEditor
                         };
                     valueWidget = comboBox;
                 }
-                AttachLabelAndValueWidget:
                 var deleteButton = new Button(new Gtk.Image(Stock.Delete, IconSize.Menu))
                     {
                         Relief = ReliefStyle.None,
                     };
                 deleteButton.Clicked += (sender, e) =>
                     {
-                        geom.Mtnf.SData.Remove(element);
+                        var elementList = new List<object[]>(geometryResource.Shader.Data);
+                        var fieldList = new List<uint[]>(geometryResource.Shader.Fields);
+                        elementList.RemoveAt(elementIndex);
+                        fieldList.RemoveAt(elementIndex);
+                        geometryResource.Shader.Data = elementList.ToArray();
+                        geometryResource.Shader.Fields = fieldList.ToArray();
+                        geometryResource.Shader.FieldCount--;
                         foreach (var child in table.Children)
                         {
                             table.Remove(child);
@@ -283,7 +284,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         mainWindow.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
                 var labelHBox = new HBox(false, 6);
-                labelHBox.PackStart(new Label(element.Field.ToString())
+                labelHBox.PackStart(new Label(((FieldType)field).ToString())
                     {
                         UseUnderline = false,
                         Xalign = 0
@@ -313,9 +314,33 @@ namespace Destrospean.DestrospeanCASPEditor
                         {
                             table.Remove(child);
                         }
-                        var element = addMaterialPropertyDialog.DataType == typeof(ElementTextureRef) ? new ElementTextureRef(0, null, null, "GEOM") : (ShaderData)Activator.CreateInstance(addMaterialPropertyDialog.DataType, 0, null);
-                        element.Field = addMaterialPropertyDialog.Field;
-                        geom.Mtnf.SData.Add(element);
+                        var elementList = new List<object[]>(geometryResource.Shader.Data);
+                        var fieldList = new List<uint[]>(geometryResource.Shader.Fields);
+                        elementList.Add(new object[addMaterialPropertyDialog.ValueCount]);
+                        for (var i = 0; i < addMaterialPropertyDialog.ValueCount; i++)
+                        {
+                            switch (addMaterialPropertyDialog.DataType)
+                            {
+                                case 1:
+                                    elementList[elementList.Count - 1][i] = 0f;
+                                    break;
+                                case 2:
+                                    elementList[elementList.Count - 1][i] = 0;
+                                    break;
+                                default:
+                                    elementList[elementList.Count - 1][i] = 0u;
+                                    break;
+                            }
+                        }
+                        fieldList.Add(new uint[]
+                            {
+                                addMaterialPropertyDialog.Field,
+                                addMaterialPropertyDialog.DataType,
+                                addMaterialPropertyDialog.ValueCount
+                            });
+                        geometryResource.Shader.Data = elementList.ToArray();
+                        geometryResource.Shader.Fields = fieldList.ToArray();
+                        geometryResource.Shader.FieldCount++;
                         table.AddProperties(package, geometryResource, scrolledWindow, imageWidget);
                         table.ShowAll();
                         scrolledWindow.Vadjustment.Value = scrolledWindow.Vadjustment.Upper;

@@ -108,9 +108,6 @@
       <HintPath>..\libs\s3pi.ModularResource.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="s3pi.MeshChunks">
-      <HintPath>..\libs\s3pi.MeshChunks.dll</HintPath>
-    </Reference>
     <Reference Include="s3pi.RCOLChunks">
       <HintPath>..\libs\s3pi.RCOLChunks.dll</HintPath>
     </Reference>
@@ -187,6 +184,10 @@
     </Reference>
     <Reference Include="TeximpNet">
       <HintPath>..\libs\TeximpNet.dll</HintPath>
+    </Reference>
+    <Reference Include="s3pi.MeshChunks">
+      <HintPath>..\libs\s3pi.MeshChunks.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

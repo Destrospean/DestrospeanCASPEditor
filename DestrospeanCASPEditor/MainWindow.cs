@@ -6,7 +6,6 @@ using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Destrospean.S3PIAbstractions;
 using Gtk;
-using meshExpImp.ModelBlocks;
 using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
@@ -67,7 +66,7 @@ public partial class MainWindow : Window
 
     public readonly Dictionary<string, CASPart> PreloadedCASParts = new Dictionary<string, CASPart>();
 
-    public readonly Dictionary<string, GeometryResource> PreloadedGeometryResources = new Dictionary<string, GeometryResource>();
+    public readonly Dictionary<string, GEOM> PreloadedGeometryResources = new Dictionary<string, GEOM>();
 
     public readonly Dictionary<string, GenericRCOLResource> PreloadedVPXYResources = new Dictionary<string, GenericRCOLResource>();
 
@@ -231,14 +230,22 @@ public partial class MainWindow : Window
                     ShowTabs = false
                 };
             var actionGroup = new ActionGroup("Default");
-            Gtk.Action exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.SaveAs),
+            Gtk.Action addMeshGroupAction = new Gtk.Action("AddMeshGroupAction", "Add Group", null, Stock.Add),
+            deleteMeshGroupAction = new Gtk.Action("DeleteMeshGroupAction", "Delete Group", null, Stock.Delete)
+                {
+                    Sensitive = lodKvp.Value.Count > 1
+                },
+            exportGEOMAction = new Gtk.Action("ExportGEOMAction", "Export GEOM", null, Stock.SaveAs),
             exportOBJAction = new Gtk.Action("ExportOBJAction", "Export OBJ", null, Stock.SaveAs),
             exportWSOAction = new Gtk.Action("ExportWSOAction", "Export WSO", null, Stock.SaveAs),
             importGEOMAction = new Gtk.Action("ImportGEOMAction", "Import GEOM", null, Stock.Directory),
             importOBJAction = new Gtk.Action("ImportOBJAction", "Import OBJ", null, Stock.Directory),
             importWSOAction = new Gtk.Action("ImportWSOAction", "Import WSO", null, Stock.Directory);
-            actionGroup.Add(new Gtk.Action("ExportAction", "Export"));
-            actionGroup.Add(new Gtk.Action("ImportAction", "Import"));
+            actionGroup.Add(new Gtk.Action("ExportAction", "Export", null, Stock.SaveAs));
+            actionGroup.Add(new Gtk.Action("ImportAction", "Import", null, Stock.Directory));
+            actionGroup.Add(new Gtk.Action("OptionsAction", "Options"));
+            actionGroup.Add(addMeshGroupAction);
+            actionGroup.Add(deleteMeshGroupAction);
             actionGroup.Add(exportGEOMAction);
             actionGroup.Add(exportOBJAction);
             actionGroup.Add(exportWSOAction);
@@ -250,15 +257,19 @@ public partial class MainWindow : Window
             uiManager.AddUiFromString(@"
                 <ui>
                     <menubar name='GEOMPropertiesMenuBar'>
-                        <menu name='ExportAction' action='ExportAction'>
-                            <menuitem name='ExportGEOMAction' action='ExportGEOMAction'/>
-                            <menuitem name='ExportOBJAction' action='ExportOBJAction'/>
-                            <menuitem name='ExportWSOAction' action='ExportWSOAction'/>
-                        </menu>
-                        <menu name='ImportAction' action='ImportAction'>
-                            <menuitem name='ImportGEOMAction' action='ImportGEOMAction'/>
-                            <menuitem name='ImportOBJAction' action='ImportOBJAction'/>
-                            <menuitem name='ImportWSOAction' action='ImportWSOAction'/>
+                        <menu name='OptionsAction' action='OptionsAction'>
+                            <menuitem name='AddMeshGroupAction' action='AddMeshGroupAction'/>
+                            <menuitem name='DeleteMeshGroupAction' action='DeleteMeshGroupAction'/>
+                            <menu name='ImportAction' action='ImportAction'>
+                                <menuitem name='ImportGEOMAction' action='ImportGEOMAction'/>
+                                <menuitem name='ImportOBJAction' action='ImportOBJAction'/>
+                                <menuitem name='ImportWSOAction' action='ImportWSOAction'/>
+                            </menu>                            
+                            <menu name='ExportAction' action='ExportAction'>
+                                <menuitem name='ExportGEOMAction' action='ExportGEOMAction'/>
+                                <menuitem name='ExportOBJAction' action='ExportOBJAction'/>
+                                <menuitem name='ExportWSOAction' action='ExportWSOAction'/>
+                            </menu>
                         </menu>
                     </menubar>
                 </ui>");
@@ -272,6 +283,10 @@ public partial class MainWindow : Window
                 {
                     Xalign = .5f
                 });
+            var pageIndexLabel = new Label
+                {
+                    Xalign = .5f
+                };
             nextButton.Clicked += (sender, e) => geomNotebook.NextPage();
             prevButton.Clicked += (sender, e) => geomNotebook.PrevPage();
             Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
@@ -280,6 +295,7 @@ public partial class MainWindow : Window
             prevButtonAlignment.Add(prevButton);
             geomNotebook.SwitchPage += (o, args) =>
                 {
+                    pageIndexLabel.Text = geomNotebook.CurrentPage.ToString();
                     nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
                     prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                 };
@@ -301,7 +317,7 @@ public partial class MainWindow : Window
                         };
                     fileFilter.AddPattern(meshFileType == MeshFileType.GEOM ? "*.simgeom" : meshFileType == MeshFileType.OBJ ? "*.obj" : meshFileType == MeshFileType.WSO ? "*.wso" : null);
                     fileChooserDialog.AddFilter(fileFilter);
-                    var geom = lodKvp.Value[geomNotebook.CurrentPage].ToGEOM();
+                    var geom = lodKvp.Value[geomNotebook.CurrentPage];
                     if (fileChooserDialog.Run() == (int)ResponseType.Accept)
                     {
                         byte[] bblnIndices =
@@ -354,7 +370,7 @@ public partial class MainWindow : Window
                                                 try
                                                 {
                                                     evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
-                                                    morphs[i] = ((GeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToGEOM();
+                                                    morphs[i] = new GEOM(new BinaryReader((evaluated.Package as APackage).GetResource(evaluated.ResourceIndexEntry)));
                                                 }
                                                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                                 {
@@ -426,7 +442,7 @@ public partial class MainWindow : Window
                         };
                     fileFilter.AddPattern(meshFileType == MeshFileType.OBJ ? "*.obj" : meshFileType == MeshFileType.WSO ? "*.wso" : null);
                     fileChooserDialog.AddFilter(fileFilter);
-                    var geom = lodKvp.Value[geomNotebook.CurrentPage].ToGEOM();
+                    var geom = lodKvp.Value[geomNotebook.CurrentPage];
                     if (fileChooserDialog.Run() == (int)ResponseType.Accept)
                     {
                         byte[] bblnIndices =
@@ -486,21 +502,18 @@ public partial class MainWindow : Window
                             {
                                 var stream = new MemoryStream();
                                 newGEOMPlusMorphs[i].Write(new BinaryWriter(stream));
-                                int selectedGEOMIndex = geomNotebook.CurrentPage,
-                                selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
                                 if (i == 0)
                                 {
+                                    int selectedGEOMIndex = geomNotebook.CurrentPage,
+                                    selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
                                     foreach (var geometryResourceKvp in PreloadedGeometryResources)
                                     {
                                         if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                         {
                                             var evaluated = casPart.ParentPackage.EvaluateResourceKey(geometryResourceKvp.Key);
-                                            var tempResourceIndexEntry = casPart.ParentPackage.AddResource(evaluated.ResourceIndexEntry, stream, false);
-                                            casPart.ParentPackage.ResolveResourceType(tempResourceIndexEntry);
-                                            var resource = WrapperDealer.GetResource(0, casPart.ParentPackage, tempResourceIndexEntry);
-                                            evaluated.Package.ReplaceResource(evaluated.ResourceIndexEntry, resource);
-                                            casPart.ParentPackage.DeleteResource(tempResourceIndexEntry);
-                                            PreloadedGeometryResources[geometryResourceKvp.Key] = (GeometryResource)resource;
+                                            casPart.ParentPackage.AddResource(evaluated.ResourceIndexEntry, stream, false);
+                                            casPart.ParentPackage.DeleteResource(evaluated.ResourceIndexEntry);
+                                            PreloadedGeometryResources[geometryResourceKvp.Key] = newGEOMPlusMorphs[i];
                                             casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
                                             foreach (var child in ResourcePropertyNotebook.Children)
                                             {
@@ -536,7 +549,7 @@ public partial class MainWindow : Window
                                             lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                 {
                                                     newGEOMPlusMorphs[i]
-                                                } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()].ToGEOM());
+                                                } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
                                         }
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
@@ -576,7 +589,7 @@ public partial class MainWindow : Window
                                             var geomStream = new MemoryStream();
                                             lodMorphMeshes[j][k].Write(new BinaryWriter(geomStream));
                                             var geomResourceIndexEntry = casPart.ParentPackage.AddResource(geomResourceKey, geomStream, true);
-                                            PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = (GeometryResource)WrapperDealer.GetResource(0, casPart.ParentPackage, geomResourceIndexEntry);
+                                            PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(new BinaryReader((casPart.ParentPackage as APackage).GetResource(geomResourceIndexEntry)));
                                         }
                                     }
                                     var vpxyTGI = new TGI(ResourceUtils.GetResourceType("VPXY"), 1, bblnResourceIndexEntries[i - 1].Instance);
@@ -601,6 +614,32 @@ public partial class MainWindow : Window
                     }
                     fileChooserDialog.Destroy();
                 };
+            addMeshGroupAction.Activated += (sender, e) =>
+                {
+                    int selectedGEOMIndex = geomNotebook.CurrentPage,
+                    selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
+                    casPart.AddMeshGroup(lodKvp.Key, PreloadedGeometryResources, PreloadedVPXYResources);
+                    casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                    foreach (var child in ResourcePropertyNotebook.Children)
+                    {
+                        ResourcePropertyNotebook.Remove(child);
+                    }
+                    BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex + 1);
+                    NextState = NextStateOptions.UnsavedChanges;
+                };
+            deleteMeshGroupAction.Activated += (sender, e) =>
+                {
+                    int selectedGEOMIndex = geomNotebook.CurrentPage,
+                    selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
+                    casPart.DeleteMeshGroup(lodKvp.Key, selectedGEOMIndex, PreloadedGeometryResources, PreloadedVPXYResources);
+                    casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                    foreach (var child in ResourcePropertyNotebook.Children)
+                    {
+                        ResourcePropertyNotebook.Remove(child);
+                    }
+                    BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex == lodKvp.Value.Count ? selectedGEOMIndex - 1 : selectedGEOMIndex);
+                    NextState = NextStateOptions.UnsavedChanges;
+                };
             exportGEOMAction.Activated += (sender, e) => exportMesh(MeshFileType.GEOM);
             exportOBJAction.Activated += (sender, e) => exportMesh(MeshFileType.OBJ);
             exportWSOAction.Activated += (sender, e) => exportMesh(MeshFileType.WSO);
@@ -624,12 +663,9 @@ public partial class MainWindow : Window
                                 if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                 {
                                     var evaluated = casPart.ParentPackage.EvaluateResourceKey(geometryResourceKvp.Key);
-                                    var tempResourceIndexEntry = casPart.ParentPackage.AddResource(fileChooserDialog.Filename, evaluated.ResourceIndexEntry, false);
-                                    casPart.ParentPackage.ResolveResourceType(tempResourceIndexEntry);
-                                    var resource = WrapperDealer.GetResource(0, casPart.ParentPackage, tempResourceIndexEntry);
-                                    evaluated.Package.ReplaceResource(evaluated.ResourceIndexEntry, resource);
-                                    casPart.ParentPackage.DeleteResource(tempResourceIndexEntry);
-                                    PreloadedGeometryResources[geometryResourceKvp.Key] = (GeometryResource)resource;
+                                    casPart.ParentPackage.AddResource(fileChooserDialog.Filename, evaluated.ResourceIndexEntry, false);
+                                    casPart.ParentPackage.DeleteResource(evaluated.ResourceIndexEntry);
+                                    PreloadedGeometryResources[geometryResourceKvp.Key] = new GEOM(new BinaryReader(File.OpenRead(fileChooserDialog.Filename)));
                                     casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
                                     foreach (var child in ResourcePropertyNotebook.Children)
                                     {
@@ -710,6 +746,7 @@ public partial class MainWindow : Window
             var geomPageButtonHBox = new HBox(false, 0);
             geomPageButtonHBox.PackEnd(menuBar, true, true, 4);
             geomPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
+            geomPageButtonHBox.PackStart(pageIndexLabel, false, true, 4);
             geomPageButtonHBox.PackStart(nextButtonAlignment, false, true, 4);
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             var iconSize = WidgetUtils.SmallImageSize << 1;
@@ -726,7 +763,7 @@ public partial class MainWindow : Window
             lodPageVBox.ShowAll();
             ResourcePropertyNotebook.AppendPage(lodPageVBox, new Label("LOD " + lodKvp.Key.ToString()));
             lodKvp.Value.ForEach(x => geomNotebook.AddProperties(CurrentPackage, x, Image));
-            if (lodKvp.Value == new List<List<GeometryResource>>(casPart.LODs.Values)[startLODPageIndex])
+            if (lodKvp.Value == new List<List<GEOM>>(casPart.LODs.Values)[startLODPageIndex])
             {
                 ResourcePropertyNotebook.CurrentPage = startLODPageIndex;
                 geomNotebook.CurrentPage = startGEOMPageIndex;
@@ -890,7 +927,7 @@ public partial class MainWindow : Window
                 case "GEOM":
                     if (!PreloadedGeometryResources.ContainsKey(key) || missingResourceKeyIndex > -1)
                     {
-                        PreloadedGeometryResources[key] = (GeometryResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
+                        PreloadedGeometryResources[key] = new GEOM(new BinaryReader((CurrentPackage as APackage).GetResource(resourceIndexEntry)));
                     }
                     break;
                 case "VPXY":
@@ -954,7 +991,11 @@ public partial class MainWindow : Window
         }
         foreach (var geometryResourceKvp in PreloadedGeometryResources)
         {
-            CurrentPackage.ReplaceResource(CurrentPackage.EvaluateResourceKey(geometryResourceKvp.Key).ResourceIndexEntry, geometryResourceKvp.Value);
+            var stream = new MemoryStream();
+            PreloadedGeometryResources[geometryResourceKvp.Key].Write(new BinaryWriter(stream));
+            var resourceIndexEntry = CurrentPackage.EvaluateResourceKey(geometryResourceKvp.Key).ResourceIndexEntry;
+            CurrentPackage.AddResource(resourceIndexEntry, stream, false);
+            CurrentPackage.DeleteResource(resourceIndexEntry);
         }
         foreach (var vpxyResourceKvp in PreloadedVPXYResources)
         {
@@ -1177,8 +1218,9 @@ public partial class MainWindow : Window
         fileChooserDialog.AddFilter(fileFilter);
         if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
-            SavePackage(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".package") ? "" : ".package"));
-            AddFilePathToWindowTitle(fileChooserDialog.Filename);
+            var path = fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".package") ? "" : ".package");
+            SavePackage(path);
+            AddFilePathToWindowTitle(path);
         }
         fileChooserDialog.Destroy();
     }
