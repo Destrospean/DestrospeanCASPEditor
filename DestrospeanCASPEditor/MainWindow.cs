@@ -540,12 +540,11 @@ public partial class MainWindow : Window
                                     var morphName = "_fat _fit _thin _special".Split(' ')[i - 1];
                                     if (morphEvaluated.ResourceIndexEntry.GetResourceTypeTag() == "BGEO")
                                     {
-                                        var bgeo = new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
                                             lodMorphMeshes[j] =  casPart.LODs.ContainsKey(j) ? new GEOM[]
                                                 {
-                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(casPart.LODs[j][geomNotebook.CurrentPage], bgeo, 0, j)
+                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(casPart.LODs[j][geomNotebook.CurrentPage], new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream)), 0, j)
                                                 } : new GEOM[0];
                                         }
                                     }
