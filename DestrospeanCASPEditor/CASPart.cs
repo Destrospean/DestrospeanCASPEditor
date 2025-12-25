@@ -1123,7 +1123,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         GEOM geometryResource;
                         if (!geometryResources.TryGetValue(geometryResourceKey, out geometryResource))
                         {
-                            geometryResources.Add(geometryResourceKey, new GEOM(new BinaryReader((ParentPackage as APackage).GetResource(geometryResourceIndexEntry))));
+                            geometryResources.Add(geometryResourceKey, new GEOM(new BinaryReader(((APackage)ParentPackage).GetResource(geometryResourceIndexEntry))));
                             geometryResource = geometryResources[geometryResourceKey];
                         }
                         LODs[entry00.EntryID].Add(geometryResource);

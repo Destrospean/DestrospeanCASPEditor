@@ -374,7 +374,7 @@ public partial class MainWindow : Window
                                                 try
                                                 {
                                                     evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
-                                                    morphs[i] = new GEOM(new BinaryReader((evaluated.Package as APackage).GetResource(evaluated.ResourceIndexEntry)));
+                                                    morphs[i] = new GEOM(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                                 }
                                                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                                 {
@@ -593,7 +593,7 @@ public partial class MainWindow : Window
                                             var geomStream = new MemoryStream();
                                             lodMorphMeshes[j][k].Write(new BinaryWriter(geomStream));
                                             var geomResourceIndexEntry = casPart.ParentPackage.AddResource(geomResourceKey, geomStream, true);
-                                            PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(new BinaryReader((casPart.ParentPackage as APackage).GetResource(geomResourceIndexEntry)));
+                                            PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(new BinaryReader(((APackage)casPart.ParentPackage).GetResource(geomResourceIndexEntry)));
                                         }
                                     }
                                     var vpxyTGI = new TGI(ResourceUtils.GetResourceType("VPXY"), 1, bblnResourceIndexEntries[i - 1].Instance);
@@ -932,7 +932,7 @@ public partial class MainWindow : Window
                 case "GEOM":
                     if (!PreloadedGeometryResources.ContainsKey(key) || missingResourceKeyIndex > -1)
                     {
-                        PreloadedGeometryResources[key] = new GEOM(new BinaryReader((CurrentPackage as APackage).GetResource(resourceIndexEntry)));
+                        PreloadedGeometryResources[key] = new GEOM(new BinaryReader(((APackage)CurrentPackage).GetResource(resourceIndexEntry)));
                     }
                     break;
                 case "VPXY":
