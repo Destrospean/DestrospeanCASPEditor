@@ -543,10 +543,10 @@ public partial class MainWindow : Window
                                         var bgeo = new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
                                         for (var j = 0; j < lodMorphMeshes.Length; j++)
                                         {
-                                            lodMorphMeshes[j] = new GEOM[]
+                                            lodMorphMeshes[j] =  casPart.LODs.ContainsKey(j) ? new GEOM[]
                                                 {
-                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(newGEOMPlusMorphs[0], bgeo, 0, j)
-                                                };
+                                                    j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(casPart.LODs[j][geomNotebook.CurrentPage], bgeo, 0, j)
+                                                } : new GEOM[0];
                                         }
                                     }
                                     else
