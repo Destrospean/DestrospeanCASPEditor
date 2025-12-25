@@ -39,6 +39,10 @@ public partial class MainWindow : Window
     {
         set
         {
+            if (value == NextStateOptions.UnsavedChangesAndUpdateModels)
+            {
+                mPreloadedLODsMorphed.Clear();
+            }
             if (value.HasFlag(NextStateOptions.UpdateModels))
             {
                 TreeIter iter;
@@ -50,7 +54,6 @@ public partial class MainWindow : Window
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
-                mPreloadedBBLNs.Clear();
                 Title += HasUnsavedChanges ? "" : " *";
                 HasUnsavedChanges = true;
             }
@@ -224,7 +227,8 @@ public partial class MainWindow : Window
         ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
             {
                 LoadGEOMs(casPart);
-                mPreloadedBBLNs.Clear();
+                mPreloadedLODsMorphed.Clear();
+                NextState = NextStateOptions.UpdateModels;
             });
         ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
         foreach (var lodKvp in casPart.LODs)
@@ -851,7 +855,7 @@ public partial class MainWindow : Window
     {
         mSaveAsPath = null;
         mMeshes.Clear();
-        mPreloadedBBLNs.Clear();
+        mPreloadedLODsMorphed.Clear();
         PreloadedCASParts.Clear();
         PreloadedGeometryResources.Clear();
         Materials.Clear();
