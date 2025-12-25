@@ -528,7 +528,7 @@ public partial class MainWindow : Window
                                                 ResourcePropertyNotebook.Remove(child);
                                             }
                                             BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex);
-                                            NextState = NextStateOptions.UnsavedChanges;
+                                            NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                                             break;
                                         }
                                     }
@@ -633,7 +633,7 @@ public partial class MainWindow : Window
                         ResourcePropertyNotebook.Remove(child);
                     }
                     BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex + 1);
-                    NextState = NextStateOptions.UnsavedChanges;
+                    NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             deleteMeshGroupAction.Activated += (sender, e) =>
                 {
@@ -646,7 +646,7 @@ public partial class MainWindow : Window
                         ResourcePropertyNotebook.Remove(child);
                     }
                     BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex == lodKvp.Value.Count ? selectedGEOMIndex - 1 : selectedGEOMIndex);
-                    NextState = NextStateOptions.UnsavedChanges;
+                    NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             exportGEOMAction.Activated += (sender, e) => exportMesh(MeshFileType.GEOM);
             exportOBJAction.Activated += (sender, e) => exportMesh(MeshFileType.OBJ);
@@ -680,7 +680,7 @@ public partial class MainWindow : Window
                                         ResourcePropertyNotebook.Remove(child);
                                     }
                                     BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex);
-                                    NextState = NextStateOptions.UnsavedChanges;
+                                    NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                                     break;
                                 }
                             }
