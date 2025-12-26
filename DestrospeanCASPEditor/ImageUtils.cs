@@ -18,7 +18,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>(),
         PreloadedImages = new Dictionary<string, Bitmap>();
 
-        static System.Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        static Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {
             return package.GetPreloadVariables(resourceIndexEntry, imageWidget.WidthRequest, imageWidget.HeightRequest);
         }
