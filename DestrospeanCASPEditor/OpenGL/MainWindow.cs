@@ -561,7 +561,7 @@ public partial class MainWindow : Window
             var key = "";
             foreach (var geometryResourceKvp in PreloadedGeometryResources)
             {
-                if (geometryResourceKvp.Value == geom)
+                if (geometryResourceKvp.Value == geometryResource)
                 {
                     key = geometryResourceKvp.Key;
                     break;
