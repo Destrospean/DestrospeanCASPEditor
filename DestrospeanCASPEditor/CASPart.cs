@@ -55,7 +55,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 if (mCurrentRig == null)
                 {
-                    mCurrentRig = MeshUtils.GetTS3Rig(ParentPackage, AdjustedSpecies, AdjustedAge);
+                    mCurrentRig = MeshUtils.GetRig(ParentPackage, AdjustedSpecies, AdjustedAge);
                 }
                 return mCurrentRig;
             }

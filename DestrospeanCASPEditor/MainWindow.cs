@@ -354,7 +354,7 @@ public partial class MainWindow : Window
                             try
                             {
                                 evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
-                                bgeo = ((CASPartResource.BlendGeometryResource)WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry)).ToBGEO();
+                                bgeo = new BGEO(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                             }
                             catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                             {
