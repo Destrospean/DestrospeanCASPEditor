@@ -12,7 +12,14 @@
                 {
                     MainWindow.Singleton.RescaleAndReposition(true);
                     MainWindow.Singleton.Sensitive = false;
-                    ChoosePatternDialog.GenerateCache(s3pi.Package.Package.NewPackage(0));
+                    try
+                    {
+                        ChoosePatternDialog.GenerateCache(s3pi.Package.Package.NewPackage(0));
+                    }
+                    catch (System.Exception ex)
+                    {
+                        MainClass.WriteError(ex);
+                    }
                     MainWindow.Singleton.Sensitive = true;
                     Destroy();
                 }).Start();

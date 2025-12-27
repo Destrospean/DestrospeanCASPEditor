@@ -1136,6 +1136,10 @@ public partial class MainWindow : Window
             {
                 Console.WriteLine(ex);
             }
+            catch (Exception ex)
+            {
+                MainClass.WriteError(ex);
+            }
         }
         fileChooserDialog.Destroy();
     }

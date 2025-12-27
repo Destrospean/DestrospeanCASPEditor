@@ -126,6 +126,11 @@ public partial class MainWindow : Window
             {
                 mCASParts[clothingType] = null;
             }
+            /*
+            var key = new ResourceUtils.ResourceKey(ResourceUtils.GetResourceType("CASP"), 0, System.Security.Cryptography.FNV64.GetHash("afHairBun")).ReverseEvaluateResourceKey();
+            var evaluated = s3pi.Package.Package.NewPackage(0).EvaluateResourceKey(key);
+            mCASParts[CASPartResource.ClothingType.Hair] = new CASPart(evaluated.Package, evaluated.ResourceIndexEntry, Singleton.PreloadedGeometryResources, Singleton.PreloadedVPXYResources);
+            */
         }
 
         public void LoadGEOMs()
