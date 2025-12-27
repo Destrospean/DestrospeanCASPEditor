@@ -83,7 +83,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             set;
         }
 
-        public int TextureID;
+        public int AmbientMapID, MainTextureID, SpecularMapID;
 
         public abstract void CalculateModelMatrix();
 

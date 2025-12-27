@@ -63,9 +63,11 @@ public partial class MainWindow : Window
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
+    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+
     public bool ModelsNeedUpdated = false;
 
-    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+    public Sim RenderedSim;
 
     public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
 
@@ -88,6 +90,47 @@ public partial class MainWindow : Window
         {
             BBLN = bbln;
             GEOMs = geoms;
+        }
+    }
+
+    public class Sim
+    {
+        readonly Dictionary<CASPartResource.ClothingType, CASPart> mCASParts = new Dictionary<CASPartResource.ClothingType, CASPart>();
+
+        public Dictionary<CASPartResource.ClothingType, CASPart> CASParts
+        {
+            get
+            {
+                var casParts = new Dictionary<CASPartResource.ClothingType, CASPart>();
+                foreach (var casPartKvp in mCASParts)
+                {
+                    casParts.Add(casPartKvp.Key, CurrentCASPart != null && casPartKvp.Key == CurrentCASPart.CASPartResource.Clothing ? CurrentCASPart : casPartKvp.Value);
+                }
+                return casParts;
+            }
+        }
+
+        public CASPart CurrentCASPart = null;
+
+        public RIG CurrentRig
+        {
+            get
+            {
+                return CurrentCASPart.CurrentRig;
+            }
+        }
+
+        public Sim()
+        {
+            foreach (CASPartResource.ClothingType clothingType in Enum.GetValues(typeof(CASPartResource.ClothingType)))
+            {
+                mCASParts[clothingType] = null;
+            }
+        }
+
+        public void LoadGEOMs()
+        {
+            Singleton.LoadGEOMs(new List<CASPart>(CASParts.Values).FindAll(x => x != null).ToArray());
         }
     }
 
@@ -413,10 +456,14 @@ public partial class MainWindow : Window
         mCamera.Position = new Vector3(0, 1, 4);
     }
 
+    void LoadGEOMs(CASPart[] casParts)
+    {
+        Array.ForEach(casParts, LoadGEOMs);
+    }
+
     void LoadGEOMs(CASPart casPart)
     {
-        mMeshes.Clear();
-        if (!PreloadedCASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
+        if (!RenderedSim.CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
         {
             return;
         }
@@ -601,15 +648,7 @@ public partial class MainWindow : Window
                     };
                 Materials.Add(key, material);
             }
-            var currentPreset = casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
-            if (currentPreset.AmbientMap != null)
-            {
-                LoadTexture(currentPreset.AmbientMap);
-            }
-            if (currentPreset.SpecularMap != null)
-            {
-                LoadTexture(currentPreset.SpecularMap);
-            }
+            var currentPreset = casPart == RenderedSim.CurrentCASPart ? casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage] : casPart.AllPresets[0];
             mMeshes.Add(new Volume
                 {
                     ColorData = colors.ToArray(),
@@ -617,7 +656,9 @@ public partial class MainWindow : Window
                     Material = material,
                     Normals = normals.ToArray(),
                     TextureCoordinates = textureCoordinates.ToArray(),
-                    TextureID = LoadTexture(key, currentPreset.Texture),
+                    AmbientMapID = LoadTexture(currentPreset.AmbientMap == null ? material.AmbientMap : currentPreset.AmbientMap),
+                    MainTextureID = LoadTexture(key, currentPreset.Texture),
+                    SpecularMapID = LoadTexture(currentPreset.SpecularMap == null ? material.SpecularMap : currentPreset.SpecularMap),
                     Vertices = vertices.ToArray()
                 });
         }
@@ -809,7 +850,7 @@ public partial class MainWindow : Window
         var indexAt = 0;
         foreach (var mesh in mMeshes)
         {
-            GL.BindTexture(TextureTarget.Texture2D, mesh.TextureID);
+            GL.BindTexture(TextureTarget.Texture2D, mesh.MainTextureID);
             GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref mesh.ModelViewProjectionMatrix);
             if (mShaders[mActiveShader].GetUniform("light_ambientIntensity") != -1)
             {
@@ -868,32 +909,21 @@ public partial class MainWindow : Window
             }
             if (mShaders[mActiveShader].GetAttribute("maintexture") != -1)
             {
-                GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), mesh.TextureID);
+                GL.Uniform1(mShaders[mActiveShader].GetAttribute("maintexture"), mesh.MainTextureID);
             }
             if (mShaders[mActiveShader].GetUniform("map_specular") != -1)
             {
-                TreeIter iter;
-                TreeModel model;
-                CASPart.Preset currentPreset = null;
-                if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
+                if (mesh.SpecularMapID == -1)
                 {
-                    currentPreset = PreloadedCASParts[((s3pi.Interfaces.IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey()].AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage];
-                }
-                if (currentPreset != null && currentPreset.SpecularMap != null)
-                {
-                    int textureID;
-                    if (TextureIDs.TryGetValue(currentPreset.SpecularMap, out textureID))
-                    {
-                        GL.ActiveTexture(TextureUnit.Texture1);
-                        GL.BindTexture(TextureTarget.Texture2D, textureID);
-                        GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
-                        GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 1);
-                        GL.ActiveTexture(TextureUnit.Texture0);
-                    }
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 0);
                 }
                 else
                 {
-                    GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 0);
+                    GL.ActiveTexture(TextureUnit.Texture1);
+                    GL.BindTexture(TextureTarget.Texture2D, mesh.SpecularMapID);
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("map_specular"), 1);
+                    GL.Uniform1(mShaders[mActiveShader].GetUniform("hasSpecularMap"), 1);
+                    GL.ActiveTexture(TextureUnit.Texture0);
                 }
             }
             if (mShaders[mActiveShader].GetUniform("material_ambient") != -1)

@@ -45,12 +45,8 @@ public partial class MainWindow : Window
             }
             if (value.HasFlag(NextStateOptions.UpdateModels))
             {
-                TreeIter iter;
-                TreeModel model;
-                if (ResourceTreeView.Selection.GetSelected(out model, out iter) && (string)model.GetValue(iter, 0) == "CASP")
-                {
-                    LoadGEOMs(PreloadedCASParts[((IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey()]);
-                }
+                mMeshes.Clear();
+                RenderedSim.LoadGEOMs();
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
@@ -102,6 +98,7 @@ public partial class MainWindow : Window
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
+        RenderedSim = new Sim();
         if (!File.Exists(ChoosePatternDialog.CacheFilePath))
         {
             new CacheGenerationWindow("Please wait as caches are being generated...", this);
@@ -123,6 +120,8 @@ public partial class MainWindow : Window
 
     void AddCASPartWidgets(CASPart casPart)
     {
+        mMeshes.Clear();
+        RenderedSim.CurrentCASPart = casPart;
         var flagNotebook = new Notebook
             {
                 ShowTabs = false
@@ -205,7 +204,7 @@ public partial class MainWindow : Window
         flagTables[1].ShowAll();
         ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
         mPresetNotebook = PresetNotebook.CreateInstance(casPart, Image);
-        mPresetNotebook.SwitchPage += (o, args) => LoadGEOMs(casPart);
+        mPresetNotebook.SwitchPage += (o, args) => RenderedSim.LoadGEOMs();
         ResourcePropertyTable.Attach(mPresetNotebook, 1, 2, 0, 1);
         ResourcePropertyTable.ShowAll();
         BuildLODNotebook(casPart);
@@ -226,7 +225,7 @@ public partial class MainWindow : Window
         ResourcePropertyNotebookSwitchPageHandlers.Clear();
         ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
             {
-                LoadGEOMs(casPart);
+                RenderedSim.LoadGEOMs();
                 mPreloadedLODsMorphed.Clear();
                 NextState = NextStateOptions.UpdateModels;
             });
