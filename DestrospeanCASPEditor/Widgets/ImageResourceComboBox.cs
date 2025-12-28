@@ -51,33 +51,41 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             var entries = package.GetResourceList.ConvertAll(ResourceUtils.ReverseEvaluateResourceKey).FindAll(ImageUtils.PreloadedImagePixbufs.ContainsKey).ConvertAll(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x));
             var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Image, x.Label));
-            var missing = ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == currentValue.ToLowerInvariant());
-            if (!entries.Exists(x => x.Label.ToLowerInvariant() == currentValue.ToLowerInvariant()))
+            var currentValueKey = currentValue;
+            try
+            {
+                currentValueKey = "key:" + ResourceUtils.GetResourceType("_IMG").ToString("X8") + ":00000000:" + System.Security.Cryptography.FNV64.GetHash(currentValue.Substring(currentValue.LastIndexOf("\\") + 1, currentValue.LastIndexOf(".") - currentValue.LastIndexOf("\\") - 1)).ToString("X16");
+            }
+            catch
+            {
+            }
+            var missing = ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == currentValueKey.ToLowerInvariant());
+            if (!entries.Exists(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()))
             {
                 System.Collections.Generic.List<Pixbuf> pixbufs = null;
-                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(currentValue, out pixbufs) && !missing)
+                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(currentValueKey, out pixbufs) && !missing)
                 {
                     try
                     {
                         var evaluated = package.EvaluateImageResourceKey(currentValue);
                         evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
-                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[currentValue];
+                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[currentValueKey];
                         pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                     }
                     catch
                     {
-                        ResourceUtils.MissingResourceKeys.Add(currentValue);
+                        ResourceUtils.MissingResourceKeys.Add(currentValueKey);
                         missing = true;
                     }
                 }
-                entries.Add(new ImageResourceComboBoxEntry(missing ? null : pixbufs[1], currentValue.ToUpperInvariant().Replace("KEY", "key")));
+                entries.Add(new ImageResourceComboBoxEntry(missing ? null : pixbufs[1], currentValueKey.ToUpperInvariant().Replace("KEY", "key")));
                 listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
             }
             entries.Add(new ImageResourceComboBoxEntry(null, "<Specify key>"));
             listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
             var comboBox = new ImageResourceComboBox(entries)
                 {
-                    Active = entries.FindIndex(x => x.Label.ToLowerInvariant() == currentValue.ToLowerInvariant()),
+                    Active = entries.FindIndex(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()),
                     Model = listStore
                 };
             var comboBoxLastActive = comboBox.Active;
