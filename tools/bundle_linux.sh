@@ -11,9 +11,10 @@ cp ../DestrospeanCASPEditor/bin/Release/LICENSE.md CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/Mono.Posix.dll CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
 cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
-rar a CASDesignerToolkit-linux-amd64.rar CASDesignerToolkit/*
+rar a CASDesignerToolkit-fedora-amd64.rar CASDesignerToolkit/*
 rm CASDesignerToolkit/*
 cp ../DestrospeanCASPEditor/bin/Release/* CASDesignerToolkit
 rar a CASDesignerToolkit-win32-i386.rar CASDesignerToolkit/*
 mv CASDesignerToolkit-*.rar ../DestrospeanCASPEditor/bin/Release
 rm -rf CASDesignerToolkit
+distrobox enter debian-bookworm -- ./bundle_debian.sh
