@@ -10,6 +10,7 @@ cp ../DestrospeanCASPEditor/bin/Release/LICENSE.md CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/Mono.Posix.dll CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
 cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
+cp For\ Ubuntu/* CASDesignerToolkit
 rar a CASDesignerToolkit-debian-amd64.rar CASDesignerToolkit/*
 mv CASDesignerToolkit-*.rar ../DestrospeanCASPEditor/bin/Release
 rm -rf CASDesignerToolkit
