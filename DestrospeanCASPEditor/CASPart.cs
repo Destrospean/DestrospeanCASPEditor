@@ -9,6 +9,7 @@ using Destrospean.S3PIAbstractions;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
+using System.Globalization;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -169,7 +170,7 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public static float[] ParseCommaSeparatedValues(string text)
             {
-                return Array.ConvertAll(text.Split(','), float.Parse);
+                return Array.ConvertAll(text.Split(','), x => float.Parse(x, CultureInfo.InvariantCulture));
             }
 
             public virtual void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
@@ -325,44 +326,44 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseHueBackground = float.Parse(value);
+                            baseHueBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            baseHues.Add(float.Parse(value));
+                            baseHues.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else if (key.StartsWith("base s"))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseSaturationBackground = float.Parse(value);
+                            baseSaturationBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            baseSaturations.Add(float.Parse(value));
+                            baseSaturations.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else if (key.StartsWith("base v"))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            baseValueBackground = float.Parse(value);
+                            baseValueBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            baseValues.Add(float.Parse(value));
+                            baseValues.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else if (key.StartsWith("h "))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            hueBackground = float.Parse(value);
+                            hueBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            hues.Add(float.Parse(value));
+                            hues.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else if (key.StartsWith("hsvshift"))
@@ -380,22 +381,22 @@ namespace Destrospean.DestrospeanCASPEditor
                     {
                         if (key.EndsWith("bg"))
                         {
-                            saturationBackground = float.Parse(value);
+                            saturationBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            saturations.Add(float.Parse(value));
+                            saturations.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else if (key.StartsWith("v "))
                     {
                         if (key.EndsWith("bg"))
                         {
-                            valueBackground = float.Parse(value);
+                            valueBackground = float.Parse(value, CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            values.Add(float.Parse(value));
+                            values.Add(float.Parse(value, CultureInfo.InvariantCulture));
                         }
                     }
                     else
@@ -624,7 +625,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 else if (key.EndsWith("rotation"))
                                 {
-                                    logosRotation.Add(float.Parse(value));
+                                    logosRotation.Add(float.Parse(value, CultureInfo.InvariantCulture));
                                 }
                                 else if (key.EndsWith("texture"))
                                 {
@@ -643,7 +644,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 else if (key.EndsWith("rotation"))
                                 {
-                                    stencilsRotation.Add(float.Parse(value));
+                                    stencilsRotation.Add(float.Parse(value, CultureInfo.InvariantCulture));
                                 }
                             }
                             else

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Gdk;
 using Gtk;
+using System.Globalization;
 
 namespace Destrospean.DestrospeanCASPEditor.Widgets
 {
@@ -82,7 +83,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "color":
                         alignment.Xscale = 0;
-                        var rgba = System.Array.ConvertAll(value.Split(','), x => (ushort)(float.Parse(x) * ushort.MaxValue));
+                        var rgba = System.Array.ConvertAll(value.Split(','), x => (ushort)(float.Parse(x, CultureInfo.InvariantCulture) * ushort.MaxValue));
                         var colorButton = new ColorButton
                             {
                                 Alpha = rgba[3],
@@ -105,7 +106,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "float":
                         alignment.Xscale = 0;
-                        var spinButton = new SpinButton(new Adjustment(float.Parse(value), -1, 1, .0001, 10, 0), 0, 4);
+                        var spinButton = new SpinButton(new Adjustment(float.Parse(value, CultureInfo.InvariantCulture), -1, 1, .0001, 10, 0), 0, 4);
                         spinButton.ValueChanged += (sender, e) => complate[propertyName] = spinButton.Value.ToString("F4");
                         valueWidget = spinButton;
                         break;
@@ -161,7 +162,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         break;
                     case "vec2":
                         var hBox = new HBox();
-                        var coordinates = System.Array.ConvertAll(value.Split(','), float.Parse);
+                        var coordinates = System.Array.ConvertAll(value.Split(','), x => float.Parse(x, CultureInfo.InvariantCulture));
                         var spinButtons = new List<SpinButton>
                             {
                                 new SpinButton(new Adjustment(coordinates[0], -1, 1, .0001, 10, 0), 0, 4),

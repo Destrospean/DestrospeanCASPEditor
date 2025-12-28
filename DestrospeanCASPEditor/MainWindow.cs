@@ -851,6 +851,7 @@ public partial class MainWindow : Window
 
     public void ClearTemporaryData()
     {
+        RenderedSim.CurrentCASPart = null;
         mSaveAsPath = null;
         mMeshes.Clear();
         mPreloadedLODsMorphed.Clear();
@@ -962,7 +963,7 @@ public partial class MainWindow : Window
         var scaleEnvironmentVariable = Environment.GetEnvironmentVariable("CASDT_SCALE");
         if (!skipRescale)
         {
-            WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable);
+            WidgetUtils.Scale = string.IsNullOrEmpty(scaleEnvironmentVariable) ? Platform.IsUnix ? monitorGeometry.Height / 1080f : 1 : float.Parse(scaleEnvironmentVariable, System.Globalization.CultureInfo.InvariantCulture);
             WidgetUtils.WineScaleDenominator = Platform.IsRunningUnderWine ? (float)Screen.Resolution / 96 : 1;
             SetDefaultSize((int)(DefaultWidth * WidgetUtils.Scale), (int)(DefaultHeight * WidgetUtils.Scale));
             foreach (var widget in new Widget[]
