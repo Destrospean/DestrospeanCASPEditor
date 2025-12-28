@@ -4,9 +4,16 @@
     {
         public static void Main(string[] args)
         {
-            Gtk.Application.Init();
-            new MainWindow();
-            Gtk.Application.Run();
+            try
+            {
+                Gtk.Application.Init();
+                new MainWindow();
+                Gtk.Application.Run();
+            }
+            catch (System.Exception ex)
+            {
+                WriteError(ex);
+            }
         }
 
         public static void WriteError(System.Exception ex)

@@ -48,110 +48,118 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         public static ImageResourceComboBox CreateInstance(s3pi.Interfaces.IPackage package, string currentValue, Gtk.Image imageWidget)
         {
-            var entries = package.GetResourceList.ConvertAll(ResourceUtils.ReverseEvaluateResourceKey).FindAll(ImageUtils.PreloadedImagePixbufs.ContainsKey).ConvertAll(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x));
-            var listStore = new ListStore(typeof(Pixbuf), typeof(string));
-            entries.ForEach(x => listStore.AppendValues(x.Image, x.Label));
-            var currentValueKey = currentValue;
             try
             {
-                currentValueKey = "key:" + ResourceUtils.GetResourceType("_IMG").ToString("X8") + ":00000000:" + System.Security.Cryptography.FNV64.GetHash(currentValue.Substring(currentValue.LastIndexOf("\\") + 1, currentValue.LastIndexOf(".") - currentValue.LastIndexOf("\\") - 1)).ToString("X16");
-            }
-            catch
-            {
-            }
-            var missing = ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == currentValueKey.ToLowerInvariant());
-            if (!entries.Exists(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()))
-            {
-                System.Collections.Generic.List<Pixbuf> pixbufs = null;
-                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(currentValueKey, out pixbufs) && !missing)
+                var entries = package.GetResourceList.ConvertAll(ResourceUtils.ReverseEvaluateResourceKey).FindAll(ImageUtils.PreloadedImagePixbufs.ContainsKey).ConvertAll(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x));
+                var listStore = new ListStore(typeof(Pixbuf), typeof(string));
+                entries.ForEach(x => listStore.AppendValues(x.Image, x.Label));
+                var currentValueKey = currentValue;
+                try
                 {
-                    try
-                    {
-                        var evaluated = package.EvaluateImageResourceKey(currentValue);
-                        evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
-                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[currentValueKey];
-                        pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
-                    }
-                    catch
-                    {
-                        ResourceUtils.MissingResourceKeys.Add(currentValueKey);
-                        missing = true;
-                    }
+                    currentValueKey = "key:" + ResourceUtils.GetResourceType("_IMG").ToString("X8") + ":00000000:" + System.Security.Cryptography.FNV64.GetHash(currentValue.Substring(currentValue.LastIndexOf("\\") + 1, currentValue.LastIndexOf(".") - currentValue.LastIndexOf("\\") - 1)).ToString("X16");
                 }
-                entries.Add(new ImageResourceComboBoxEntry(missing ? null : pixbufs[1], currentValueKey.ToUpperInvariant().Replace("KEY", "key")));
-                listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
-            }
-            entries.Add(new ImageResourceComboBoxEntry(null, "<Specify key>"));
-            listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
-            var comboBox = new ImageResourceComboBox(entries)
+                catch
                 {
-                    Active = entries.FindIndex(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()),
-                    Model = listStore
-                };
-            var comboBoxLastActive = comboBox.Active;
-            comboBox.Changed += (sender, e) =>
+                }
+                var missing = ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == currentValueKey.ToLowerInvariant());
+                if (!entries.Exists(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()))
                 {
-                    if (comboBox.Active == entries.Count - 1)
+                    System.Collections.Generic.List<Pixbuf> pixbufs = null;
+                    if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(currentValueKey, out pixbufs) && !missing)
                     {
-                        var textEntryDialog = new TextEntryDialog("Specify Key", "Specify the image resource's key (in the format of \"key:########:########:################\"):", MainWindow.Singleton);
-                        if (textEntryDialog.Run() == (int)ResponseType.Ok)
+                        try
                         {
-                            var existingEntryIndex = entries.FindIndex(x => x.Label.ToLowerInvariant() == textEntryDialog.TextEntryValue.ToLowerInvariant());
-                            if (existingEntryIndex == -1)
+                            var evaluated = package.EvaluateImageResourceKey(currentValue);
+                            evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
+                            pixbufs = ImageUtils.PreloadedGameImagePixbufs[currentValueKey];
+                            pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                        }
+                        catch
+                        {
+                            ResourceUtils.MissingResourceKeys.Add(currentValueKey);
+                            missing = true;
+                        }
+                    }
+                    entries.Add(new ImageResourceComboBoxEntry(missing ? null : pixbufs[1], currentValueKey.ToUpperInvariant().Replace("KEY", "key")));
+                    listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
+                }
+                entries.Add(new ImageResourceComboBoxEntry(null, "<Specify key>"));
+                listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
+                var comboBox = new ImageResourceComboBox(entries)
+                    {
+                        Active = entries.FindIndex(x => x.Label.ToLowerInvariant() == currentValueKey.ToLowerInvariant()),
+                        Model = listStore
+                    };
+                var comboBoxLastActive = comboBox.Active;
+                comboBox.Changed += (sender, e) =>
+                    {
+                        if (comboBox.Active == entries.Count - 1)
+                        {
+                            var textEntryDialog = new TextEntryDialog("Specify Key", "Specify the image resource's key (in the format of \"key:########:########:################\"):", MainWindow.Singleton);
+                            if (textEntryDialog.Run() == (int)ResponseType.Ok)
                             {
-                                var exists = true;
-                                System.Collections.Generic.List<Pixbuf> pixbufs = null;
-                                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(textEntryDialog.TextEntryValue, out pixbufs))
+                                var existingEntryIndex = entries.FindIndex(x => x.Label.ToLowerInvariant() == textEntryDialog.TextEntryValue.ToLowerInvariant());
+                                if (existingEntryIndex == -1)
                                 {
-                                    try
+                                    var exists = true;
+                                    System.Collections.Generic.List<Pixbuf> pixbufs = null;
+                                    if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(textEntryDialog.TextEntryValue, out pixbufs))
                                     {
-                                        var evaluated = package.EvaluateImageResourceKey(textEntryDialog.TextEntryValue);
-                                        evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
-                                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue];
-                                        pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                                        try
+                                        {
+                                            var evaluated = package.EvaluateImageResourceKey(textEntryDialog.TextEntryValue);
+                                            evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
+                                            pixbufs = ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue];
+                                            pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                                        }
+                                        catch
+                                        {
+                                            comboBox.Active = comboBoxLastActive;
+                                            exists = false;
+                                        }
                                     }
-                                    catch
+                                    if (exists)
                                     {
-                                        comboBox.Active = comboBoxLastActive;
-                                        exists = false;
+                                        entries.Insert(entries.Count - 1, new ImageResourceComboBoxEntry(pixbufs[1], textEntryDialog.TextEntryValue.ToUpperInvariant().Replace("KEY", "key")));
+                                        listStore.InsertWithValues(entries.Count - 2, entries[entries.Count - 2].Image, entries[entries.Count - 2].Label);
+                                        comboBox.Active = entries.Count - 2;
                                     }
                                 }
-                                if (exists)
+                                else
                                 {
-                                    entries.Insert(entries.Count - 1, new ImageResourceComboBoxEntry(pixbufs[1], textEntryDialog.TextEntryValue.ToUpperInvariant().Replace("KEY", "key")));
-                                    listStore.InsertWithValues(entries.Count - 2, entries[entries.Count - 2].Image, entries[entries.Count - 2].Label);
-                                    comboBox.Active = entries.Count - 2;
+                                    comboBox.Active = existingEntryIndex;
                                 }
                             }
                             else
                             {
-                                comboBox.Active = existingEntryIndex;
+                                comboBox.Active = comboBoxLastActive;
                             }
+                            textEntryDialog.Destroy();
                         }
                         else
                         {
-                            comboBox.Active = comboBoxLastActive;
+                            comboBoxLastActive = comboBox.Active;
                         }
-                        textEntryDialog.Destroy();
-                    }
-                    else
+                    };
+                var pixbufRenderer = new CellRendererPixbuf
                     {
-                        comboBoxLastActive = comboBox.Active;
-                    }
-                };
-            var pixbufRenderer = new CellRendererPixbuf
-                {
-                    Xpad = 4
-                };
-            var textRenderer = new CellRendererText
-                {
-                    Xpad = 4
-                };
-            comboBox.PackStart(pixbufRenderer, false);
-            comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
-            comboBox.PackStart(textRenderer, false);
-            comboBox.AddAttribute(textRenderer, "text", 1);
-            return comboBox;
+                        Xpad = 4
+                    };
+                var textRenderer = new CellRendererText
+                    {
+                        Xpad = 4
+                    };
+                comboBox.PackStart(pixbufRenderer, false);
+                comboBox.AddAttribute(pixbufRenderer, "pixbuf", 0);
+                comboBox.PackStart(textRenderer, false);
+                comboBox.AddAttribute(textRenderer, "text", 1);
+                return comboBox;
+            }
+            catch (System.Exception ex)
+            {
+                MainClass.WriteError(ex);
+                throw;
+            }
         }
     }
 }

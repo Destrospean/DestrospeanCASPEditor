@@ -463,271 +463,313 @@ public partial class MainWindow : Window
 
     void LoadGEOMs(CASPart casPart)
     {
-        if (!RenderedSim.CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
+        try
         {
-            return;
-        }
-        var lod = new List<int>(casPart.LODs.Keys)[ResourcePropertyNotebook.CurrentPage];
-        foreach (var geometryResource in new List<List<GEOM>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
-        {
-            var geom = geometryResource;
-            byte[] bblnIndices =
-                {
-                    casPart.CASPartResource.BlendInfoFatIndex,
-                    casPart.CASPartResource.BlendInfoFitIndex,
-                    casPart.CASPartResource.BlendInfoThinIndex,
-                    casPart.CASPartResource.BlendInfoSpecialIndex
-                };
-            float[] weights =
-                {
-                    mFat,
-                    mFit,
-                    mThin,
-                    mSpecial
-                };
-            for (var i = 0; i < bblnIndices.Length; i++)
+            if (!RenderedSim.CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
             {
-                BBLN bbln;
-                string bblnKey;
-                ResourceUtils.EvaluatedResourceKey evaluated;
-                PreloadedLODMorphed preloadedLODMorphed;
-                try
-                {
-                    bblnKey = casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey();
-                    if (mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed))
+                return;
+            }
+            var lod = new List<int>(casPart.LODs.Keys)[ResourcePropertyNotebook.CurrentPage];
+            foreach (var geometryResource in new List<List<GEOM>>(casPart.LODs.Values)[ResourcePropertyNotebook.CurrentPage])
+            {
+                var geom = geometryResource;
+                byte[] bblnIndices =
                     {
-                        bbln = preloadedLODMorphed.BBLN;
-                    }
-                    else
+                        casPart.CASPartResource.BlendInfoFatIndex,
+                        casPart.CASPartResource.BlendInfoFitIndex,
+                        casPart.CASPartResource.BlendInfoThinIndex,
+                        casPart.CASPartResource.BlendInfoSpecialIndex
+                    };
+                float[] weights =
                     {
-                        evaluated = casPart.ParentPackage.EvaluateResourceKey(bblnKey);
-                        bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
-                    }
-                }
-                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                        mFat,
+                        mFit,
+                        mThin,
+                        mSpecial
+                    };
+                for (var i = 0; i < bblnIndices.Length; i++)
                 {
-                    continue;
-                }
-                BGEO bgeo = null;
-                try
-                {
-                    if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed))
+                    BBLN bbln;
+                    string bblnKey;
+                    ResourceUtils.EvaluatedResourceKey evaluated;
+                    PreloadedLODMorphed preloadedLODMorphed;
+                    try
                     {
-                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
-                        bgeo = new BGEO(new BinaryReader(((s3pi.Interfaces.APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
-                    }
-                }
-                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                {
-                }
-                foreach (var entry in bbln.Entries)
-                {
-                    foreach (var geomMorph in entry.GEOMMorphs)
-                    {
-                        if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed) && bgeo != null)
+                        bblnKey = casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey();
+                        if (mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed))
                         {
-                            //bgeo.Weight = weights[i] * geomMorph.Amount;
-                            //geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
-                            preloadedLODMorphed = new PreloadedLODMorphed(bbln, new GEOM[]
-                                {
-                                    new GEOM(geom, bgeo, 0, lod)
-                                });
-                            mPreloadedLODsMorphed.Add(bblnKey, preloadedLODMorphed);
+                            bbln = preloadedLODMorphed.BBLN;
                         }
-                        else if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed) && bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
+                        else
                         {
-                            try
+                            evaluated = casPart.ParentPackage.EvaluateResourceKey(bblnKey);
+                            bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                        }
+                    }
+                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                    {
+                        continue;
+                    }
+                    BGEO bgeo = null;
+                    try
+                    {
+                        if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed))
+                        {
+                            evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
+                            bgeo = new BGEO(new BinaryReader(((s3pi.Interfaces.APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
+                        }
+                    }
+                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                    {
+                    }
+                    foreach (var entry in bbln.Entries)
+                    {
+                        foreach (var geomMorph in entry.GEOMMorphs)
+                        {
+                            if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed) && bgeo != null)
                             {
-                                var geoms = new List<GEOM>();
-                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
-                                {
-                                    try
+                                //bgeo.Weight = weights[i] * geomMorph.Amount;
+                                //geom = geom.LoadBGEOMorph(bgeo, lod, casPart.AdjustedSpecies, (AgeGender)(uint)casPart.CASPartResource.AgeGender.Age, (AgeGender)((uint)casPart.CASPartResource.AgeGender.Gender << 12));
+                                preloadedLODMorphed = new PreloadedLODMorphed(bbln, new GEOM[]
                                     {
-                                        geoms.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
-                                    }
-                                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                                    {
-                                    }
-                                }
-                                preloadedLODMorphed = new PreloadedLODMorphed(bbln, geoms.ToArray());
+                                        new GEOM(geom, bgeo, 0, lod)
+                                    });
                                 mPreloadedLODsMorphed.Add(bblnKey, preloadedLODMorphed);
                             }
-                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
-                            {
-                            }
-                        }
-                        geom = geom.LoadGEOMMorph(preloadedLODMorphed.GEOMs, weights[i]);
-                    }
-                    foreach (var boneMorph in entry.BoneMorphs)
-                    {
-                        try
-                        {   
-                            foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
+                            else if (!mPreloadedLODsMorphed.TryGetValue(bblnKey, out preloadedLODMorphed) && bbln.TGIList != null && bbln.TGIList.Length > geomMorph.TGIIndex && geom.HasVertexIDs)
                             {
                                 try
-                                {   
-                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
-                                    var bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
-                                    bond.Weight = weights[i] * boneMorph.Amount;
-                                    geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
+                                {
+                                    var geoms = new List<GEOM>();
+                                    foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
+                                    {
+                                        try
+                                        {
+                                            geoms.Add(PreloadedGeometryResources[new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
+                                        }
+                                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                        {
+                                        }
+                                    }
+                                    preloadedLODMorphed = new PreloadedLODMorphed(bbln, geoms.ToArray());
+                                    mPreloadedLODsMorphed.Add(bblnKey, preloadedLODMorphed);
                                 }
                                 catch (ResourceUtils.ResourceIndexEntryNotFoundException)
                                 {
                                 }
                             }
+                            geom = geom.LoadGEOMMorph(preloadedLODMorphed.GEOMs, weights[i]);
                         }
-                        catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                        foreach (var boneMorph in entry.BoneMorphs)
                         {
+                            try
+                            {   
+                                foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
+                                {
+                                    try
+                                    {   
+                                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
+                                        var bond = new BOND(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                        bond.Weight = weights[i] * boneMorph.Amount;
+                                        geom = geom.LoadBONDMorph(bond, casPart.CurrentRig);
+                                    }
+                                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                    {
+                                    }
+                                }
+                            }
+                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                            {
+                            }
                         }
                     }
                 }
-            }
-            List<Vector3> colors = new List<Vector3>(),
-            normals = new List<Vector3>(),
-            vertices = new List<Vector3>();
-            var faces = new List<Tuple<int, int, int>>();
-            var textureCoordinates = new List<Vector2>();
-            for (var i = 0; i < geom.FaceCount; i++)
-            {
-                var indices = geom.GetFaceIndices(i);
-                faces.Add(new Tuple<int, int, int>(indices[0], indices[1], indices[2]));
-            }
-            for (var i = 0; i < geom.VertexCount; i++)
-            {
-                colors.Add(Vector3.One);
-                float[] normal = geom.GetNormal(i),
-                position = geom.GetPosition(i);
-                normals.Add(new Vector3(normal[0], normal[1], normal[2]));
-                vertices.Add(new Vector3(position[0], position[1], position[2]));
-                for (var j = 0; j < geom.UVCount; j++)
+                List<Vector3> colors = new List<Vector3>(),
+                normals = new List<Vector3>(),
+                vertices = new List<Vector3>();
+                var faces = new List<Tuple<int, int, int>>();
+                var textureCoordinates = new List<Vector2>();
+                for (var i = 0; i < geom.FaceCount; i++)
                 {
-                    var uv = geom.GetUV(i, j);
-                    textureCoordinates.Add(new Vector2(uv[0], uv[1]));
+                    var indices = geom.GetFaceIndices(i);
+                    faces.Add(new Tuple<int, int, int>(indices[0], indices[1], indices[2]));
                 }
-            }
-            var key = "";
-            foreach (var geometryResourceKvp in PreloadedGeometryResources)
-            {
-                if (geometryResourceKvp.Value == geometryResource)
+                for (var i = 0; i < geom.VertexCount; i++)
                 {
-                    key = geometryResourceKvp.Key;
-                    break;
-                }
-            }
-            Material material;
-            if (!Materials.TryGetValue(key, out material))
-            {
-                var materialColors = new Dictionary<FieldType, Vector3>();
-                var materialMaps = new Dictionary<FieldType, string>();
-                foreach (var field in geom.Shader.GetFields())
-                {
-                    int valueType;
-                    var element = geom.Shader.GetFieldValue(field, out valueType);
-                    if (valueType == 1 && (element.Length == 3 || element.Length == 4))
+                    colors.Add(Vector3.One);
+                    float[] normal = geom.GetNormal(i),
+                    position = geom.GetPosition(i);
+                    normals.Add(new Vector3(normal[0], normal[1], normal[2]));
+                    vertices.Add(new Vector3(position[0], position[1], position[2]));
+                    for (var j = 0; j < geom.UVCount; j++)
                     {
-                        materialColors[(FieldType)field] = new Vector3((float)element[0], (float)element[1], (float)element[2]);
-                    }
-                    else if (valueType == 4)
-                    {
-                        materialMaps[(FieldType)field] = new ResourceUtils.ResourceKey(geom.TGIList[(uint)element[0]].Type, geom.TGIList[(uint)element[0]].Group, geom.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey();
+                        var uv = geom.GetUV(i, j);
+                        textureCoordinates.Add(new Vector2(uv[0], uv[1]));
                     }
                 }
-                Vector3 color;
-                string map;
-                material = new Material
+                var key = "";
+                foreach (var geometryResourceKvp in PreloadedGeometryResources)
+                {
+                    if (geometryResourceKvp.Value == geometryResource)
                     {
+                        key = geometryResourceKvp.Key;
+                        break;
+                    }
+                }
+                Material material;
+                if (!Materials.TryGetValue(key, out material))
+                {
+                    var materialColors = new Dictionary<FieldType, Vector3>();
+                    var materialMaps = new Dictionary<FieldType, string>();
+                    foreach (var field in geom.Shader.GetFields())
+                    {
+                        int valueType;
+                        var element = geom.Shader.GetFieldValue(field, out valueType);
+                        if (valueType == 1 && (element.Length == 3 || element.Length == 4))
+                        {
+                            materialColors[(FieldType)field] = new Vector3((float)element[0], (float)element[1], (float)element[2]);
+                        }
+                        else if (valueType == 4)
+                        {
+                            materialMaps[(FieldType)field] = new ResourceUtils.ResourceKey(geom.TGIList[(uint)element[0]].Type, geom.TGIList[(uint)element[0]].Group, geom.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey();
+                        }
+                    }
+                    Vector3 color;
+                    string map;
+                    material = new Material
+                        {
 #pragma warning disable 0618
-                        AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : Vector3.One,
+                            AmbientColor = materialColors.TryGetValue(FieldType.Ambient, out color) ? color : Vector3.One,
 #pragma warning restore 0618
-                        AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
-                        DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : Vector3.One,
-                        DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
-                        NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
-                        SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : Vector3.One,
-                        SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
-                    };
-                Materials.Add(key, material);
+                            AmbientMap = materialMaps.TryGetValue(FieldType.AmbientOcclusionMap, out map) ? map : "",
+                            DiffuseColor = materialColors.TryGetValue(FieldType.Diffuse, out color) ? color : Vector3.One,
+                            DiffuseMap = materialMaps.TryGetValue(FieldType.DiffuseMap, out map) ? map : "",
+                            NormalMap = materialMaps.TryGetValue(FieldType.NormalMap, out map) ? map : "",
+                            SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : Vector3.One,
+                            SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
+                        };
+                    Materials.Add(key, material);
+                }
+                var currentPreset = casPart == RenderedSim.CurrentCASPart ? casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage] : casPart.AllPresets[0];
+                mMeshes.Add(new Volume
+                    {
+                        ColorData = colors.ToArray(),
+                        Faces = faces,
+                        Material = material,
+                        Normals = normals.ToArray(),
+                        TextureCoordinates = textureCoordinates.ToArray(),
+                        AmbientMapID = LoadTexture(currentPreset.AmbientMap == null ? material.AmbientMap : currentPreset.AmbientMap),
+                        MainTextureID = LoadTexture(key, currentPreset.Texture),
+                        SpecularMapID = LoadTexture(currentPreset.SpecularMap == null ? material.SpecularMap : currentPreset.SpecularMap),
+                        Vertices = vertices.ToArray()
+                    });
             }
-            var currentPreset = casPart == RenderedSim.CurrentCASPart ? casPart.AllPresets[mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage] : casPart.AllPresets[0];
-            mMeshes.Add(new Volume
-                {
-                    ColorData = colors.ToArray(),
-                    Faces = faces,
-                    Material = material,
-                    Normals = normals.ToArray(),
-                    TextureCoordinates = textureCoordinates.ToArray(),
-                    AmbientMapID = LoadTexture(currentPreset.AmbientMap == null ? material.AmbientMap : currentPreset.AmbientMap),
-                    MainTextureID = LoadTexture(key, currentPreset.Texture),
-                    SpecularMapID = LoadTexture(currentPreset.SpecularMap == null ? material.SpecularMap : currentPreset.SpecularMap),
-                    Vertices = vertices.ToArray()
-                });
+        }
+        catch (Exception ex)
+        {
+            MainClass.WriteError(ex);
         }
     }
 
     void PrepareGLWidget()
     {
-        mGLWidget = new GLWidget
-            {
-                HeightRequest = Image.HeightRequest,
-                WidthRequest = Image.WidthRequest
-            };
-        mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask | Gdk.EventMask.ScrollMask));
-        mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
-        mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
-        mGLWidget.ScrollEvent += (o, args) =>
-            {
-                var delta = MathHelper.DegreesToRadians(1);
-                switch ((int)args.Event.Direction)
+        try
+        {
+            mGLWidget = new GLWidget
                 {
-                    case 0:
-                        mFOV -= mFOV - delta > 0 ? delta : 0;
-                        break;
-                    case 1:
-                        mFOV += mFOV + delta <= MathHelper.DegreesToRadians(110) ? delta : 0;
-                        break;
-                }
-            };
-        mGLWidget.MotionNotifyEvent += (o, args) =>
-            {
-                if (args.Event.Device.Source == Gdk.InputSource.Mouse)
+                    HeightRequest = Image.HeightRequest,
+                    WidthRequest = Image.WidthRequest
+                };
+            mGLWidget.AddEvents((int)(Gdk.EventMask.ButtonPressMask | Gdk.EventMask.ButtonReleaseMask | Gdk.EventMask.PointerMotionMask | Gdk.EventMask.KeyPressMask | Gdk.EventMask.KeyReleaseMask | Gdk.EventMask.ScrollMask));
+            mGLWidget.ButtonPressEvent += (o, args) => mMouseButtonsHeld |= (MouseButtonsHeld)Math.Pow(2, args.Event.Button - 1);
+            mGLWidget.ButtonReleaseEvent += (o, args) => mMouseButtonsHeld &= (MouseButtonsHeld)(byte.MaxValue - Math.Pow(2, args.Event.Button - 1));
+            mGLWidget.ScrollEvent += (o, args) =>
                 {
-                    double currentX = args.Event.X,
-                    currentY = args.Event.Y;
-                    var currentTime = args.Event.Time;
-                    if (mTime > 0)
+                    var delta = MathHelper.DegreesToRadians(1);
+                    switch ((int)args.Event.Direction)
                     {
-                        double deltaX = currentX - mMouseX,
-                        deltaY = currentY - mMouseY,
-                        distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY),
-                        secondsElapsed = (currentTime - mTime) * .001;
-                        if (secondsElapsed > 0)
-                        {
-                            mCamera.MoveSpeed = (float)(distance / secondsElapsed * .0001);
-                        }
+                        case 0:
+                            mFOV -= mFOV - delta > 0 ? delta : 0;
+                            break;
+                        case 1:
+                            mFOV += mFOV + delta <= MathHelper.DegreesToRadians(110) ? delta : 0;
+                            break;
                     }
-                    mMouseX = (float)currentX;
-                    mMouseY = (float)currentY;
-                    mTime = (float)currentTime;
-                }
-            };
-        mGLWidget.Initialized += (sender, e) => 
-            {
-                InitProgram();
-                mGLInitialized = true;
-                NextState = NextStateOptions.UpdateModels;
-                GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
-            };
-        KeyPressEvent += OnKeyPress;
-        KeyReleaseEvent += (o, args) => mKeysHeld.RemoveAll(x => x == args.Event.Key);
+                };
+            mGLWidget.MotionNotifyEvent += (o, args) =>
+                {
+                    if (args.Event.Device.Source == Gdk.InputSource.Mouse)
+                    {
+                        double currentX = args.Event.X,
+                        currentY = args.Event.Y;
+                        var currentTime = args.Event.Time;
+                        if (mTime > 0)
+                        {
+                            double deltaX = currentX - mMouseX,
+                            deltaY = currentY - mMouseY,
+                            distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY),
+                            secondsElapsed = (currentTime - mTime) * .001;
+                            if (secondsElapsed > 0)
+                            {
+                                mCamera.MoveSpeed = (float)(distance / secondsElapsed * .0001);
+                            }
+                        }
+                        mMouseX = (float)currentX;
+                        mMouseY = (float)currentY;
+                        mTime = (float)currentTime;
+                    }
+                };
+            mGLWidget.Initialized += (sender, e) => 
+                {
+                    InitProgram();
+                    mGLInitialized = true;
+                    NextState = NextStateOptions.UpdateModels;
+                    GLib.Idle.Add(new GLib.IdleHandler(OnIdleProcessMain));
+                };
+            KeyPressEvent += OnKeyPress;
+            KeyReleaseEvent += (o, args) => mKeysHeld.RemoveAll(x => x == args.Event.Key);
+        }
+        catch (Exception ex)
+        {
+            MainClass.WriteError(ex);
+        }
     }
 
     void ProcessInput()
     {
-        var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
-        mLastMousePosition += delta;
-        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
+        try
         {
-            if (mKeysHeld.Contains(Gdk.Key.Control_L))
+            var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
+            mLastMousePosition += delta;
+            if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
+            {
+                if (mKeysHeld.Contains(Gdk.Key.Control_L))
+                {
+                    if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                    {
+                        mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                        mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+                    }
+                    else
+                    {
+                        mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+                    }
+                }
+                else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                {
+                    mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
+                }
+                else
+                {
+                    mCamera.AddTranslation(delta.X, -delta.Y, 0);
+                }
+            }
+            if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
+            {
+                mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+            }
+            if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
             {
                 if (mKeysHeld.Contains(Gdk.Key.Alt_L))
                 {
@@ -739,33 +781,12 @@ public partial class MainWindow : Window
                     mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
                 }
             }
-            else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
-            {
-                mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
-            }
-            else
-            {
-                mCamera.AddTranslation(delta.X, -delta.Y, 0);
-            }
+            mLastMousePosition = new Vector2(mMouseX, mMouseY);
         }
-        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
+        catch (Exception ex)
         {
-            mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
-            mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+            MainClass.WriteError(ex);
         }
-        if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
-        {
-            if (mKeysHeld.Contains(Gdk.Key.Alt_L))
-            {
-                mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
-                mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
-            }
-            else
-            {
-                mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
-            }
-        }
-        mLastMousePosition = new Vector2(mMouseX, mMouseY);
     }
 
     public void DeleteTexture(string key)
@@ -795,22 +816,30 @@ public partial class MainWindow : Window
 
     public int LoadTexture(string key, Bitmap image)
     {
-        if (!mGLInitialized)
+        try
         {
-            return -1;
+            if (!mGLInitialized)
+            {
+                return -1;
+            }
+            int textureID;
+            if (!TextureIDs.TryGetValue(key, out textureID))
+            {
+                GL.GenTextures(1, out textureID);
+                TextureIDs.Add(key, textureID);
+            }
+            GL.BindTexture(TextureTarget.Texture2D, textureID);
+            var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+            image.UnlockBits(bitmapData);
+            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            return textureID;
         }
-        int textureID;
-        if (!TextureIDs.TryGetValue(key, out textureID))
+        catch (Exception ex)
         {
-            GL.GenTextures(1, out textureID);
-            TextureIDs.Add(key, textureID);
+            MainClass.WriteError(ex);
+            throw;
         }
-        GL.BindTexture(TextureTarget.Texture2D, textureID);
-        var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
-        image.UnlockBits(bitmapData);
-        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-        return textureID;
     }
 
     protected bool OnIdleProcessMain()
