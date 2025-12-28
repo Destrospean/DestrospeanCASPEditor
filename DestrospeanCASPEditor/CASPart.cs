@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
@@ -9,7 +10,6 @@ using Destrospean.S3PIAbstractions;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using System.Globalization;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -299,7 +299,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 float[] hsvShiftBackground = null;
                 foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                 {
-                    string key = propertyXmlNodeKvp.Key.ToLower(),
+                    string key = propertyXmlNodeKvp.Key.ToLowerInvariant(),
                     value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
                     if (key.StartsWith("channel"))
                     {
@@ -607,7 +607,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         stencilsRotation = new List<float>();
                         foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
                         {
-                            string key = propertyXmlNodeKvp.Key.ToLower(),
+                            string key = propertyXmlNodeKvp.Key.ToLowerInvariant(),
                             value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
                             if (key.StartsWith("logo"))
                             {
@@ -689,7 +689,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                         if (diffuseMap != null)
                         {
-                            if (mXmlDocument.SelectSingleNode("complate").Attributes["name"].Value.ToLower() == "hairuniversal")
+                            if (mXmlDocument.SelectSingleNode("complate").Attributes["name"].Value.ToLowerInvariant() == "hairuniversal")
                             {
                                 float[][] hairMatrix =
                                     {
@@ -960,7 +960,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         presetChildNode.Attributes["reskey"].Value = patternKey;
                         for (var j = presetChildNode.ChildNodes.Count - 1; j > -1; j--)
                         {
-                            switch (presetChildNode.ChildNodes[j].Attributes["key"].Value.ToLower())
+                            switch (presetChildNode.ChildNodes[j].Attributes["key"].Value.ToLowerInvariant())
                             {
                                 case "assetroot":
                                 case "filename":

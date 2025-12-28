@@ -12,11 +12,11 @@ namespace Destrospean.DestrospeanCASPEditor
 {
     public static class ImageUtils
     {
-        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImagePixbufs = new Dictionary<string, List<Pixbuf>>(),
-        PreloadedImagePixbufs = new Dictionary<string, List<Pixbuf>>();
+        public static readonly Dictionary<string, List<Pixbuf>> PreloadedGameImagePixbufs = new Dictionary<string, List<Pixbuf>>(StringComparer.InvariantCultureIgnoreCase),
+        PreloadedImagePixbufs = new Dictionary<string, List<Pixbuf>>(StringComparer.InvariantCultureIgnoreCase);
 
-        public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>(),
-        PreloadedImages = new Dictionary<string, Bitmap>();
+        public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>(StringComparer.InvariantCultureIgnoreCase),
+        PreloadedImages = new Dictionary<string, Bitmap>(StringComparer.InvariantCultureIgnoreCase);
 
         static Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
         {

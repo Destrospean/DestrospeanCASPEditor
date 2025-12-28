@@ -55,7 +55,7 @@ public partial class MainWindow : Window
 
     MouseButtonsHeld mMouseButtonsHeld = MouseButtonsHeld.None;
 
-    readonly Dictionary<string, PreloadedLODMorphed> mPreloadedLODsMorphed = new Dictionary<string, PreloadedLODMorphed>();
+    readonly Dictionary<string, PreloadedLODMorphed> mPreloadedLODsMorphed = new Dictionary<string, PreloadedLODMorphed>(StringComparer.InvariantCultureIgnoreCase);
 
     readonly Dictionary<string, Shader> mShaders = new Dictionary<string, Shader>();
 
@@ -63,13 +63,13 @@ public partial class MainWindow : Window
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
-    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>();
+    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>(StringComparer.InvariantCultureIgnoreCase);
 
     public bool ModelsNeedUpdated = false;
 
     public Sim RenderedSim;
 
-    public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>();
+    public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
     [Flags]
     enum MouseButtonsHeld : byte
@@ -126,11 +126,6 @@ public partial class MainWindow : Window
             {
                 mCASParts[clothingType] = null;
             }
-            /*
-            var key = new ResourceUtils.ResourceKey(ResourceUtils.GetResourceType("CASP"), 0, System.Security.Cryptography.FNV64.GetHash("afHairBun")).ReverseEvaluateResourceKey();
-            var evaluated = s3pi.Package.Package.NewPackage(0).EvaluateResourceKey(key);
-            mCASParts[CASPartResource.ClothingType.Hair] = new CASPart(evaluated.Package, evaluated.ResourceIndexEntry, Singleton.PreloadedGeometryResources, Singleton.PreloadedVPXYResources);
-            */
         }
 
         public void LoadGEOMs()

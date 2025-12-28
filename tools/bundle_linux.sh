@@ -7,9 +7,13 @@ cd ../../../tools
 cp ../DestrospeanCASPEditor/bin/Release/Acknowledgements.txt CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/GameFolders.xml CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/LICENSE.md CASDesignerToolkit
-cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
 cp ../DestrospeanCASPEditor/bin/Release/Mono.Posix.dll CASDesignerToolkit
+cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
 cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
-zip -r CASDesignerToolkit-linux-amd64.zip CASDesignerToolkit/*
+rar a CASDesignerToolkit-linux-amd64.rar CASDesignerToolkit/*
+rm CASDesignerToolkit/*
+cp ../DestrospeanCASPEditor/bin/Release/* CASDesignerToolkit
+mkdir
+rar a CASDesignerToolkit-win32-i386.rar CASDesignerToolkit/*
+mv CASDesignerToolkit-*.rar ../DestrospeanCASPEditor/bin/Release
 rm -rf CASDesignerToolkit
-mv CASDesignerToolkit-linux-amd64.zip ../DestrospeanCASPEditor/bin/Release

@@ -51,16 +51,18 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             var entries = package.GetResourceList.ConvertAll(ResourceUtils.ReverseEvaluateResourceKey).FindAll(ImageUtils.PreloadedImagePixbufs.ContainsKey).ConvertAll(x => new ImageResourceComboBoxEntry(ImageUtils.PreloadedImagePixbufs[x][1], x));
             var listStore = new ListStore(typeof(Pixbuf), typeof(string));
             entries.ForEach(x => listStore.AppendValues(x.Image, x.Label));
-            var missing = ResourceUtils.MissingResourceKeys.Contains(currentValue);
-            if (!entries.Exists(x => x.Label == currentValue))
+            var missing = ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == currentValue.ToLowerInvariant());
+            if (!entries.Exists(x => x.Label.ToLowerInvariant() == currentValue.ToLowerInvariant()))
             {
-                if (!ImageUtils.PreloadedGameImagePixbufs.ContainsKey(currentValue) && !missing)
+                System.Collections.Generic.List<Pixbuf> pixbufs = null;
+                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(currentValue, out pixbufs) && !missing)
                 {
                     try
                     {
                         var evaluated = package.EvaluateImageResourceKey(currentValue);
                         evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
-                        ImageUtils.PreloadedGameImagePixbufs[currentValue].Add(ImageUtils.PreloadedGameImagePixbufs[currentValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[currentValue];
+                        pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                     }
                     catch
                     {
@@ -68,14 +70,14 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         missing = true;
                     }
                 }
-                entries.Add(new ImageResourceComboBoxEntry(missing ? null : ImageUtils.PreloadedGameImagePixbufs[currentValue][1], currentValue));
+                entries.Add(new ImageResourceComboBoxEntry(missing ? null : pixbufs[1], currentValue.ToUpperInvariant().Replace("KEY", "key")));
                 listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
             }
             entries.Add(new ImageResourceComboBoxEntry(null, "<Specify key>"));
             listStore.AppendValues(entries[entries.Count - 1].Image, entries[entries.Count - 1].Label);
             var comboBox = new ImageResourceComboBox(entries)
                 {
-                    Active = entries.FindIndex(x => x.Label == currentValue),
+                    Active = entries.FindIndex(x => x.Label.ToLowerInvariant() == currentValue.ToLowerInvariant()),
                     Model = listStore
                 };
             var comboBoxLastActive = comboBox.Active;
@@ -86,17 +88,19 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         var textEntryDialog = new TextEntryDialog("Specify Key", "Specify the image resource's key (in the format of \"key:########:########:################\"):", MainWindow.Singleton);
                         if (textEntryDialog.Run() == (int)ResponseType.Ok)
                         {
-                            var existingEntryIndex = entries.FindIndex(x => x.Label == textEntryDialog.TextEntryValue);
+                            var existingEntryIndex = entries.FindIndex(x => x.Label.ToLowerInvariant() == textEntryDialog.TextEntryValue.ToLowerInvariant());
                             if (existingEntryIndex == -1)
                             {
                                 var exists = true;
-                                if (!ImageUtils.PreloadedGameImagePixbufs.ContainsKey(textEntryDialog.TextEntryValue))
+                                System.Collections.Generic.List<Pixbuf> pixbufs = null;
+                                if (!ImageUtils.PreloadedGameImagePixbufs.TryGetValue(textEntryDialog.TextEntryValue, out pixbufs))
                                 {
                                     try
                                     {
                                         var evaluated = package.EvaluateImageResourceKey(textEntryDialog.TextEntryValue);
                                         evaluated.Package.PreloadGameImage(evaluated.ResourceIndexEntry, imageWidget);
-                                        ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue].Add(ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue][0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
+                                        pixbufs = ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue];
+                                        pixbufs.Add(pixbufs[0].ScaleSimple(WidgetUtils.SmallImageSize, WidgetUtils.SmallImageSize, InterpType.Bilinear));
                                     }
                                     catch
                                     {
@@ -106,7 +110,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 }
                                 if (exists)
                                 {
-                                    entries.Insert(entries.Count - 1, new ImageResourceComboBoxEntry(ImageUtils.PreloadedGameImagePixbufs[textEntryDialog.TextEntryValue][1], textEntryDialog.TextEntryValue));
+                                    entries.Insert(entries.Count - 1, new ImageResourceComboBoxEntry(pixbufs[1], textEntryDialog.TextEntryValue.ToUpperInvariant().Replace("KEY", "key")));
                                     listStore.InsertWithValues(entries.Count - 2, entries[entries.Count - 2].Image, entries[entries.Count - 2].Label);
                                     comboBox.Active = entries.Count - 2;
                                 }

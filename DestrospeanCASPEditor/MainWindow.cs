@@ -63,11 +63,11 @@ public partial class MainWindow : Window
 
     public readonly string OriginalWindowTitle;
 
-    public readonly Dictionary<string, CASPart> PreloadedCASParts = new Dictionary<string, CASPart>();
+    public readonly Dictionary<string, CASPart> PreloadedCASParts = new Dictionary<string, CASPart>(StringComparer.InvariantCultureIgnoreCase);
 
-    public readonly Dictionary<string, GEOM> PreloadedGeometryResources = new Dictionary<string, GEOM>();
+    public readonly Dictionary<string, GEOM> PreloadedGeometryResources = new Dictionary<string, GEOM>(StringComparer.InvariantCultureIgnoreCase);
 
-    public readonly Dictionary<string, GenericRCOLResource> PreloadedVPXYResources = new Dictionary<string, GenericRCOLResource>();
+    public readonly Dictionary<string, GenericRCOLResource> PreloadedVPXYResources = new Dictionary<string, GenericRCOLResource>(StringComparer.InvariantCultureIgnoreCase);
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
@@ -161,7 +161,7 @@ public partial class MainWindow : Window
                 fileChooserDialog.AddFilter(fileFilter);
                 if (fileChooserDialog.Run() == (int)ResponseType.Accept)
                 {
-                    casPart.AllPresets[mPresetNotebook.CurrentPage].Texture.Save(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".png") ? "" : ".png"), System.Drawing.Imaging.ImageFormat.Png);
+                    casPart.AllPresets[mPresetNotebook.CurrentPage].Texture.Save(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLowerInvariant().EndsWith(".png") ? "" : ".png"), System.Drawing.Imaging.ImageFormat.Png);
                 }
                 fileChooserDialog.Destroy();
             };
@@ -225,7 +225,6 @@ public partial class MainWindow : Window
         ResourcePropertyNotebookSwitchPageHandlers.Clear();
         ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
             {
-                RenderedSim.LoadGEOMs();
                 mPreloadedLODsMorphed.Clear();
                 NextState = NextStateOptions.UpdateModels;
             });
@@ -397,7 +396,7 @@ public partial class MainWindow : Window
                         {
                             case MeshFileType.GEOM:
                                 var filename = fileChooserDialog.Filename;
-                                if (filename.ToLower().EndsWith(".simgeom"))
+                                if (filename.ToLowerInvariant().EndsWith(".simgeom"))
                                 {
                                     filename.Remove(filename.LastIndexOf('.'));
                                 }
@@ -417,13 +416,13 @@ public partial class MainWindow : Window
                                 }
                                 break;
                             case MeshFileType.OBJ:
-                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".obj") ? "" : ".obj")))
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLowerInvariant().EndsWith(".obj") ? "" : ".obj")))
                                 {
                                     new OBJ(geom, Array.ConvertAll(morphs, x => x.IsValid ? x : null)).Write(new StreamWriter(fileStream));
                                 }
                                 break;
                             case MeshFileType.WSO:
-                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".wso") ? "" : ".wso")))
+                                using (var fileStream = File.Create(fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLowerInvariant().EndsWith(".wso") ? "" : ".wso")))
                                 {
                                     new WSO(geom, morphs).Write(new BinaryWriter(fileStream));
                                 }
@@ -917,7 +916,7 @@ public partial class MainWindow : Window
                     break;
             }
             var key = resourceIndexEntry.ReverseEvaluateResourceKey();
-            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.IndexOf(key);
+            var missingResourceKeyIndex = ResourceUtils.MissingResourceKeys.FindIndex(x => x.ToLowerInvariant() == key.ToLowerInvariant());
             switch (tag)
             {
                 case "_IMG":
@@ -990,7 +989,7 @@ public partial class MainWindow : Window
         }
         foreach (var casPartKvp in PreloadedCASParts)
         {
-            if (ResourceUtils.MissingResourceKeys.Contains(casPartKvp.Key))
+            if (ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == casPartKvp.Key.ToLowerInvariant()))
             {
                 continue;
             }
@@ -1234,7 +1233,7 @@ public partial class MainWindow : Window
         fileChooserDialog.AddFilter(fileFilter);
         if (fileChooserDialog.Run() == (int)ResponseType.Accept)
         {
-            var path = fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLower().EndsWith(".package") ? "" : ".package");
+            var path = fileChooserDialog.Filename + (fileChooserDialog.Filename.ToLowerInvariant().EndsWith(".package") ? "" : ".package");
             SavePackage(path);
             AddFilePathToWindowTitle(path);
         }

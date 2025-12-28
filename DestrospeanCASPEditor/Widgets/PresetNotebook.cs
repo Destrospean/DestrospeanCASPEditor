@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Gdk;
 using Gtk;
-using System.Globalization;
 
 namespace Destrospean.DestrospeanCASPEditor.Widgets
 {
