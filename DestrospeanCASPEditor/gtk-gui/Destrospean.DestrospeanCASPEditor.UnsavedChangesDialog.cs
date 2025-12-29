@@ -22,7 +22,7 @@ namespace Destrospean.DestrospeanCASPEditor
 		{
 			global::Stetic.Gui.Initialize (this);
 			// Widget Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog
-			this.WidthRequest = 280;
+			this.WidthRequest = 320;
 			this.HeightRequest = 120;
 			this.Name = "Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog";
 			this.Title = global::Mono.Unix.Catalog.GetString ("Unsaved Changes");
@@ -47,17 +47,15 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.WarningAreaHBox.Add (this.WarningIconAlignment);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningIconAlignment]));
 			w3.Position = 0;
-			w3.Expand = false;
 			// Container child WarningAreaHBox.Gtk.Box+BoxChild
 			this.WarningLabel = new global::Gtk.Label ();
 			this.WarningLabel.Name = "WarningLabel";
+			this.WarningLabel.Xalign = 0F;
 			this.WarningLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("The current package has unsaved changes.");
 			this.WarningLabel.Wrap = true;
 			this.WarningAreaHBox.Add (this.WarningLabel);
 			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.WarningAreaHBox [this.WarningLabel]));
 			w4.Position = 1;
-			w4.Expand = false;
-			w4.Fill = false;
 			w1.Add (this.WarningAreaHBox);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(w1 [this.WarningAreaHBox]));
 			w5.Position = 0;

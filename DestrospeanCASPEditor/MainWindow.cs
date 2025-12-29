@@ -142,7 +142,8 @@ public partial class MainWindow : Window
             }
             flagPageVBox.PackStart(buttonHBox, false, false, 0);
             flagPageVBox.PackStart(flagNotebook, true, true, 0);
-            Button exportTextureButton = new Button("Export Texture"),
+            Button addPresetButton = new Button(new Gtk.Image(Stock.Add, IconSize.SmallToolbar)),
+            exportTextureButton = new Button("Export Texture"),
             nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
                 {
                     Xalign = .5f
@@ -152,6 +153,7 @@ public partial class MainWindow : Window
                     Xalign = .5f
                 }),
             resetViewButton = new Button("Reset View");
+            addPresetButton.Clicked += (sender, e) => mPresetNotebook.AddPreset();
             exportTextureButton.Clicked += (sender, e) =>
                 {
                     var fileChooserDialog = new FileChooserDialog("Export Texture", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
@@ -181,8 +183,10 @@ public partial class MainWindow : Window
                     nextButton.Sensitive = flagNotebook.CurrentPage < flagNotebook.NPages - 1;
                     prevButton.Sensitive = flagNotebook.CurrentPage > 0;
                 };
-            Alignment nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
+            Alignment addPresetButtonAlignment = new Alignment(.5f, .5f, 0, 0),
+            nextButtonAlignment = new Alignment(.5f, .5f, 0, 0),
             prevButtonAlignment = new Alignment(.5f, .5f, 0, 0);
+            addPresetButtonAlignment.Add(addPresetButton);
             nextButtonAlignment.Add(nextButton);
             prevButtonAlignment.Add(prevButton);
             flagPageButtonHBox.PackStart(prevButtonAlignment, false, true, 4);
@@ -190,10 +194,11 @@ public partial class MainWindow : Window
             flagPageButtonHBox.PackEnd(resetViewButton, false, true, 4);
             flagPageButtonHBox.PackEnd(exportTextureButton, false, true, 4);
             buttonHBox.PackStart(flagPageButtonHBox, false, true, 0);
+            buttonHBox.PackEnd(addPresetButtonAlignment, false, true, 0);
             System.Action additionalToggleAction = delegate
                 {
                     casPart.ClearCurrentRig();
-                    MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
+                    NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                 };
             flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Category", additionalToggleAction, casPart.CASPartResource, "ClothingCategory"), 0, 1, 0, 2);
             flagTables[0].Attach(WidgetUtils.GetEnumPropertyCheckButtonsInNewFrame("Clothing Type", additionalToggleAction, casPart.CASPartResource, "Clothing"), 1, 2, 0, 2);
@@ -206,7 +211,8 @@ public partial class MainWindow : Window
             flagTables[1].ShowAll();
             ResourcePropertyTable.Attach(flagPageVBox, 0, 1, 0, 1);
             mPresetNotebook = PresetNotebook.CreateInstance(casPart, Image);
-            mPresetNotebook.SwitchPage += (o, args) => RenderedSim.LoadGEOMs();
+            mPresetNotebook.Scrollable = true;
+            mPresetNotebook.SwitchPage += (o, args) => NextState = NextStateOptions.UpdateModels;
             ResourcePropertyTable.Attach(mPresetNotebook, 1, 2, 0, 1);
             ResourcePropertyTable.ShowAll();
             BuildLODNotebook(casPart);
@@ -691,9 +697,9 @@ public partial class MainWindow : Window
                                     }
                                 }
                             }
-                            catch (InvalidDataException ex)
+                            catch (Exception ex)
                             {
-                                Console.WriteLine(ex);
+                                MainClass.WriteError(ex);
                             }
                         }
                         fileChooserDialog.Destroy();
@@ -1118,7 +1124,7 @@ public partial class MainWindow : Window
 
     protected void OnGameFoldersActionActivated(object sender, EventArgs e)
     {
-        new GameFoldersDialog(this).ShowAll();
+        new GameFoldersDialog(this);
     }
 
     protected void OnImportResourceActionActivated(object sender, EventArgs e)

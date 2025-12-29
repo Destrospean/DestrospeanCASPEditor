@@ -43,6 +43,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         {
                             return;
                         }
+                        /*
                         if (NPages > 1 && CurrentPage == NPages - 1)
                         {
                             CASPart.Presets.Add(new CASPart.Preset(CASPart, CASPart.AllPresets[LastSelectedPage].XmlFile));
@@ -56,6 +57,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             ShowAll();
                             MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                         }
+                        */
                         LastSelectedPage = CurrentPage;
                     };
             }
@@ -236,13 +238,16 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             AddPreset(CASPart.DefaultPreset, true);
                         }
                         CASPart.Presets.ForEach(x => AddPreset(x));
+                        CurrentPage = LastSelectedPage -= LastSelectedPage <= pageIndex ? 0 : 1;
+                        /*
                         CurrentPage = LastSelectedPage < NPages ? LastSelectedPage : NPages - 1;
                         AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                             {
                                 Xalign = Platform.IsWindows ? 1 : .5f
                             });
+                        */
                         ShowAll();
-                        LastSelectedPage = CurrentPage;
+                        //LastSelectedPage = CurrentPage;
                         mDisableSwitchPage = false;
                         MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
@@ -260,6 +265,17 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 MainClass.WriteError(ex);
                 throw;
             }
+        }
+
+        public void AddPreset()
+        {
+            CASPart.Presets.Add(new CASPart.Preset(CASPart, CASPart.AllPresets[CurrentPage].XmlFile));
+            AddPreset(CASPart.AllPresets[CASPart.AllPresets.Count - 1]);
+            CurrentPage = CASPart.AllPresets.Count - 1;
+            SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASPart.AllPresets.Count, CASPart.DefaultPreset != null));
+            SetTabLabel(CurrentPageWidget, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count - 1));
+            ShowAll();
+            MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
         }
 
         public void AddPreset(CASPart.Preset preset, bool isDefault = false)
@@ -306,10 +322,12 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     notebook.AddPreset(casPart.DefaultPreset, true);
                 }
                 casPart.Presets.ForEach(x => notebook.AddPreset(x));
+                /*
                 notebook.AppendPage(new PresetNotebook(casPart, imageWidget, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                     {
                         Xalign = Platform.IsWindows ? 1 : .5f
                     });
+                */
                 notebook.ShowAll();
                 return notebook;
             }

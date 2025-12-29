@@ -53,6 +53,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 GameFolderTable.Attach(entryAlignment, 1, 2, GameFolderTable.NRows - 1, GameFolderTable.NRows, AttachOptions.Expand | AttachOptions.Fill, 0, 0, 0);
                 GameFolderTable.NRows++;
             }
+            ShowAll();
         }
 
         public static void SetInstallDirectory(Game game, string path)

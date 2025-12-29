@@ -59,7 +59,6 @@ namespace Destrospean.DestrospeanCASPEditor
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
-                throw;
             }
         }
 
