@@ -64,6 +64,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             catch (System.Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
 
@@ -213,6 +214,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             catch (System.Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
 
@@ -238,7 +240,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             AddPreset(CASPart.DefaultPreset, true);
                         }
                         CASPart.Presets.ForEach(x => AddPreset(x));
-                        CurrentPage = LastSelectedPage -= LastSelectedPage <= pageIndex ? 0 : 1;
+                        CurrentPage = LastSelectedPage -= LastSelectedPage > pageIndex ? 1 : 0;
                         /*
                         CurrentPage = LastSelectedPage < NPages ? LastSelectedPage : NPages - 1;
                         AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
@@ -309,6 +311,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             catch (System.Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
 

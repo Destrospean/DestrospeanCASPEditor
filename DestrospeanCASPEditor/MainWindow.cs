@@ -220,6 +220,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -386,7 +387,7 @@ public partial class MainWindow : Window
                                             {
                                                 evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
                                                 var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
-                                                foreach (var link in vpxy.MeshLinks(lodKvp.Key))
+                                                foreach (var link in vpxy.GetMeshLinks(lodKvp.Key))
                                                 {
                                                     try
                                                     {
@@ -569,11 +570,11 @@ public partial class MainWindow : Window
                                                 lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                     {
                                                         newGEOMPlusMorphs[i]
-                                                    } : Array.ConvertAll(vpxy.MeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
+                                                    } : Array.ConvertAll(vpxy.GetMeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
                                             }
                                             for (var j = 0; j < lodMorphMeshes.Length; j++)
                                             {
-                                                var meshLinks = vpxy.MeshLinks(j);
+                                                var meshLinks = vpxy.GetMeshLinks(j);
                                                 for (var k = 0; k < meshLinks.Length; k++)
                                                 {
                                                     var key = new ResourceUtils.ResourceKey(meshLinks[k].Type, meshLinks[k].Group, meshLinks[k].Instance).ReverseEvaluateResourceKey();
@@ -700,6 +701,7 @@ public partial class MainWindow : Window
                             catch (Exception ex)
                             {
                                 MainClass.WriteError(ex);
+                                throw;
                             }
                         }
                         fileChooserDialog.Destroy();
@@ -793,6 +795,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -872,6 +875,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -987,6 +991,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -1019,6 +1024,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -1065,6 +1071,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -1141,6 +1148,7 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
         fileChooserDialog.Destroy();
@@ -1183,6 +1191,7 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
         fileChooserDialog.Destroy();
@@ -1232,6 +1241,7 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
         fileChooserDialog.Destroy();

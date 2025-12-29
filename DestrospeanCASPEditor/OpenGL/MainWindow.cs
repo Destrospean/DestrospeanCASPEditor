@@ -541,7 +541,7 @@ public partial class MainWindow : Window
                                 try
                                 {
                                     var geoms = new List<GEOM>();
-                                    foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).MeshLinks(lod))
+                                    foreach (var link in new Destrospean.CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedVPXYResources[new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).GetMeshLinks(lod))
                                     {
                                         try
                                         {
@@ -668,6 +668,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -732,6 +733,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 
@@ -786,6 +788,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MainClass.WriteError(ex);
+            throw;
         }
     }
 

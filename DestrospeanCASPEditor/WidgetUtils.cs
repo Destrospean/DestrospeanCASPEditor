@@ -59,6 +59,7 @@ namespace Destrospean.DestrospeanCASPEditor
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
 
@@ -362,6 +363,7 @@ namespace Destrospean.DestrospeanCASPEditor
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
 
@@ -494,6 +496,7 @@ namespace Destrospean.DestrospeanCASPEditor
             catch (Exception ex)
             {
                 MainClass.WriteError(ex);
+                throw;
             }
         }
     }

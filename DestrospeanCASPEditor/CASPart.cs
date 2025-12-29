@@ -1032,7 +1032,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var geomTGIs = new TGI[4][];
             for (var i = 0; i < geomTGIs.GetLength(0); i++)
             {
-                var geomTGIList = new List<TGI>(vpxy.MeshLinks(i));
+                var geomTGIList = new List<TGI>(vpxy.GetMeshLinks(i));
                 if (i == lod || lod == -1)
                 {
                     var temp = "_lod" + i.ToString() + "-" + (geomTGIList.Count + 1).ToString();
@@ -1067,7 +1067,7 @@ namespace Destrospean.DestrospeanCASPEditor
             var geomTGIs = new TGI[4][];
             for (var i = 0; i < geomTGIs.GetLength(0); i++)
             {
-                var geomTGIList = new List<TGI>(vpxy.MeshLinks(i));
+                var geomTGIList = new List<TGI>(vpxy.GetMeshLinks(i));
                 if (i == lod || lod == -1)
                 {
                     var geomKey = new ResourceUtils.ResourceKey(geomTGIList[groupIndex].Type, geomTGIList[groupIndex].Group, geomTGIList[groupIndex].Instance).ReverseEvaluateResourceKey();

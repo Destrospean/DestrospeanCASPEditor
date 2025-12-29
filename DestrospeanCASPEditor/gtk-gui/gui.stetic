@@ -117,148 +117,157 @@
     <property name="DefaultHeight">540</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
     <child>
-      <widget class="Gtk.VBox" id="MainVBox">
+      <widget class="Gtk.HPaned" id="MainPane">
         <property name="MemberName" />
-        <property name="Spacing">6</property>
+        <property name="CanFocus">True</property>
+        <property name="Position">10</property>
         <child>
-          <widget class="Gtk.MenuBar" id="MainMenuBar">
-            <property name="MemberName" />
-            <node name="MainMenuBar" type="Menubar">
-              <node type="Menu" action="FileAction">
-                <node type="Menuitem" action="OpenAction" />
-                <node type="Menuitem" action="SaveAction" />
-                <node type="Menuitem" action="SaveAsAction" />
-                <node type="Menuitem" action="CloseAction" />
-                <node type="Menuitem" action="QuitAction" />
-              </node>
-              <node type="Menu" action="ResourceAction">
-                <node type="Menuitem" action="ImportResourceAction" />
-                <node type="Menuitem" action="ReplaceResourceAction" />
-                <node type="Menuitem" action="DeleteResourceAction" />
-              </node>
-              <node type="Menu" action="SettingsAction">
-                <node type="Menuitem" action="GameFoldersAction" />
-                <node type="Menuitem" action="UseAdvancedShadersAction" />
-              </node>
-            </node>
-          </widget>
-          <packing>
-            <property name="Position">0</property>
-            <property name="AutoSize">True</property>
-            <property name="Expand">False</property>
-            <property name="Fill">False</property>
-          </packing>
+          <placeholder />
         </child>
         <child>
-          <widget class="Gtk.Table" id="MainTable">
+          <widget class="Gtk.VBox" id="MainVBox">
             <property name="MemberName" />
-            <property name="NColumns">3</property>
-            <property name="RowSpacing">6</property>
-            <property name="ColumnSpacing">6</property>
+            <property name="Spacing">6</property>
             <child>
-              <widget class="Gtk.ScrolledWindow" id="GtkScrolledWindow">
+              <widget class="Gtk.MenuBar" id="MainMenuBar">
                 <property name="MemberName" />
-                <property name="ShadowType">In</property>
-                <child>
-                  <widget class="Gtk.TreeView" id="ResourceTreeView">
-                    <property name="MemberName" />
-                    <property name="CanFocus">True</property>
-                    <property name="ShowScrollbars">True</property>
-                  </widget>
-                </child>
+                <node name="MainMenuBar" type="Menubar">
+                  <node type="Menu" action="FileAction">
+                    <node type="Menuitem" action="OpenAction" />
+                    <node type="Menuitem" action="SaveAction" />
+                    <node type="Menuitem" action="SaveAsAction" />
+                    <node type="Menuitem" action="CloseAction" />
+                    <node type="Menuitem" action="QuitAction" />
+                  </node>
+                  <node type="Menu" action="ResourceAction">
+                    <node type="Menuitem" action="ImportResourceAction" />
+                    <node type="Menuitem" action="ReplaceResourceAction" />
+                    <node type="Menuitem" action="DeleteResourceAction" />
+                  </node>
+                  <node type="Menu" action="SettingsAction">
+                    <node type="Menuitem" action="GameFoldersAction" />
+                    <node type="Menuitem" action="UseAdvancedShadersAction" />
+                  </node>
+                </node>
               </widget>
               <packing>
-                <property name="LeftAttach">1</property>
-                <property name="RightAttach">2</property>
+                <property name="Position">0</property>
                 <property name="AutoSize">True</property>
-                <property name="YOptions">Fill</property>
-                <property name="XExpand">True</property>
-                <property name="XFill">True</property>
-                <property name="XShrink">False</property>
-                <property name="YExpand">False</property>
-                <property name="YFill">True</property>
-                <property name="YShrink">False</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
               </packing>
             </child>
             <child>
-              <widget class="Gtk.Image" id="Image">
+              <widget class="Gtk.Table" id="MainTable">
                 <property name="MemberName" />
-                <property name="WidthRequest">270</property>
-                <property name="HeightRequest">270</property>
-                <property name="Xalign">0</property>
-                <property name="Yalign">0</property>
-              </widget>
-              <packing>
-                <property name="AutoSize">False</property>
-                <property name="XOptions">Fill</property>
-                <property name="YOptions">Fill</property>
-                <property name="XExpand">False</property>
-                <property name="XFill">True</property>
-                <property name="XShrink">False</property>
-                <property name="YExpand">False</property>
-                <property name="YFill">True</property>
-                <property name="YShrink">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="Gtk.Notebook" id="ResourcePropertyNotebook">
-                <property name="MemberName" />
-                <property name="WidthRequest">480</property>
-                <property name="CanFocus">True</property>
-                <property name="CurrentPage">0</property>
+                <property name="NColumns">3</property>
+                <property name="RowSpacing">6</property>
+                <property name="ColumnSpacing">6</property>
                 <child>
-                  <placeholder />
-                </child>
-                <child>
-                  <widget class="Gtk.Label" id="PresetLabel">
+                  <widget class="Gtk.ScrolledWindow" id="GtkScrolledWindow">
                     <property name="MemberName" />
-                    <property name="LabelProp" translatable="yes">Page</property>
+                    <property name="ShadowType">In</property>
+                    <child>
+                      <widget class="Gtk.TreeView" id="ResourceTreeView">
+                        <property name="MemberName" />
+                        <property name="CanFocus">True</property>
+                        <property name="ShowScrollbars">True</property>
+                      </widget>
+                    </child>
                   </widget>
                   <packing>
-                    <property name="type">tab</property>
+                    <property name="LeftAttach">1</property>
+                    <property name="RightAttach">2</property>
+                    <property name="AutoSize">True</property>
+                    <property name="YOptions">Fill</property>
+                    <property name="XExpand">True</property>
+                    <property name="XFill">True</property>
+                    <property name="XShrink">False</property>
+                    <property name="YExpand">False</property>
+                    <property name="YFill">True</property>
+                    <property name="YShrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.Image" id="Image">
+                    <property name="MemberName" />
+                    <property name="WidthRequest">270</property>
+                    <property name="HeightRequest">270</property>
+                    <property name="Xalign">0</property>
+                    <property name="Yalign">0</property>
+                  </widget>
+                  <packing>
+                    <property name="AutoSize">False</property>
+                    <property name="XOptions">Fill</property>
+                    <property name="YOptions">Fill</property>
+                    <property name="XExpand">False</property>
+                    <property name="XFill">True</property>
+                    <property name="XShrink">False</property>
+                    <property name="YExpand">False</property>
+                    <property name="YFill">True</property>
+                    <property name="YShrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.Notebook" id="ResourcePropertyNotebook">
+                    <property name="MemberName" />
+                    <property name="WidthRequest">480</property>
+                    <property name="CanFocus">True</property>
+                    <property name="CurrentPage">0</property>
+                    <child>
+                      <placeholder />
+                    </child>
+                    <child>
+                      <widget class="Gtk.Label" id="PresetLabel">
+                        <property name="MemberName" />
+                        <property name="LabelProp" translatable="yes">Page</property>
+                      </widget>
+                      <packing>
+                        <property name="type">tab</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="LeftAttach">2</property>
+                    <property name="RightAttach">3</property>
+                    <property name="AutoSize">False</property>
+                    <property name="XOptions">Fill</property>
+                    <property name="YOptions">Fill</property>
+                    <property name="XExpand">False</property>
+                    <property name="XFill">True</property>
+                    <property name="XShrink">False</property>
+                    <property name="YExpand">False</property>
+                    <property name="YFill">True</property>
+                    <property name="YShrink">False</property>
                   </packing>
                 </child>
               </widget>
               <packing>
-                <property name="LeftAttach">2</property>
-                <property name="RightAttach">3</property>
-                <property name="AutoSize">False</property>
-                <property name="XOptions">Fill</property>
-                <property name="YOptions">Fill</property>
-                <property name="XExpand">False</property>
-                <property name="XFill">True</property>
-                <property name="XShrink">False</property>
-                <property name="YExpand">False</property>
-                <property name="YFill">True</property>
-                <property name="YShrink">False</property>
+                <property name="Position">1</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.Table" id="ResourcePropertyTable">
+                <property name="MemberName" />
+                <property name="NColumns">2</property>
+                <property name="RowSpacing">6</property>
+                <property name="ColumnSpacing">6</property>
+                <child>
+                  <placeholder />
+                </child>
+                <child>
+                  <placeholder />
+                </child>
+              </widget>
+              <packing>
+                <property name="Position">2</property>
+                <property name="AutoSize">True</property>
               </packing>
             </child>
           </widget>
-          <packing>
-            <property name="Position">1</property>
-            <property name="AutoSize">True</property>
-            <property name="Expand">False</property>
-            <property name="Fill">False</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="Gtk.Table" id="ResourcePropertyTable">
-            <property name="MemberName" />
-            <property name="NColumns">2</property>
-            <property name="Homogeneous">True</property>
-            <property name="RowSpacing">6</property>
-            <property name="ColumnSpacing">6</property>
-            <child>
-              <placeholder />
-            </child>
-            <child>
-              <placeholder />
-            </child>
-          </widget>
-          <packing>
-            <property name="Position">2</property>
-            <property name="AutoSize">True</property>
-          </packing>
         </child>
       </widget>
     </child>
