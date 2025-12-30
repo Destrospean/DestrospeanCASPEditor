@@ -230,10 +230,10 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
     <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
-    <Compile Include="Abstractions\CASPart.cs" />
     <Compile Include="Abstractions\Complate.cs" />
     <Compile Include="Abstractions\Pattern.cs" />
     <Compile Include="Abstractions\Preset.cs" />
+    <Compile Include="Abstractions\CASPart.cs" />
     <Compile Include="Abstractions\CASTableObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
