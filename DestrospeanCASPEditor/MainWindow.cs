@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
+using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Destrospean.S3PIAbstractions;
 using Gtk;

@@ -207,7 +207,6 @@
     <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="ImageUtils.cs" />
-    <Compile Include="CASPart.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
@@ -231,6 +230,11 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
     <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
+    <Compile Include="Abstractions\CASPart.cs" />
+    <Compile Include="Abstractions\Complate.cs" />
+    <Compile Include="Abstractions\Pattern.cs" />
+    <Compile Include="Abstractions\Preset.cs" />
+    <Compile Include="Abstractions\CASTableObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -238,6 +242,7 @@
     <Folder Include="Dialogs\" />
     <Folder Include="OpenGL\" />
     <Folder Include="Icons\" />
+    <Folder Include="Abstractions\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>

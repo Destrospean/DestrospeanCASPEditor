@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
+using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.DestrospeanCASPEditor.OpenGL;
 using Destrospean.S3PIAbstractions;
 using Gtk;

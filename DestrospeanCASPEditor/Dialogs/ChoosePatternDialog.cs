@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
+using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.S3PIAbstractions;
 using Gtk;
 using s3pi.Interfaces;
@@ -332,7 +333,7 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
                 else if (key.StartsWith("color"))
                 {
-                    var color = CASPart.Pattern.ParseCommaSeparatedValues(value);
+                    var color = Pattern.ParseCommaSeparatedValues(value);
                     rgbColors.Add(new float[]
                         {
                             color[0],
@@ -388,11 +389,11 @@ namespace Destrospean.DestrospeanCASPEditor
                 {
                     if (key.EndsWith("bg"))
                     {
-                        hsvShiftBackground = CASPart.Pattern.ParseCommaSeparatedValues(value);
+                        hsvShiftBackground = Pattern.ParseCommaSeparatedValues(value);
                     }
                     else
                     {
-                        hsvShift.Add(CASPart.Pattern.ParseCommaSeparatedValues(value));
+                        hsvShift.Add(Pattern.ParseCommaSeparatedValues(value));
                     }
                 }
                 else if (key.StartsWith("s "))

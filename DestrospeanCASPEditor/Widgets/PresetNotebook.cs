@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Gdk;
 using Gtk;
 
@@ -68,7 +69,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
         }
 
-        protected void AddPropertiesToTable(Table table, CASPart.Complate complate)
+        protected void AddPropertiesToTable(Table table, Complate complate)
         {
             try
             {
@@ -130,10 +131,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 });
                             button.Clicked += (sender, e) =>
                                 {
-                                    var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
+                                    var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASTableObject.ParentPackage);
                                     if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                     {
-                                        ((CASPart.Preset)complate).ReplacePattern(propertyName, choosePatternDialog.ResourceKey);
+                                        ((Preset)complate).ReplacePattern(propertyName, choosePatternDialog.ResourceKey);
                                         complate[propertyName] = choosePatternDialog.PatternPath;
                                         for (var i = 0; i < (mIsSubNotebook ? this : (PresetNotebook)CurrentPageWidget).NPages; i++)
                                         {
@@ -143,7 +144,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                                 patternTable.Remove(child);
                                             }
                                             patternTable.NRows = 1;
-                                            var patterns = new List<CASPart.Pattern>(((CASPart.Preset)complate).Patterns);
+                                            var patterns = new List<Pattern>(((Preset)complate).Patterns);
                                             patterns.Sort((a, b) => a.SlotName == "Logo" ? 1 : b.SlotName == "Logo" ? -1 : 0);
                                             AddPropertiesToTable(patternTable, i == 0 ? complate : patterns[i - 1]);
                                         }
@@ -273,7 +274,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         public void AddPreset()
         {
-            CASPart.Presets.Add(new CASPart.Preset(CASPart, CASPart.AllPresets[CurrentPage].XmlFile));
+            CASPart.Presets.Add(new Preset(CASPart, CASPart.AllPresets[CurrentPage].XmlFile));
             AddPreset(CASPart.AllPresets[CASPart.AllPresets.Count - 1]);
             CurrentPage = CASPart.AllPresets.Count - 1;
             SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASPart.AllPresets.Count, CASPart.DefaultPreset != null));
@@ -282,7 +283,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
         }
 
-        public void AddPreset(CASPart.Preset preset, bool isDefault = false)
+        public void AddPreset(Preset preset, bool isDefault = false)
         {
             try
             {
@@ -291,15 +292,15 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 {
                     AppendPage(subNotebook, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count, isDefault));
                 }
-                var complates = new List<CASPart.Complate>
+                var complates = new List<Complate>
                     {
                         preset
                     };
                 complates.AddRange(preset.Patterns);
                 complates.Sort((a, b) =>
                     {
-                        CASPart.Pattern aAsPattern = a as CASPart.Pattern,
-                        bAsPattern = b as CASPart.Pattern;
+                        Pattern aAsPattern = a as Pattern,
+                        bAsPattern = b as Pattern;
                         return aAsPattern == null || bAsPattern == null ? 0 : aAsPattern.SlotName == "Logo" ? 1 : bAsPattern.SlotName == "Logo" ? -1 : 0;
                     });
                 foreach (var complate in complates)
@@ -311,12 +312,12 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             scrolledWindow.AddWithViewport(table);
                             subNotebook.InsertPage(scrolledWindow, new Label(label), index);
                         };
-                    var complateAsPreset = complate as CASPart.Preset;
+                    var complateAsPreset = complate as Preset;
                     var complateTable = new Table(1, 2, false)
                         {
                             ColumnSpacing = WidgetUtils.DefaultTableColumnSpacing
                         };
-                    insertComplatePage(complateAsPreset == null ? ((CASPart.Pattern)complate).SlotName : "Configuration", complateTable, subNotebook.NPages);
+                    insertComplatePage(complateAsPreset == null ? ((Pattern)complate).SlotName : "Configuration", complateTable, subNotebook.NPages);
                     if (complateAsPreset != null && !complateAsPreset.Patterns.Exists(x => x.SlotName == addPatternSlotName))
                     {
                         var addPatternButtonHBox = new HBox(false, 4);
@@ -331,7 +332,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         var addPatternButton = new Button(addPatternButtonHBox);
                         addPatternButton.Clicked += (sender, e) =>
                             {
-                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
+                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASTableObject.ParentPackage);
                                 if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
                                     complateAsPreset.AddPattern(addPatternSlotName, "CasRgbaMask");
@@ -346,7 +347,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                             patternTable.Remove(child);
                                         }
                                         patternTable.NRows = 1;
-                                        var patterns = new List<CASPart.Pattern>(complateAsPreset.Patterns);
+                                        var patterns = new List<Pattern>(complateAsPreset.Patterns);
                                         patterns.Sort((a, b) => a.SlotName == "Logo" ? 1 : b.SlotName == "Logo" ? -1 : 0);
                                         AddPropertiesToTable(patternTable, i == 0 ? complate : patterns[i - 1]);
                                     }
