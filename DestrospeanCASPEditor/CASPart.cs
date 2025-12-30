@@ -1113,6 +1113,23 @@ namespace Destrospean.DestrospeanCASPEditor
             vpxyResources[vpxyKey] = vpxyResource;
         }
 
+        public void AdjustPresetCount()
+        {
+            while (CASPartResource.Presets.Count < Presets.Count)
+            {
+                CASPartResource.Presets.Add(new CASPartResource.CASPartResource.Preset(0, null));
+            }
+            while (CASPartResource.Presets.Count > Presets.Count)
+            {
+                CASPartResource.Presets.RemoveAt(0);
+            }
+        }
+
+        public void ClearCurrentRig()
+        {
+            CurrentRig = null;
+        }
+
         public void DeleteMeshGroup(int lod, int groupIndex, Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
         {
             var vpxyResourceIndexEntry = ParentPackage.GetResourceIndexEntry(CASPartResource.TGIBlocks[CASPartResource.VPXYIndexes[0]]);
@@ -1142,23 +1159,6 @@ namespace Destrospean.DestrospeanCASPEditor
             vpxyResource = new GenericRCOLResource(0, vpxyStream);
             ParentPackage.ReplaceResource(vpxyResourceIndexEntry, vpxyResource);
             vpxyResources[vpxyKey] = vpxyResource;
-        }
-
-        public void AdjustPresetCount()
-        {
-            while (CASPartResource.Presets.Count < Presets.Count)
-            {
-                CASPartResource.Presets.Add(new CASPartResource.CASPartResource.Preset(0, null));
-            }
-            while (CASPartResource.Presets.Count > Presets.Count)
-            {
-                CASPartResource.Presets.RemoveAt(0);
-            }
-        }
-
-        public void ClearCurrentRig()
-        {
-            CurrentRig = null;
         }
 
         public void LoadLODs(Dictionary<string, GEOM> geometryResources, Dictionary<string, GenericRCOLResource> vpxyResources)
