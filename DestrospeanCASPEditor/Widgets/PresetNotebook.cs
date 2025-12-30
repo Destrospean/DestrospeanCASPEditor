@@ -143,7 +143,9 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                                 patternTable.Remove(child);
                                             }
                                             patternTable.NRows = 1;
-                                            AddPropertiesToTable(patternTable, i == 0 ? complate : ((CASPart.Preset)complate).Patterns[i - 1]);
+                                            var patterns = new List<CASPart.Pattern>(((CASPart.Preset)complate).Patterns);
+                                            patterns.Sort((a, b) => a.SlotName == "Logo" ? 1 : b.SlotName == "Logo" ? -1 : 0);
+                                            AddPropertiesToTable(patternTable, i == 0 ? complate : patterns[i - 1]);
                                         }
                                     }
                                     choosePatternDialog.Destroy();
@@ -294,17 +296,68 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         preset
                     };
                 complates.AddRange(preset.Patterns);
+                complates.Sort((a, b) =>
+                    {
+                        CASPart.Pattern aAsPattern = a as CASPart.Pattern,
+                        bAsPattern = b as CASPart.Pattern;
+                        return aAsPattern == null || bAsPattern == null ? 0 : aAsPattern.SlotName == "Logo" ? 1 : bAsPattern.SlotName == "Logo" ? -1 : 0;
+                    });
                 foreach (var complate in complates)
                 {
-                    var scrolledWindow = new ScrolledWindow();
-                    var table = new Table(1, 2, false)
+                    var addPatternSlotName = "Pattern D";
+                    System.Action<string, Table, int> insertComplatePage = (string label, Table table, int index) =>
+                        {
+                            var scrolledWindow = new ScrolledWindow();
+                            scrolledWindow.AddWithViewport(table);
+                            subNotebook.InsertPage(scrolledWindow, new Label(label), index);
+                        };
+                    var complateAsPreset = complate as CASPart.Preset;
+                    var complateTable = new Table(1, 2, false)
                         {
                             ColumnSpacing = WidgetUtils.DefaultTableColumnSpacing
                         };
-                    scrolledWindow.AddWithViewport(table);
-                    var pattern = complate as CASPart.Pattern;
-                    subNotebook.AppendPage(scrolledWindow, new Label(pattern == null ? "Configuration" : pattern.SlotName));
-                    AddPropertiesToTable(table, complate);
+                    insertComplatePage(complateAsPreset == null ? ((CASPart.Pattern)complate).SlotName : "Configuration", complateTable, subNotebook.NPages);
+                    if (complateAsPreset != null && !complateAsPreset.Patterns.Exists(x => x.SlotName == addPatternSlotName))
+                    {
+                        var addPatternButtonHBox = new HBox(false, 4);
+                        addPatternButtonHBox.PackStart(new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                            {
+                                Xalign = 1
+                            }, true, true, 0);
+                        addPatternButtonHBox.PackStart(new Label("Add " + addPatternSlotName)
+                            {
+                                Xalign = 0
+                            }, true, true, 0);
+                        var addPatternButton = new Button(addPatternButtonHBox);
+                        addPatternButton.Clicked += (sender, e) =>
+                            {
+                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASPart.ParentPackage);
+                                if (choosePatternDialog.Run() == (int)ResponseType.Ok)
+                                {
+                                    complateAsPreset.AddPattern(addPatternSlotName, "CasRgbaMask");
+                                    complateAsPreset.ReplacePattern(addPatternSlotName, choosePatternDialog.ResourceKey);
+                                    complate[addPatternSlotName] = choosePatternDialog.PatternPath;
+                                    insertComplatePage(addPatternSlotName, new Table(1, 2, false), System.Array.FindLastIndex(complateAsPreset.PatternSlotNames, x => x != "Logo"));
+                                    for (var i = 0; i < subNotebook.NPages; i++)
+                                    {
+                                        var patternTable = (Table)((Viewport)((ScrolledWindow)subNotebook.GetNthPage(i)).Child).Child;
+                                        foreach (var child in patternTable.Children)
+                                        {
+                                            patternTable.Remove(child);
+                                        }
+                                        patternTable.NRows = 1;
+                                        var patterns = new List<CASPart.Pattern>(complateAsPreset.Patterns);
+                                        patterns.Sort((a, b) => a.SlotName == "Logo" ? 1 : b.SlotName == "Logo" ? -1 : 0);
+                                        AddPropertiesToTable(patternTable, i == 0 ? complate : patterns[i - 1]);
+                                    }
+                                    ShowAll();
+                                }
+                                choosePatternDialog.Destroy();
+                            };
+                        complateTable.Attach(addPatternButton, 0, 2, 0, 1);
+                        complateTable.NRows++;
+                    }
+                    AddPropertiesToTable(complateTable, complate);
                 }
                 ShowAll();
             }

@@ -582,6 +582,12 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                 }
 
+                public XmlNode ComplateXmlNode
+                {
+                    get;
+                    private set;
+                }
+
                 public Bitmap NewTexture
                 {
                     get
@@ -605,7 +611,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         logosUpperLeft = new List<float[]>();
                         List<float> logosRotation = new List<float>(),
                         stencilsRotation = new List<float>();
-                        foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
+                        foreach (var propertyXmlNodeKvp in PropertiesXmlNodes)
                         {
                             string key = propertyXmlNodeKvp.Key.ToLowerInvariant(),
                             value = propertyXmlNodeKvp.Value.Attributes["value"].Value;
@@ -838,6 +844,14 @@ namespace Destrospean.DestrospeanCASPEditor
 
                 public readonly Preset Preset;
 
+                public IDictionary<string, XmlNode> PropertiesXmlNodes
+                {
+                    get
+                    {
+                        return mPropertiesXmlNodes;
+                    }
+                }
+
                 public string SpecularMap
                 {
                     get;
@@ -863,14 +877,15 @@ namespace Destrospean.DestrospeanCASPEditor
                 public PresetInternal(Preset preset, XmlNode complateXmlNode) : base()
                 {
                     Preset = preset;
-                    var evaluated = ParentPackage.EvaluateResourceKey(complateXmlNode);
+                    ComplateXmlNode = complateXmlNode;
+                    var evaluated = ParentPackage.EvaluateResourceKey(ComplateXmlNode);
                     mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
                     Patterns = new List<Pattern>();
-                    foreach (XmlNode childNode in complateXmlNode.ChildNodes)
+                    foreach (XmlNode childNode in ComplateXmlNode.ChildNodes)
                     {
                         if (childNode.Name == "value")
                         {
-                            mPropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
+                            PropertiesXmlNodes.Add(childNode.Attributes["key"].Value, childNode);
                         }
                         if (childNode.Name == "pattern")
                         {
@@ -903,6 +918,26 @@ namespace Destrospean.DestrospeanCASPEditor
                     return imageCopy;
                 }
 
+                public void ReplacePresetComplate()
+                {
+                    PropertiesTyped.Clear();
+                    var evaluated = ParentPackage.EvaluateResourceKey(ComplateXmlNode);
+                    mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+                    foreach (XmlNode childNode in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+                    {
+                        if (childNode.Name == "variables")
+                        {
+                            foreach (XmlNode grandchildNode in childNode.ChildNodes)
+                            {
+                                if (grandchildNode.Name == "param")
+                                {
+                                    PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 public static Bitmap RotateImage(Bitmap image, float angle)
                 {
                     var imageCopy = new Bitmap(image.Width, image.Height); 
@@ -930,6 +965,31 @@ namespace Destrospean.DestrospeanCASPEditor
                 mInternal = new PresetInternal(this, mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate"));
             }
 
+            public void AddPattern(string patternSlotName, string newComplateName)
+            {
+                mInternal.ComplateXmlNode.Attributes["name"].Value = newComplateName;
+                mInternal.ComplateXmlNode.Attributes["reskey"].Value = "key:0333406C:00000000:" + System.Security.Cryptography.FNV64.GetHash(newComplateName).ToString("X16");
+                var lastPatternSlotName = Patterns.FindLast(x => x.SlotName != "Logo").SlotName;
+                foreach (XmlNode childNode in mInternal.ComplateXmlNode.ChildNodes)
+                {
+                    if (childNode.Name == "value" && childNode.Attributes["key"].Value.StartsWith(lastPatternSlotName))
+                    {
+                        var clonedNode = childNode.CloneNode(true);
+                        clonedNode.Attributes["key"].Value = clonedNode.Attributes["key"].Value.Replace(lastPatternSlotName, patternSlotName);
+                        mInternal.ComplateXmlNode.AppendChild(clonedNode);
+                        mInternal.PropertiesXmlNodes.Add(clonedNode.Attributes["key"].Value, clonedNode);
+                    }
+                    if (childNode.Name == "pattern" && childNode.Attributes["variable"].Value == lastPatternSlotName)
+                    {
+                        var clonedNode = childNode.CloneNode(true);
+                        clonedNode.Attributes["variable"].Value = patternSlotName;
+                        mInternal.ComplateXmlNode.AppendChild(clonedNode);
+                        Patterns.Add(new Pattern(this, clonedNode));
+                    }
+                }
+                mInternal.ReplacePresetComplate();
+            }
+
             public override string GetValue(string propertyName)
             {
                 return mInternal.GetValue(propertyName);
@@ -947,9 +1007,9 @@ namespace Destrospean.DestrospeanCASPEditor
 
             public void ReplacePattern(string patternSlotName, string patternKey)
             {
+                var evaluated = ParentPackage.EvaluateResourceKey(patternKey);
                 int i = 0,
                 patternIndex = Patterns.FindIndex(x => x.SlotName == patternSlotName);
-                var evaluated = ParentPackage.EvaluateResourceKey(patternKey);
                 var patternXmlDocument = new XmlDocument();
                 patternXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
                 foreach (XmlNode presetChildNode in mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate").ChildNodes)
