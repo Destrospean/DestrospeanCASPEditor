@@ -315,16 +315,6 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <ProjectReference Include="..\..\CmarNYCBorrowed\CmarNYCBorrowed\CmarNYCBorrowed.csproj">
-      <Project>{1DAE5711-35BA-4DF3-B392-68DAAAC3A5FD}</Project>
-      <Name>CmarNYCBorrowed</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions.csproj">
-      <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
-      <Name>Destrospean.S3PIAbstractions</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="GameFolders.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -338,5 +328,15 @@
       <Link>Acknowledgements.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CmarNYCBorrowed\CmarNYCBorrowed.csproj">
+      <Project>{1DAE5711-35BA-4DF3-B392-68DAAAC3A5FD}</Project>
+      <Name>CmarNYCBorrowed</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions.csproj">
+      <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
+      <Name>Destrospean.S3PIAbstractions</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
