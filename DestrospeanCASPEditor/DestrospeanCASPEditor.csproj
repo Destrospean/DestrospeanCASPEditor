@@ -219,7 +219,6 @@
     <Compile Include="OpenGL\MainWindow.cs" />
     <Compile Include="OpenGL\Shader.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
-    <Compile Include="ApplicationSpecificSettings.cs" />
     <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
     <Compile Include="Dialogs\TextEntryDialog.cs" />
@@ -236,6 +235,8 @@
     <Compile Include="Abstractions\CASPart.cs" />
     <Compile Include="Abstractions\CASTableObject.cs" />
     <Compile Include="OpenGL\Sim.cs" />
+    <Compile Include="ApplicationSettings.cs" />
+    <Compile Include="PreloadedData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

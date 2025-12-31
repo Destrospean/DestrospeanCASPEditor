@@ -58,7 +58,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -69,7 +69,7 @@ namespace Destrospean.DestrospeanCASPEditor
             {
                 var mainWindow = MainWindow.Singleton;
                 var geometryResourceKey = "";
-                foreach (var geometryResourceKvp in mainWindow.PreloadedGeometryResources)
+                foreach (var geometryResourceKvp in PreloadedData.Singleton.GEOMs)
                 {
                     if (geometryResourceKvp.Value == geometryResource)
                     {
@@ -362,7 +362,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -471,7 +471,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -495,7 +495,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }

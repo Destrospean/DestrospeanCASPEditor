@@ -64,12 +64,6 @@ public partial class MainWindow : Window
 
     public readonly string OriginalWindowTitle;
 
-    public readonly Dictionary<string, CASPart> PreloadedCASParts = new Dictionary<string, CASPart>(StringComparer.InvariantCultureIgnoreCase);
-
-    public readonly Dictionary<string, GEOM> PreloadedGeometryResources = new Dictionary<string, GEOM>(StringComparer.InvariantCultureIgnoreCase);
-
-    public readonly Dictionary<string, GenericRCOLResource> PreloadedVPXYResources = new Dictionary<string, GenericRCOLResource>(StringComparer.InvariantCultureIgnoreCase);
-
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
@@ -97,14 +91,14 @@ public partial class MainWindow : Window
         OriginalWindowTitle = Title;
         RescaleAndReposition();
         BuildResourceTable();
-        ApplicationSpecificSettings.LoadSettings();
-        new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
+        ApplicationSettings.LoadSettings();
         Sim = new Sim();
+        new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(ChoosePatternDialog.CacheFilePath))
         {
             new CacheGenerationWindow("Please wait as caches are being generated...", this);
         }
-        UseAdvancedShadersAction.Active = ApplicationSpecificSettings.UseAdvancedOpenGLShaders;
+        UseAdvancedShadersAction.Active = ApplicationSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
         MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
             {
@@ -220,7 +214,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -235,6 +229,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            var preloadedData = PreloadedData.Singleton;
             foreach (var switchPageHandler in ResourcePropertyNotebookSwitchPageHandlers)
             {
                 ResourcePropertyNotebook.SwitchPage -= switchPageHandler;
@@ -529,15 +524,15 @@ public partial class MainWindow : Window
                                     {
                                         int selectedGEOMIndex = geomNotebook.CurrentPage,
                                         selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
-                                        foreach (var geometryResourceKvp in PreloadedGeometryResources)
+                                        foreach (var geometryResourceKvp in preloadedData.GEOMs)
                                         {
                                             if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                             {
                                                 var evaluated = casPart.ParentPackage.EvaluateResourceKey(geometryResourceKvp.Key);
                                                 casPart.ParentPackage.AddResource(evaluated.ResourceIndexEntry, stream, false);
                                                 casPart.ParentPackage.DeleteResource(evaluated.ResourceIndexEntry);
-                                                PreloadedGeometryResources[geometryResourceKvp.Key] = newGEOMPlusMorphs[i];
-                                                casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                                                preloadedData.GEOMs[geometryResourceKvp.Key] = newGEOMPlusMorphs[i];
+                                                casPart.LoadLODs(preloadedData.GEOMs, preloadedData.VPXYs);
                                                 foreach (var child in ResourcePropertyNotebook.Children)
                                                 {
                                                     ResourcePropertyNotebook.Remove(child);
@@ -571,7 +566,7 @@ public partial class MainWindow : Window
                                                 lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                     {
                                                         newGEOMPlusMorphs[i]
-                                                    } : Array.ConvertAll(vpxy.GetMeshLinks(j), x => PreloadedGeometryResources[new ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
+                                                    } : Array.ConvertAll(vpxy.GetMeshLinks(j), x => preloadedData.GEOMs[new ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
                                             }
                                             for (var j = 0; j < lodMorphMeshes.Length; j++)
                                             {
@@ -581,7 +576,7 @@ public partial class MainWindow : Window
                                                     var key = new ResourceKey(meshLinks[k].Type, meshLinks[k].Group, meshLinks[k].Instance).ReverseEvaluateResourceKey();
                                                     var evaluated = casPart.ParentPackage.EvaluateResourceKey(key);
                                                     evaluated.Package.DeleteResource(evaluated.ResourceIndexEntry);
-                                                    PreloadedGeometryResources.Remove(key);
+                                                    preloadedData.GEOMs.Remove(key);
                                                 }
                                             }
                                         }
@@ -611,7 +606,7 @@ public partial class MainWindow : Window
                                                 var geomStream = new MemoryStream();
                                                 lodMorphMeshes[j][k].Write(new BinaryWriter(geomStream));
                                                 var geomResourceIndexEntry = casPart.ParentPackage.AddResource(geomResourceKey, geomStream, true);
-                                                PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(lodMorphMeshes[j][k]);
+                                                preloadedData.GEOMs[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(lodMorphMeshes[j][k]);
                                             }
                                         }
                                         var vpxyTGI = new TGI(ResourceUtils.GetResourceType("VPXY"), 1, bblnResourceIndexEntries[i - 1].Instance);
@@ -627,7 +622,7 @@ public partial class MainWindow : Window
                                         vpxyStream = new MemoryStream();
                                         newVPXY.Write(new BinaryWriter(vpxyStream));
                                         var vpxyResourceIndexEntry = casPart.ParentPackage.AddResource(vpxyResourceKey, vpxyStream, true);
-                                        PreloadedVPXYResources[vpxyResourceIndexEntry.ReverseEvaluateResourceKey()] = (GenericRCOLResource)WrapperDealer.GetResource(0, casPart.ParentPackage, vpxyResourceIndexEntry);
+                                        preloadedData.VPXYs[vpxyResourceIndexEntry.ReverseEvaluateResourceKey()] = (GenericRCOLResource)WrapperDealer.GetResource(0, casPart.ParentPackage, vpxyResourceIndexEntry);
                                         casPart.CASPartResource.TGIBlocks[bblnIndices[i - 1]].ResourceGroup = bblnResourceIndexEntries[i - 1].ResourceGroup;
                                         casPart.CASPartResource.TGIBlocks[bblnIndices[i - 1]].Instance = bblnResourceIndexEntries[i - 1].Instance;
                                     }
@@ -640,8 +635,8 @@ public partial class MainWindow : Window
                     {
                         int selectedGEOMIndex = geomNotebook.CurrentPage,
                         selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
-                        casPart.AddMeshGroup(lodKvp.Key, PreloadedGeometryResources, PreloadedVPXYResources);
-                        casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                        casPart.AddMeshGroup(lodKvp.Key, preloadedData.GEOMs, preloadedData.VPXYs);
+                        casPart.LoadLODs(preloadedData.GEOMs, preloadedData.VPXYs);
                         foreach (var child in ResourcePropertyNotebook.Children)
                         {
                             ResourcePropertyNotebook.Remove(child);
@@ -653,8 +648,8 @@ public partial class MainWindow : Window
                     {
                         int selectedGEOMIndex = geomNotebook.CurrentPage,
                         selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
-                        casPart.DeleteMeshGroup(lodKvp.Key, selectedGEOMIndex, PreloadedGeometryResources, PreloadedVPXYResources);
-                        casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                        casPart.DeleteMeshGroup(lodKvp.Key, selectedGEOMIndex, preloadedData.GEOMs, preloadedData.VPXYs);
+                        casPart.LoadLODs(preloadedData.GEOMs, preloadedData.VPXYs);
                         foreach (var child in ResourcePropertyNotebook.Children)
                         {
                             ResourcePropertyNotebook.Remove(child);
@@ -680,15 +675,15 @@ public partial class MainWindow : Window
                             {
                                 int selectedGEOMIndex = geomNotebook.CurrentPage,
                                 selectedLODIndex = ResourcePropertyNotebook.CurrentPage;
-                                foreach (var geometryResourceKvp in PreloadedGeometryResources)
+                                foreach (var geometryResourceKvp in preloadedData.GEOMs)
                                 {
                                     if (geometryResourceKvp.Value == lodKvp.Value[selectedGEOMIndex])
                                     {
                                         var evaluated = casPart.ParentPackage.EvaluateResourceKey(geometryResourceKvp.Key);
                                         casPart.ParentPackage.AddResource(fileChooserDialog.Filename, evaluated.ResourceIndexEntry, false);
                                         casPart.ParentPackage.DeleteResource(evaluated.ResourceIndexEntry);
-                                        PreloadedGeometryResources[geometryResourceKvp.Key] = new GEOM(new BinaryReader(File.OpenRead(fileChooserDialog.Filename)));
-                                        casPart.LoadLODs(PreloadedGeometryResources, PreloadedVPXYResources);
+                                        preloadedData.GEOMs[geometryResourceKvp.Key] = new GEOM(new BinaryReader(File.OpenRead(fileChooserDialog.Filename)));
+                                        casPart.LoadLODs(preloadedData.GEOMs, preloadedData.VPXYs);
                                         foreach (var child in ResourcePropertyNotebook.Children)
                                         {
                                             ResourcePropertyNotebook.Remove(child);
@@ -701,7 +696,7 @@ public partial class MainWindow : Window
                             }
                             catch (Exception ex)
                             {
-                                MainClass.WriteError(ex);
+                                Program.WriteError(ex);
                                 throw;
                             }
                         }
@@ -795,7 +790,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -867,7 +862,7 @@ public partial class MainWindow : Window
                                 break;
                             case "CASP":
                                 mGLWidget.Show();
-                                AddCASPartWidgets(PreloadedCASParts[key]);
+                                AddCASPartWidgets(PreloadedData.Singleton.CASParts[key]);
                                 break;
                         }
                     }
@@ -875,7 +870,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -886,11 +881,11 @@ public partial class MainWindow : Window
         mSaveAsPath = null;
         Meshes.Clear();
         Sim.PreloadedLODsMorphed.Clear();
-        PreloadedCASParts.Clear();
-        PreloadedGeometryResources.Clear();
+        PreloadedData.Singleton.CASParts.Clear();
+        PreloadedData.Singleton.GEOMs.Clear();
+        PreloadedData.Singleton.VPXYs.Clear();
         Materials.Clear();
         DeleteTextures();
-        PreloadedVPXYResources.Clear();
         ImageUtils.PreloadedGameImagePixbufs.Clear();
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImagePixbufs.Clear();
@@ -909,6 +904,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            var preloadedData = PreloadedData.Singleton;
             if (clearTemporaryData)
             {
                 ClearTemporaryData();
@@ -960,21 +956,21 @@ public partial class MainWindow : Window
                         }
                         break;
                     case "CASP":
-                        if (!PreloadedCASParts.ContainsKey(key) || missingResourceKeyIndex > -1)
+                        if (!preloadedData.CASParts.ContainsKey(key) || missingResourceKeyIndex > -1)
                         {
-                            PreloadedCASParts[key] = new CASPart(CurrentPackage, resourceIndexEntry, PreloadedGeometryResources, PreloadedVPXYResources);
+                            preloadedData.CASParts[key] = new CASPart(CurrentPackage, resourceIndexEntry, preloadedData.GEOMs, preloadedData.VPXYs);
                         }
                         break;
                     case "GEOM":
-                        if (!PreloadedGeometryResources.ContainsKey(key) || missingResourceKeyIndex > -1)
+                        if (!preloadedData.GEOMs.ContainsKey(key) || missingResourceKeyIndex > -1)
                         {
-                            PreloadedGeometryResources[key] = new GEOM(new BinaryReader(((APackage)CurrentPackage).GetResource(resourceIndexEntry)));
+                            preloadedData.GEOMs[key] = new GEOM(new BinaryReader(((APackage)CurrentPackage).GetResource(resourceIndexEntry)));
                         }
                         break;
                     case "VPXY":
-                        if (!PreloadedVPXYResources.ContainsKey(key) || missingResourceKeyIndex > -1)
+                        if (!preloadedData.VPXYs.ContainsKey(key) || missingResourceKeyIndex > -1)
                         {
-                            PreloadedVPXYResources[key] = (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
+                            preloadedData.VPXYs[key] = (GenericRCOLResource)WrapperDealer.GetResource(0, CurrentPackage, resourceIndexEntry);
                         }
                         break;
                 }
@@ -983,7 +979,7 @@ public partial class MainWindow : Window
                     ResourceUtils.MissingResourceKeys.RemoveAt(missingResourceKeyIndex);
                 }
             }
-            foreach (var casPart in PreloadedCASParts.Values)
+            foreach (var casPart in preloadedData.CASParts.Values)
             {
                 AddCASPartWidgets(casPart);
             }
@@ -991,7 +987,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -1024,7 +1020,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -1033,11 +1029,12 @@ public partial class MainWindow : Window
     {
         try
         {
+            var preloadedData = PreloadedData.Singleton;
             if (string.IsNullOrEmpty(mSaveAsPath))
             {
                 mSaveAsPath = path;
             }
-            foreach (var casPartKvp in PreloadedCASParts)
+            foreach (var casPartKvp in preloadedData.CASParts)
             {
                 if (ResourceUtils.MissingResourceKeys.Exists(x => x.ToLowerInvariant() == casPartKvp.Key.ToLowerInvariant()))
                 {
@@ -1046,15 +1043,15 @@ public partial class MainWindow : Window
                 casPartKvp.Value.SavePresets();
                 CurrentPackage.ReplaceResource(CurrentPackage.EvaluateResourceKey(casPartKvp.Key).ResourceIndexEntry, casPartKvp.Value.CASPartResource);
             }
-            foreach (var geometryResourceKvp in PreloadedGeometryResources)
+            foreach (var geometryResourceKvp in preloadedData.GEOMs)
             {
                 var stream = new MemoryStream();
-                PreloadedGeometryResources[geometryResourceKvp.Key].Write(new BinaryWriter(stream));
+                preloadedData.GEOMs[geometryResourceKvp.Key].Write(new BinaryWriter(stream));
                 var resourceIndexEntry = CurrentPackage.EvaluateResourceKey(geometryResourceKvp.Key).ResourceIndexEntry;
                 CurrentPackage.AddResource(resourceIndexEntry, stream, false);
                 CurrentPackage.DeleteResource(resourceIndexEntry);
             }
-            foreach (var vpxyResourceKvp in PreloadedVPXYResources)
+            foreach (var vpxyResourceKvp in preloadedData.VPXYs)
             {
                 CurrentPackage.ReplaceResource(CurrentPackage.EvaluateResourceKey(vpxyResourceKvp.Key).ResourceIndexEntry, vpxyResourceKvp.Value);
             }
@@ -1071,7 +1068,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MainClass.WriteError(ex);
+            Program.WriteError(ex);
             throw;
         }
     }
@@ -1148,7 +1145,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -1191,7 +1188,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -1233,7 +1230,7 @@ public partial class MainWindow : Window
                 CurrentPackage.DeleteResource(tempResourceIndexEntry);
                 ResourceUtils.MissingResourceKeys.Add(resourceIndexEntry.ReverseEvaluateResourceKey());
                 RefreshWidgets(false);
-                foreach (var casPartKvp in PreloadedCASParts)
+                foreach (var casPartKvp in PreloadedData.Singleton.CASParts)
                 {
                     casPartKvp.Value.AllPresets.ForEach(x => x.RegenerateTexture());
                 }
@@ -1241,7 +1238,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }
@@ -1297,7 +1294,7 @@ public partial class MainWindow : Window
 
     protected void OnUseAdvancedShadersActionToggled(object sender, EventArgs e)
     {
-        ApplicationSpecificSettings.UseAdvancedOpenGLShaders = UseAdvancedShadersAction.Active;
+        ApplicationSettings.UseAdvancedOpenGLShaders = UseAdvancedShadersAction.Active;
         mActiveShader = UseAdvancedShadersAction.Active ? "lit_advanced" : "textured";
     }
 }

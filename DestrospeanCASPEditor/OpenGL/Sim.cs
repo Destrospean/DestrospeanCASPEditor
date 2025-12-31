@@ -71,6 +71,7 @@ namespace Destrospean.DestrospeanCASPEditor
             try
             {
                 var mainWindow = MainWindow.Singleton;
+                var preloadedData = PreloadedData.Singleton;
                 if (!CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
                 {
                     return;
@@ -147,11 +148,11 @@ namespace Destrospean.DestrospeanCASPEditor
                                     try
                                     {
                                         var geoms = new List<GEOM>();
-                                        foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(mainWindow.PreloadedVPXYResources[new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).GetMeshLinks(lod))
+                                        foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(preloadedData.VPXYs[new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).GetMeshLinks(lod))
                                         {
                                             try
                                             {
-                                                geoms.Add(mainWindow.PreloadedGeometryResources[new ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
+                                                geoms.Add(preloadedData.GEOMs[new ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
                                             }
                                             catch (ResourceIndexEntryNotFoundException)
                                             {
@@ -170,7 +171,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             {
                                 try
                                 {   
-                                    foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(mainWindow.PreloadedVPXYResources[new ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
+                                    foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(preloadedData.VPXYs[new ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
                                     {
                                         try
                                         {   
@@ -214,7 +215,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                     var key = "";
-                    foreach (var geometryResourceKvp in mainWindow.PreloadedGeometryResources)
+                    foreach (var geometryResourceKvp in preloadedData.GEOMs)
                     {
                         if (geometryResourceKvp.Value == geometryResource)
                         {
@@ -273,7 +274,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             catch (Exception ex)
             {
-                MainClass.WriteError(ex);
+                Program.WriteError(ex);
                 throw;
             }
         }

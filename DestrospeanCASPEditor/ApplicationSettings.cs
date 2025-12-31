@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
-    public static class ApplicationSpecificSettings
+    public static class ApplicationSettings
     {
         public static Dictionary<string, object> Settings
         {

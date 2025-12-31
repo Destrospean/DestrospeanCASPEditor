@@ -1,6 +1,6 @@
 ﻿namespace Destrospean.DestrospeanCASPEditor
 {
-    class MainClass
+    class Program
     {
         public static void Main(string[] args)
         {

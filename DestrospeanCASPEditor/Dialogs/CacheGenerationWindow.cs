@@ -18,7 +18,7 @@
                     }
                     catch (System.Exception ex)
                     {
-                        MainClass.WriteError(ex);
+                        Program.WriteError(ex);
                     }
                     MainWindow.Singleton.Sensitive = true;
                     Destroy();

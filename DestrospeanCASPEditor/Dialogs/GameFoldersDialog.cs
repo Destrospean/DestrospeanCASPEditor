@@ -68,8 +68,8 @@ namespace Destrospean.DestrospeanCASPEditor
                 outputDictionary.Add(installDirectoryKvp.Key.Name, installDirectoryKvp.Value.Replace('\\', '/'));
             }
             GameFolders.InstallDirs = output.Substring(1);
-            ApplicationSpecificSettings.Settings[ApplicationSpecificSettings.JSONNodeNames.GameFolders] = outputDictionary;
-            ApplicationSpecificSettings.SaveSettings();
+            ApplicationSettings.Settings[ApplicationSettings.JSONNodeNames.GameFolders] = outputDictionary;
+            ApplicationSettings.SaveSettings();
         }
 
         protected void OnOKButtonClicked(object sender, System.EventArgs e)
