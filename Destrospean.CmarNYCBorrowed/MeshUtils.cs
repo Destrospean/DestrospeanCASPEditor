@@ -5,6 +5,13 @@ namespace Destrospean.CmarNYCBorrowed
 {
     public static class MeshUtils
     {
+        public static Rig GetRig(this s3pi.Interfaces.IPackage package, Species species, AgeGender age)
+        {
+            var rigName = GetRigPrefix(species, age, AgeGender.Unisex) + "Rig";
+            var evaluated = package.EvaluateResourceKey(new ResourceKey(ResourceUtils.GetResourceType("_RIG"), 0, System.Security.Cryptography.FNV64.GetHash(rigName)).ReverseEvaluateResourceKey());
+            return new Rig(new System.IO.BinaryReader(((s3pi.Interfaces.APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
+        }
+
         public static string GetRigPrefix(Species species, AgeGender age, AgeGender gender)
         {
             var specifier = "";
@@ -30,13 +37,6 @@ namespace Destrospean.CmarNYCBorrowed
                     break;
             }
             return specifier;
-        }
-
-        public static Rig GetRig(this s3pi.Interfaces.IPackage package, Species species, AgeGender age)
-        {
-            var rigName = GetRigPrefix(species, age, AgeGender.Unisex) + "Rig";
-            var evaluated = package.EvaluateResourceKey(new ResourceKey(ResourceUtils.GetResourceType("_RIG"), 0, System.Security.Cryptography.FNV64.GetHash(rigName)).ReverseEvaluateResourceKey());
-            return new Rig(new System.IO.BinaryReader(((s3pi.Interfaces.APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
         }
 
         public static GEOM LoadBGEOMorph(this GEOM baseMesh, BGEO morph, int lod, Species species, AgeGender age, AgeGender gender)
