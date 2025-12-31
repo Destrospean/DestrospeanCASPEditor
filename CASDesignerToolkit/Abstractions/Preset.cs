@@ -5,7 +5,7 @@ using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIExtensions;
-using s3pi.WrapperDealer;
+using s3pi.Interfaces;
 
 namespace Destrospean.CASDesignerToolkit.Abstractions
 {
@@ -33,7 +33,7 @@ namespace Destrospean.CASDesignerToolkit.Abstractions
             }
         }
 
-        public override s3pi.Interfaces.IPackage ParentPackage
+        public override IPackage ParentPackage
         {
             get
             {
@@ -364,7 +364,7 @@ namespace Destrospean.CASDesignerToolkit.Abstractions
                 }
             }
 
-            public override s3pi.Interfaces.IPackage ParentPackage
+            public override IPackage ParentPackage
             {
                 get
                 {
@@ -419,7 +419,7 @@ namespace Destrospean.CASDesignerToolkit.Abstractions
                 Preset = preset;
                 ComplateXmlNode = complateXmlNode;
                 var evaluated = ParentPackage.EvaluateResourceKey(ComplateXmlNode);
-                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)).ReadToEnd());
                 Patterns = new List<Pattern>();
                 foreach (XmlNode childNode in ComplateXmlNode.ChildNodes)
                 {
@@ -462,7 +462,7 @@ namespace Destrospean.CASDesignerToolkit.Abstractions
             {
                 PropertiesTyped.Clear();
                 var evaluated = ParentPackage.EvaluateResourceKey(ComplateXmlNode);
-                mXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+                mXmlDocument.LoadXml(new StreamReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)).ReadToEnd());
                 foreach (XmlNode childNode in mXmlDocument.SelectSingleNode("complate").ChildNodes)
                 {
                     if (childNode.Name == "variables")
@@ -551,7 +551,7 @@ namespace Destrospean.CASDesignerToolkit.Abstractions
             int i = 0,
             patternIndex = Patterns.FindIndex(x => x.SlotName == patternSlotName);
             var patternXmlDocument = new XmlDocument();
-            patternXmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            patternXmlDocument.LoadXml(new StreamReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)).ReadToEnd());
             foreach (XmlNode presetChildNode in mXmlDocument.SelectSingleNode("preset").SelectSingleNode("complate").ChildNodes)
             {
                 if (presetChildNode.Name == "pattern" && i++ == patternIndex)
