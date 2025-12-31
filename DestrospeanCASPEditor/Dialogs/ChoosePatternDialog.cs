@@ -74,7 +74,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                     }
                                     else
                                     {
-                                        throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
+                                        throw new AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                                     }
                                     patternsByCategory[category].Add(key);
                                     patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);
@@ -175,12 +175,12 @@ namespace Destrospean.DestrospeanCASPEditor
         public static void GenerateCache(IPackage package)
         {
             List<string> categories = new List<string>();
-            ResourceUtils.EvaluatedResourceKey gamePatternListEvaluated;
+            EvaluatedResourceKey gamePatternListEvaluated;
             try
             {
                  gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
             }
-            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+            catch (ResourceIndexEntryNotFoundException)
             {
                 return;
             }
@@ -208,7 +208,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                             else
                             {
-                                throw new ResourceUtils.AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
+                                throw new AttributeNotFoundException("The pattern XML node given does not have a \"reskey\" or \"name\" attribute.");
                             }
                             patternsByCategory[category].Add(key);
                             patternsByCategory[category].Add(grandchildNode.HasAttribute("name") ? "Materials\\" + category + "\\" + grandchildNode.Attributes["name"].Value : key);

@@ -6,7 +6,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
 {
     public abstract class CASTableObject
     {
-        protected RIG mCurrentRig;
+        protected Rig mCurrentRig;
 
         public List<Preset> AllPresets
         {
@@ -21,7 +21,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             }
         }
 
-        public abstract RIG CurrentRig
+        public abstract Rig CurrentRig
         {
             get;
         }
@@ -46,7 +46,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             else
             {
                 DefaultPresetKey = defaultPresetResourceIndexEntries[0].ReverseEvaluateResourceKey();
-                DefaultPreset = new Preset(this, new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, ParentPackage, defaultPresetResourceIndexEntries[0]).Stream));
+                DefaultPreset = new Preset(this, new System.IO.StreamReader(((s3pi.Interfaces.APackage)ParentPackage).GetResource(defaultPresetResourceIndexEntries[0])));
             }
             Presets = new List<Preset>();
         }

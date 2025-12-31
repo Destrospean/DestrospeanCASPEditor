@@ -42,12 +42,12 @@ public partial class MainWindow : Window
         {
             if (value == NextStateOptions.UnsavedChangesAndUpdateModels)
             {
-                mPreloadedLODsMorphed.Clear();
+                Sim.PreloadedLODsMorphed.Clear();
             }
             if (value.HasFlag(NextStateOptions.UpdateModels))
             {
-                mMeshes.Clear();
-                RenderedSim.LoadGEOMs();
+                Meshes.Clear();
+                Sim.LoadGEOMs(mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage, ResourcePropertyNotebook.CurrentPage);
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
@@ -99,7 +99,7 @@ public partial class MainWindow : Window
         BuildResourceTable();
         ApplicationSpecificSettings.LoadSettings();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
-        RenderedSim = new Sim();
+        Sim = new Sim();
         if (!File.Exists(ChoosePatternDialog.CacheFilePath))
         {
             new CacheGenerationWindow("Please wait as caches are being generated...", this);
@@ -123,8 +123,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            mMeshes.Clear();
-            RenderedSim.CurrentCASPart = casPart;
+            Meshes.Clear();
+            Sim.CurrentCASPart = casPart;
             var flagNotebook = new Notebook
                 {
                     ShowTabs = false
@@ -242,7 +242,7 @@ public partial class MainWindow : Window
             ResourcePropertyNotebookSwitchPageHandlers.Clear();
             ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
                 {
-                    mPreloadedLODsMorphed.Clear();
+                    Sim.PreloadedLODsMorphed.Clear();
                     NextState = NextStateOptions.UpdateModels;
                 });
             ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
@@ -322,7 +322,7 @@ public partial class MainWindow : Window
                         nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
                         prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                     };
-                System.Action<MeshFileType> exportMesh = (MeshFileType meshFileType) =>
+                Action<MeshFileType> exportMesh = (MeshFileType meshFileType) =>
                     {
                         switch (meshFileType)
                         {
@@ -354,13 +354,13 @@ public partial class MainWindow : Window
                             for (var i = 0; i < bblnIndices.Length; i++)
                             {
                                 BBLN bbln;
-                                ResourceUtils.EvaluatedResourceKey evaluated;
+                                EvaluatedResourceKey evaluated;
                                 try
                                 {
                                     evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
-                                    bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                    bbln = new BBLN(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                 }
-                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                catch (ResourceIndexEntryNotFoundException)
                                 {
                                     morphs[i] = null;
                                     continue;
@@ -368,10 +368,10 @@ public partial class MainWindow : Window
                                 BGEO bgeo = null;
                                 try
                                 {
-                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
+                                    evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
                                     bgeo = new BGEO(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                 }
-                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                catch (ResourceIndexEntryNotFoundException)
                                 {
                                 }
                                 foreach (var entry in bbln.Entries)
@@ -386,22 +386,22 @@ public partial class MainWindow : Window
                                         {
                                             try
                                             {
-                                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
-                                                var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                                evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
+                                                var vpxy = new VPXY(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                                 foreach (var link in vpxy.GetMeshLinks(lodKvp.Key))
                                                 {
                                                     try
                                                     {
-                                                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
+                                                        evaluated = casPart.ParentPackage.EvaluateResourceKey(new ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey());
                                                         morphs[i] = new GEOM(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                                     }
-                                                    catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                                    catch (ResourceIndexEntryNotFoundException)
                                                     {
                                                         morphs[i] = null;
                                                     }
                                                 }
                                             }
-                                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                            catch (ResourceIndexEntryNotFoundException)
                                             {
                                                 morphs[i] = null;
                                             }
@@ -476,28 +476,28 @@ public partial class MainWindow : Window
                                     casPart.CASPartResource.BlendInfoSpecialIndex
                                 };
                             var bblnResourceIndexEntries = new IResourceIndexEntry[bblnIndices.Length];
-                            var morphsEvaluated = new ResourceUtils.EvaluatedResourceKey?[bblnIndices.Length];
+                            var morphsEvaluated = new EvaluatedResourceKey?[bblnIndices.Length];
                             for (var i = 0; i < bblnIndices.Length; i++)
                             {
                                 BBLN bbln;
-                                ResourceUtils.EvaluatedResourceKey evaluated;
+                                EvaluatedResourceKey evaluated;
                                 try
                                 {
                                     evaluated = casPart.ParentPackage.EvaluateResourceKey(casPart.CASPartResource.TGIBlocks[bblnIndices[i]].ReverseEvaluateResourceKey());
-                                    bbln = new BBLN(new BinaryReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream));
+                                    bbln = new BBLN(new BinaryReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)));
                                     bblnResourceIndexEntries[i] = evaluated.ResourceIndexEntry;
                                 }
-                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                catch (ResourceIndexEntryNotFoundException)
                                 {
                                     morphsEvaluated[i] = null;
                                     continue;
                                 }
                                 try
                                 {
-                                    morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
+                                    morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceKey(bbln.BGEOTGI.Type, bbln.BGEOTGI.Group, bbln.BGEOTGI.Instance).ReverseEvaluateResourceKey());
                                     continue;
                                 }
-                                catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                catch (ResourceIndexEntryNotFoundException)
                                 {
                                 }
                                 foreach (var entry in bbln.Entries)
@@ -508,9 +508,9 @@ public partial class MainWindow : Window
                                         {
                                             try
                                             {
-                                                morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceUtils.ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
+                                                morphsEvaluated[i] = casPart.ParentPackage.EvaluateResourceKey(new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey());
                                             }
-                                            catch (ResourceUtils.ResourceIndexEntryNotFoundException)
+                                            catch (ResourceIndexEntryNotFoundException)
                                             {
                                                 morphsEvaluated[i] = null;
                                             }
@@ -559,26 +559,26 @@ public partial class MainWindow : Window
                                             {
                                                 lodMorphMeshes[j] =  casPart.LODs.ContainsKey(j) ? new GEOM[]
                                                     {
-                                                        j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(casPart.LODs[j][geomNotebook.CurrentPage], new BGEO(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream)), 0, j)
+                                                        j == lodKvp.Key ? newGEOMPlusMorphs[i] : new GEOM(casPart.LODs[j][geomNotebook.CurrentPage], new BGEO(new BinaryReader(((APackage)morphEvaluated.Package).GetResource(morphEvaluated.ResourceIndexEntry))), 0, j)
                                                     } : new GEOM[0];
                                             }
                                         }
                                         else
                                         {
-                                            var vpxy = new VPXY(new BinaryReader(WrapperDealer.GetResource(0, morphEvaluated.Package, morphEvaluated.ResourceIndexEntry).Stream));
+                                            var vpxy = new VPXY(new BinaryReader(((APackage)morphEvaluated.Package).GetResource(morphEvaluated.ResourceIndexEntry)));
                                             for (var j = 0; j < lodMorphMeshes.Length; j++)
                                             {
                                                 lodMorphMeshes[j] = j == lodKvp.Key ? new GEOM[]
                                                     {
                                                         newGEOMPlusMorphs[i]
-                                                    } : Array.ConvertAll(vpxy.GetMeshLinks(j), x => PreloadedGeometryResources[new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
+                                                    } : Array.ConvertAll(vpxy.GetMeshLinks(j), x => PreloadedGeometryResources[new ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey()]);
                                             }
                                             for (var j = 0; j < lodMorphMeshes.Length; j++)
                                             {
                                                 var meshLinks = vpxy.GetMeshLinks(j);
                                                 for (var k = 0; k < meshLinks.Length; k++)
                                                 {
-                                                    var key = new ResourceUtils.ResourceKey(meshLinks[k].Type, meshLinks[k].Group, meshLinks[k].Instance).ReverseEvaluateResourceKey();
+                                                    var key = new ResourceKey(meshLinks[k].Type, meshLinks[k].Group, meshLinks[k].Instance).ReverseEvaluateResourceKey();
                                                     var evaluated = casPart.ParentPackage.EvaluateResourceKey(key);
                                                     evaluated.Package.DeleteResource(evaluated.ResourceIndexEntry);
                                                     PreloadedGeometryResources.Remove(key);
@@ -711,15 +711,15 @@ public partial class MainWindow : Window
                 importWSOAction.Activated += (sender, e) => importMesh(MeshFileType.WSO);
                 HScale fatnessHScale = new HScale(-1, 1, .01)
                     {
-                        Value = mFat - mThin
+                        Value = Sim.Fat - Sim.Thin
                     },
                 fitnessHScale = new HScale(0, 1, .01)
                     {
-                        Value = mFit
+                        Value = Sim.Fit
                     },
                 specialHScale = new HScale(0, 1, .01)
                     {
-                        Value = mSpecial
+                        Value = Sim.Special
                     };
                 System.Action changeOtherSlidersAndUpdateModels = delegate
                     {
@@ -752,18 +752,18 @@ public partial class MainWindow : Window
                     };
                 fatnessHScale.ValueChanged += (sender, e) =>
                     {
-                        mFat = fatnessHScale.Value > 0 ? (float)fatnessHScale.Value : 0;
-                        mThin = fatnessHScale.Value < 0 ? (float)-fatnessHScale.Value : 0;
+                        Sim.Fat = fatnessHScale.Value > 0 ? (float)fatnessHScale.Value : 0;
+                        Sim.Thin = fatnessHScale.Value < 0 ? (float)-fatnessHScale.Value : 0;
                         changeOtherSlidersAndUpdateModels();
                     };
                 fitnessHScale.ValueChanged += (sender, e) =>
                     {
-                        mFit = (float)fitnessHScale.Value;
+                        Sim.Fit = (float)fitnessHScale.Value;
                         changeOtherSlidersAndUpdateModels();
                     };
                 specialHScale.ValueChanged += (sender, e) =>
                     {
-                        mSpecial = (float)specialHScale.Value;
+                        Sim.Special = (float)specialHScale.Value;
                         changeOtherSlidersAndUpdateModels();
                     };
                 var geomPageButtonHBox = new HBox(false, 0);
@@ -840,7 +840,7 @@ public partial class MainWindow : Window
             ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
             ResourceTreeView.Selection.Changed += (sender, e) => 
                 {
-                    mMeshes.Clear();
+                    Meshes.Clear();
                     mGLWidget.Hide();
                     Image.Clear();
                     foreach (var child in ResourcePropertyTable.Children)
@@ -882,10 +882,10 @@ public partial class MainWindow : Window
 
     public void ClearTemporaryData()
     {
-        RenderedSim.CurrentCASPart = null;
+        Sim.CurrentCASPart = null;
         mSaveAsPath = null;
-        mMeshes.Clear();
-        mPreloadedLODsMorphed.Clear();
+        Meshes.Clear();
+        Sim.PreloadedLODsMorphed.Clear();
         PreloadedCASParts.Clear();
         PreloadedGeometryResources.Clear();
         Materials.Clear();

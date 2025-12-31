@@ -231,7 +231,7 @@ namespace Destrospean.DestrospeanCASPEditor
                     else if (valueType == 4)
                     {
                         alignment.Xscale = 1;
-                        var comboBox = ImageResourceComboBox.CreateInstance(package, new ResourceUtils.ResourceKey(geometryResource.TGIList[(uint)element[0]].Type, geometryResource.TGIList[(uint)element[0]].Group, geometryResource.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey(), imageWidget);
+                        var comboBox = ImageResourceComboBox.CreateInstance(package, new ResourceKey(geometryResource.TGIList[(uint)element[0]].Type, geometryResource.TGIList[(uint)element[0]].Group, geometryResource.TGIList[(uint)element[0]].Instance).ReverseEvaluateResourceKey(), imageWidget);
                         var comboBoxLastActive = comboBox.Active;
                         comboBox.Changed += (sender, e) =>
                             {
@@ -241,7 +241,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                 }
                                 comboBoxLastActive = comboBox.Active;
                                 var key = comboBox[comboBox.Active].Label;
-                                var index = Array.FindIndex(geometryResource.TGIList, x => new ResourceUtils.ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey() == key);
+                                var index = Array.FindIndex(geometryResource.TGIList, x => new ResourceKey(x.Type, x.Group, x.Instance).ReverseEvaluateResourceKey() == key);
                                 if (index == -1)
                                 {
                                     var temp = new List<TGI>(geometryResource.TGIList);

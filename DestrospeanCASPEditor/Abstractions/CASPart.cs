@@ -31,7 +31,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             
         public readonly CASPartResource.CASPartResource CASPartResource;
 
-        public override RIG CurrentRig
+        public override Rig CurrentRig
         {
             get
             {
@@ -72,9 +72,9 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                     var temp = "_lod" + i.ToString() + "-" + (geomTGIList.Count + 1).ToString();
                     var newGEOMTGI = new TGI(ResourceUtils.GetResourceType("GEOM"), geomTGIList[geomTGIList.Count - 1].Group, System.Security.Cryptography.FNV64.GetHash(CASPartResource.Unknown1 + temp + Environment.UserName + Environment.TickCount.ToString() + temp));
                     var geomStream = new MemoryStream();
-                    var geom = geometryResources[new ResourceUtils.ResourceKey(geomTGIList[geomTGIList.Count - 1].Type, geomTGIList[geomTGIList.Count - 1].Group, geomTGIList[geomTGIList.Count - 1].Instance).ReverseEvaluateResourceKey()];
+                    var geom = geometryResources[new ResourceKey(geomTGIList[geomTGIList.Count - 1].Type, geomTGIList[geomTGIList.Count - 1].Group, geomTGIList[geomTGIList.Count - 1].Instance).ReverseEvaluateResourceKey()];
                     geom.Write(new BinaryWriter(geomStream));
-                    var newGEOMResourceIndexEntry = ParentPackage.AddResource(new ResourceUtils.ResourceKey(newGEOMTGI.Type, newGEOMTGI.Group, newGEOMTGI.Instance), geomStream, true);
+                    var newGEOMResourceIndexEntry = ParentPackage.AddResource(new ResourceKey(newGEOMTGI.Type, newGEOMTGI.Group, newGEOMTGI.Instance), geomStream, true);
                     geometryResources.Add(newGEOMResourceIndexEntry.ReverseEvaluateResourceKey(), geom);
                     geomTGIList.Add(newGEOMTGI);
                 }
@@ -116,7 +116,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                 var geomTGIList = new List<TGI>(vpxy.GetMeshLinks(i));
                 if (i == lod || lod == -1)
                 {
-                    var geomKey = new ResourceUtils.ResourceKey(geomTGIList[groupIndex].Type, geomTGIList[groupIndex].Group, geomTGIList[groupIndex].Instance).ReverseEvaluateResourceKey();
+                    var geomKey = new ResourceKey(geomTGIList[groupIndex].Type, geomTGIList[groupIndex].Group, geomTGIList[groupIndex].Instance).ReverseEvaluateResourceKey();
                     ParentPackage.DeleteResource(ParentPackage.EvaluateResourceKey(geomKey).ResourceIndexEntry);
                     geometryResources.Remove(geomKey);
                     geomTGIList.RemoveAt(groupIndex);

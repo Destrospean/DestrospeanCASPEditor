@@ -235,6 +235,7 @@
     <Compile Include="Abstractions\Preset.cs" />
     <Compile Include="Abstractions\CASPart.cs" />
     <Compile Include="Abstractions\CASTableObject.cs" />
+    <Compile Include="OpenGL\Sim.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
