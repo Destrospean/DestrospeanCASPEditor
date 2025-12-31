@@ -336,7 +336,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.ParentPackage);
                                 if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
-                                    complateAsPreset.AddPattern(addPatternSlotName, complate.CASTableObject is CASPart ? "CasRgbaMask" : "ObjectRgbaMask" );
+                                    complateAsPreset.AddPattern(addPatternSlotName, complate.CASTableObject is CASPart ? "CasRgbaMask" : "ObjectRgbaMask");
                                     complateAsPreset.ReplacePattern(addPatternSlotName, choosePatternDialog.ResourceKey);
                                     complate[addPatternSlotName] = choosePatternDialog.PatternPath;
                                     insertComplatePage(addPatternSlotName, new Table(1, 2, false), System.Array.FindLastIndex(complateAsPreset.PatternSlotNames, x => x != "Logo"));
