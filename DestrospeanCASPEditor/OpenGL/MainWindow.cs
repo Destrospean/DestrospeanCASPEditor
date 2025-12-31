@@ -78,7 +78,7 @@ public partial class MainWindow : Window
         None,
         Left,
         Middle,
-        Right = 4,
+        Right = 4
     }
 
     struct PreloadedLODMorphed
