@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 
 namespace Destrospean.CmarNYCBorrowed
 {

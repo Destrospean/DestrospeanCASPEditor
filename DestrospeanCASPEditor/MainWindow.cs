@@ -5,7 +5,7 @@ using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor;
 using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.DestrospeanCASPEditor.Widgets;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 using Gtk;
 using OpenTK.Graphics.OpenGL;
 using s3pi.GenericRCOLResource;

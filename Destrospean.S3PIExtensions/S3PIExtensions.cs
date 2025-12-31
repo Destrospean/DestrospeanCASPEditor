@@ -12,7 +12,7 @@ namespace System.Runtime.CompilerServices
     }
 }
 
-namespace Destrospean.S3PIAbstractions
+namespace Destrospean.S3PIExtensions
 {
     public class AttributeNotFoundException : Exception
     {

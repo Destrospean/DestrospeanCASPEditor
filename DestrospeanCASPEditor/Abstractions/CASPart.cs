@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Destrospean.CmarNYCBorrowed;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;

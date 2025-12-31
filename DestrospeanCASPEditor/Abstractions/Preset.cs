@@ -4,8 +4,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
-using Destrospean.S3PIAbstractions;
-using s3pi.WrapperDealer;
+using Destrospean.S3PIExtensions;
+using s3pi.Interfaces;
 
 namespace Destrospean.DestrospeanCASPEditor.Abstractions
 {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor.Abstractions;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 using Gtk;
 using s3pi.Interfaces;
 

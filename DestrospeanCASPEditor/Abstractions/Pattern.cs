@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 
 namespace Destrospean.DestrospeanCASPEditor.Abstractions
 {

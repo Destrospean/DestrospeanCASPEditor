@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Destrospean.S3PIAbstractions</RootNamespace>
-    <AssemblyName>Destrospean.S3PIAbstractions</AssemblyName>
+    <RootNamespace>Destrospean.S3PIExtensions</RootNamespace>
+    <AssemblyName>Destrospean.S3PIExtensions</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResourceUtils.cs" />
+    <Compile Include="S3PIExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -4,7 +4,7 @@ using System.IO;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.DestrospeanCASPEditor.OpenGL;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 using s3pi.GenericRCOLResource;
 using Vector2 = OpenTK.Vector2;
 using Vector3 = OpenTK.Vector3;

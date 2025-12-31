@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using Destrospean.S3PIAbstractions;
+using Destrospean.S3PIExtensions;
 using s3pi.Interfaces;
 
 namespace Destrospean.CmarNYCBorrowed

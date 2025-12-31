@@ -330,13 +330,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CmarNYCBorrowed\CmarNYCBorrowed.csproj">
+    <ProjectReference Include="..\Destrospean.CmarNYCBorrowed\Destrospean.CmarNYCBorrowed.csproj">
       <Project>{1DAE5711-35BA-4DF3-B392-68DAAAC3A5FD}</Project>
-      <Name>CmarNYCBorrowed</Name>
+      <Name>Destrospean.CmarNYCBorrowed</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Destrospean.S3PIAbstractions\Destrospean.S3PIAbstractions.csproj">
+    <ProjectReference Include="..\Destrospean.S3PIExtensions\Destrospean.S3PIExtensions.csproj">
       <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
-      <Name>Destrospean.S3PIAbstractions</Name>
+      <Name>Destrospean.S3PIExtensions</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
