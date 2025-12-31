@@ -273,24 +273,24 @@ public partial class MainWindow : Window
                 var uiManager = new UIManager();
                 uiManager.InsertActionGroup(actionGroup, 0);
                 uiManager.AddUiFromString(@"
-                <ui>
-                    <menubar name='GEOMPropertiesMenuBar'>
-                        <menu name='OptionsAction' action='OptionsAction'>
-                            <menuitem name='AddMeshGroupAction' action='AddMeshGroupAction'/>
-                            <menuitem name='DeleteMeshGroupAction' action='DeleteMeshGroupAction'/>
-                            <menu name='ImportAction' action='ImportAction'>
-                                <menuitem name='ImportGEOMAction' action='ImportGEOMAction'/>
-                                <menuitem name='ImportOBJAction' action='ImportOBJAction'/>
-                                <menuitem name='ImportWSOAction' action='ImportWSOAction'/>
-                            </menu>                            
-                            <menu name='ExportAction' action='ExportAction'>
-                                <menuitem name='ExportGEOMAction' action='ExportGEOMAction'/>
-                                <menuitem name='ExportOBJAction' action='ExportOBJAction'/>
-                                <menuitem name='ExportWSOAction' action='ExportWSOAction'/>
+                    <ui>
+                        <menubar name='GEOMPropertiesMenuBar'>
+                            <menu name='OptionsAction' action='OptionsAction'>
+                                <menuitem name='AddMeshGroupAction' action='AddMeshGroupAction'/>
+                                <menuitem name='DeleteMeshGroupAction' action='DeleteMeshGroupAction'/>
+                                <menu name='ImportAction' action='ImportAction'>
+                                    <menuitem name='ImportGEOMAction' action='ImportGEOMAction'/>
+                                    <menuitem name='ImportOBJAction' action='ImportOBJAction'/>
+                                    <menuitem name='ImportWSOAction' action='ImportWSOAction'/>
+                                </menu>                            
+                                <menu name='ExportAction' action='ExportAction'>
+                                    <menuitem name='ExportGEOMAction' action='ExportGEOMAction'/>
+                                    <menuitem name='ExportOBJAction' action='ExportOBJAction'/>
+                                    <menuitem name='ExportWSOAction' action='ExportWSOAction'/>
+                                </menu>
                             </menu>
-                        </menu>
-                    </menubar>
-                </ui>");
+                        </menubar>
+                    </ui>");
                 var menuBar = (MenuBar)uiManager.GetWidget("/GEOMPropertiesMenuBar");
                 menuBar.PackDirection = PackDirection.Rtl;
                 Button nextButton = new Button(new Arrow(ArrowType.Right, ShadowType.None)
