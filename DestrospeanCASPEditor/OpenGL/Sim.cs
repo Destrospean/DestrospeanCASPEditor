@@ -66,11 +66,10 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        void LoadGEOMs(CASPart casPart, int presetIndex, int lodIndex)
+        void LoadGEOMs(CASPart casPart, int presetIndex, int lodIndex, Func<string, System.Drawing.Bitmap, int> loadTextureCallback)
         {
             try
             {
-                var mainWindow = MainWindow.Singleton;
                 var preloadedData = PreloadedData.Singleton;
                 if (!CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
                 {
@@ -224,7 +223,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                     Material material;
-                    if (!mainWindow.Materials.TryGetValue(key, out material))
+                    if (!preloadedData.Materials.TryGetValue(key, out material))
                     {
                         var materialColors = new Dictionary<FieldType, Vector3>();
                         var materialMaps = new Dictionary<FieldType, string>();
@@ -255,19 +254,19 @@ namespace Destrospean.DestrospeanCASPEditor
                                 SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : Vector3.One,
                                 SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
                             };
-                        mainWindow.Materials.Add(key, material);
+                        preloadedData.Materials.Add(key, material);
                     }
                     var currentPreset = casPart == CurrentCASPart ? casPart.AllPresets[presetIndex] : casPart.AllPresets[0];
-                    mainWindow.Meshes.Add(new Volume
+                    preloadedData.Meshes.Add(new Volume
                         {
                             ColorData = colors.ToArray(),
                             Faces = faces,
                             Material = material,
                             Normals = normals.ToArray(),
                             TextureCoordinates = textureCoordinates.ToArray(),
-                            AmbientMapID = mainWindow.LoadTexture(currentPreset.AmbientMap == null ? material.AmbientMap : currentPreset.AmbientMap),
-                            MainTextureID = mainWindow.LoadTexture(key, currentPreset.Texture),
-                            SpecularMapID = mainWindow.LoadTexture(currentPreset.SpecularMap == null ? material.SpecularMap : currentPreset.SpecularMap),
+                            AmbientMapID = loadTextureCallback(currentPreset.AmbientMap == null ? material.AmbientMap : currentPreset.AmbientMap, null),
+                            MainTextureID = loadTextureCallback(key, currentPreset.Texture),
+                            SpecularMapID = loadTextureCallback(currentPreset.SpecularMap == null ? material.SpecularMap : currentPreset.SpecularMap, null),
                             Vertices = vertices.ToArray()
                         });
                 }
@@ -279,9 +278,9 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public void LoadGEOMs(int presetIndex, int lodIndex)
+        public void LoadGEOMs(int presetIndex, int lodIndex, Func<string, System.Drawing.Bitmap, int> loadTextureCallback)
         {
-            Array.ForEach(new List<CASPart>(CASParts.Values).FindAll(x => x != null).ToArray(), x => LoadGEOMs(x, presetIndex, lodIndex));
+            Array.ForEach(new List<CASPart>(CASParts.Values).FindAll(x => x != null).ToArray(), x => LoadGEOMs(x, presetIndex, lodIndex, loadTextureCallback));
         }
     }
 }

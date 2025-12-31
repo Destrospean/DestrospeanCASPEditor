@@ -46,8 +46,8 @@ public partial class MainWindow : Window
             }
             if (value.HasFlag(NextStateOptions.UpdateModels))
             {
-                Meshes.Clear();
-                Sim.LoadGEOMs(mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage, ResourcePropertyNotebook.CurrentPage);
+                PreloadedData.Singleton.Meshes.Clear();
+                Sim.LoadGEOMs(mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage, ResourcePropertyNotebook.CurrentPage, LoadTexture);
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
@@ -117,7 +117,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            Meshes.Clear();
+            PreloadedData.Singleton.Meshes.Clear();
             Sim.CurrentCASPart = casPart;
             var flagNotebook = new Notebook
                 {
@@ -835,7 +835,7 @@ public partial class MainWindow : Window
             ResourceTreeView.ButtonPressEvent += OnResourceTreeViewButtonPress;
             ResourceTreeView.Selection.Changed += (sender, e) => 
                 {
-                    Meshes.Clear();
+                    PreloadedData.Singleton.Meshes.Clear();
                     mGLWidget.Hide();
                     Image.Clear();
                     foreach (var child in ResourcePropertyTable.Children)
@@ -879,12 +879,13 @@ public partial class MainWindow : Window
     {
         Sim.CurrentCASPart = null;
         mSaveAsPath = null;
-        Meshes.Clear();
+        var preloadedData = PreloadedData.Singleton;
+        preloadedData.Meshes.Clear();
+        preloadedData.CASParts.Clear();
+        preloadedData.GEOMs.Clear();
+        preloadedData.Materials.Clear();
+        preloadedData.VPXYs.Clear();
         Sim.PreloadedLODsMorphed.Clear();
-        PreloadedData.Singleton.CASParts.Clear();
-        PreloadedData.Singleton.GEOMs.Clear();
-        PreloadedData.Singleton.VPXYs.Clear();
-        Materials.Clear();
         DeleteTextures();
         ImageUtils.PreloadedGameImagePixbufs.Clear();
         ImageUtils.PreloadedGameImages.Clear();

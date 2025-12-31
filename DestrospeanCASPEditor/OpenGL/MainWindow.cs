@@ -48,15 +48,9 @@ public partial class MainWindow : Window
 
     Matrix4 mViewMatrix = Matrix4.Identity;
 
-    public readonly Dictionary<string, Material> Materials = new Dictionary<string, Material>(StringComparer.InvariantCultureIgnoreCase);
-
-    public readonly List<Volume> Meshes = new List<Volume>();
-
     public bool ModelsNeedUpdated = false;
 
-    public Sim Sim;
-
-    public readonly Dictionary<string, int> TextureIDs = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+    public readonly Sim Sim;
 
     [Flags]
     enum MouseButtonsHeld : byte
@@ -512,20 +506,20 @@ public partial class MainWindow : Window
     public void DeleteTexture(string key)
     {
         int textureID;
-        if (TextureIDs.TryGetValue(key, out textureID))
+        if (PreloadedData.Singleton.TextureIDs.TryGetValue(key, out textureID))
         {
             GL.DeleteTexture(textureID);
-            TextureIDs.Remove(key);
+            PreloadedData.Singleton.TextureIDs.Remove(key);
         }
     }
 
     public void DeleteTextures()
     {
-        foreach (var textureID in TextureIDs.Values)
+        foreach (var textureID in PreloadedData.Singleton.TextureIDs.Values)
         {
             GL.DeleteTexture(textureID);
         }
-        TextureIDs.Clear();
+        PreloadedData.Singleton.TextureIDs.Clear();
     }
 
     public int LoadTexture(string key, Bitmap image = null)
@@ -541,10 +535,10 @@ public partial class MainWindow : Window
                 return -1;
             }
             int textureID;
-            if (!TextureIDs.TryGetValue(key, out textureID))
+            if (!PreloadedData.Singleton.TextureIDs.TryGetValue(key, out textureID))
             {
                 GL.GenTextures(1, out textureID);
-                TextureIDs.Add(key, textureID);
+                PreloadedData.Singleton.TextureIDs.Add(key, textureID);
             }
             GL.BindTexture(TextureTarget.Texture2D, textureID);
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -595,7 +589,7 @@ public partial class MainWindow : Window
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         mShaders[mActiveShader].EnableVertexAttribArrays();
         var indexAt = 0;
-        foreach (var mesh in Meshes)
+        foreach (var mesh in PreloadedData.Singleton.Meshes)
         {
             GL.BindTexture(TextureTarget.Texture2D, mesh.MainTextureID);
             GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref mesh.ModelViewProjectionMatrix);
@@ -714,7 +708,7 @@ public partial class MainWindow : Window
         var indices = new List<int>();
         var textureCoordinates = new List<Vector2>();
         var vertexCount = 0;
-        foreach (var mesh in Meshes)
+        foreach (var mesh in PreloadedData.Singleton.Meshes)
         {
             colors.AddRange(mesh.ColorData);
             indices.AddRange(mesh.GetIndices(vertexCount));
@@ -749,7 +743,7 @@ public partial class MainWindow : Window
             GL.BufferData<Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mNormalData.Length * Vector3.SizeInBytes), mNormalData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(mShaders[mActiveShader].GetAttribute("vNormal"), 3, VertexAttribPointerType.Float, true, 0, 0);
         }
-        foreach (var mesh in Meshes)
+        foreach (var mesh in PreloadedData.Singleton.Meshes)
         {
             mesh.Rotation = mCurrentRotation;
             mesh.CalculateModelMatrix();
