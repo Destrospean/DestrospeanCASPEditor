@@ -14,6 +14,7 @@ cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
 rar a CASDesignerToolkit-fedora-amd64.rar CASDesignerToolkit/*
 rm CASDesignerToolkit/*
 cp ../DestrospeanCASPEditor/bin/Release/* CASDesignerToolkit
+rm CASDesignerToolkit/*.log
 rar a CASDesignerToolkit-win32-i386.rar CASDesignerToolkit/*
 mv CASDesignerToolkit-*.rar ../DestrospeanCASPEditor/bin/Release
 rm -rf CASDesignerToolkit

@@ -611,7 +611,7 @@ public partial class MainWindow : Window
                                                 var geomStream = new MemoryStream();
                                                 lodMorphMeshes[j][k].Write(new BinaryWriter(geomStream));
                                                 var geomResourceIndexEntry = casPart.ParentPackage.AddResource(geomResourceKey, geomStream, true);
-                                                PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(new BinaryReader(((APackage)casPart.ParentPackage).GetResource(geomResourceIndexEntry)));
+                                                PreloadedGeometryResources[geomResourceIndexEntry.ReverseEvaluateResourceKey()] = new GEOM(lodMorphMeshes[j][k]);
                                             }
                                         }
                                         var vpxyTGI = new TGI(ResourceUtils.GetResourceType("VPXY"), 1, bblnResourceIndexEntries[i - 1].Instance);
