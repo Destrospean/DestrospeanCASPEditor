@@ -12,7 +12,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         protected readonly bool mIsSubNotebook;
 
-        public CASPart CASPart
+        public CASTableObject CASTableObject
         {
             get;
             private set;
@@ -30,11 +30,11 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             private set;
         }
 
-        protected PresetNotebook(CASPart casPart, Gtk.Image imageWidget, bool isSubNotebook = false) : base()
+        protected PresetNotebook(CASTableObject castableObject, Gtk.Image imageWidget, bool isSubNotebook = false) : base()
         {
             try
             {
-                CASPart = casPart;
+                CASTableObject = castableObject;
                 Image = imageWidget;
                 mIsSubNotebook = isSubNotebook;
                 LastSelectedPage = 0;
@@ -47,11 +47,11 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         /*
                         if (NPages > 1 && CurrentPage == NPages - 1)
                         {
-                            CASPart.Presets.Add(new CASPart.Preset(CASPart, CASPart.AllPresets[LastSelectedPage].XmlFile));
-                            ((PresetNotebook)CurrentPageWidget).AddPreset(CASPart.AllPresets[CASPart.AllPresets.Count - 1]);
-                            SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASPart.AllPresets.Count, CASPart.DefaultPreset != null));
-                            SetTabLabel(CurrentPageWidget, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count - 1));
-                            AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                            CASTableObject.Presets.Add(new Preset(CASTableObject, CASTableObject.AllPresets[LastSelectedPage].XmlFile));
+                            ((PresetNotebook)CurrentPageWidget).AddPreset(CASTableObject.AllPresets[CASTableObject.AllPresets.Count - 1]);
+                            SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASTableObject.AllPresets.Count, CASTableObject.DefaultPreset != null));
+                            SetTabLabel(CurrentPageWidget, GetPageLabelHBox(CASTableObject.Presets.Count - CASTableObject.AllPresets.Count - 1));
+                            AppendPage(new PresetNotebook(CASTableObject, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                                 {
                                     Xalign = Platform.IsWindows ? 1 : .5f
                                 });
@@ -131,7 +131,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                                 });
                             button.Clicked += (sender, e) =>
                                 {
-                                    var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASTableObject.ParentPackage);
+                                    var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.ParentPackage);
                                     if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                     {
                                         ((Preset)complate).ReplacePattern(propertyName, choosePatternDialog.ResourceKey);
@@ -223,7 +223,8 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         protected HBox GetPageLabelHBox(int pageIndexOffset = 0, bool isDefault = false)
         {
-            try {
+            try
+            {
                 var pageIndex = NPages + pageIndexOffset;
                 var deleteButton = new Button
                     {
@@ -233,20 +234,20 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 deleteButton.Clicked += (sender, e) =>
                     {
                         mDisableSwitchPage = true;
-                        CASPart.Presets.RemoveAt(pageIndex);
+                        CASTableObject.Presets.RemoveAt(pageIndex);
                         while (NPages > 0)
                         {
                             RemovePage(0);
                         }
-                        if (CASPart.DefaultPreset != null)
+                        if (CASTableObject.DefaultPreset != null)
                         {
-                            AddPreset(CASPart.DefaultPreset, true);
+                            AddPreset(CASTableObject.DefaultPreset, true);
                         }
-                        CASPart.Presets.ForEach(x => AddPreset(x));
+                        CASTableObject.Presets.ForEach(x => AddPreset(x));
                         CurrentPage = LastSelectedPage -= LastSelectedPage > pageIndex ? 1 : 0;
                         /*
                         CurrentPage = LastSelectedPage < NPages ? LastSelectedPage : NPages - 1;
-                        AppendPage(new PresetNotebook(CASPart, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                        AppendPage(new PresetNotebook(CASTableObject, Image, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                             {
                                 Xalign = Platform.IsWindows ? 1 : .5f
                             });
@@ -258,7 +259,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                     };
                 var hBox = new HBox(false, 0);
                 hBox.PackStart(new Label(isDefault ? "Default" : "Preset " + pageIndex.ToString()), true, true, 0);
-                if (CASPart.DefaultPreset == null ? CASPart.Presets.Count > 1 : !isDefault)
+                if (CASTableObject.DefaultPreset == null ? CASTableObject.Presets.Count > 1 : !isDefault)
                 {
                     hBox.PackEnd(deleteButton, false, true, 0);
                 }
@@ -274,11 +275,11 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
 
         public void AddPreset()
         {
-            CASPart.Presets.Add(new Preset(CASPart, CASPart.AllPresets[CurrentPage].XmlFile));
-            AddPreset(CASPart.AllPresets[CASPart.AllPresets.Count - 1]);
-            CurrentPage = CASPart.AllPresets.Count - 1;
-            SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASPart.AllPresets.Count, CASPart.DefaultPreset != null));
-            SetTabLabel(CurrentPageWidget, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count - 1));
+            CASTableObject.Presets.Add(new Preset(CASTableObject, CASTableObject.AllPresets[CurrentPage].XmlFile));
+            AddPreset(CASTableObject.AllPresets[CASTableObject.AllPresets.Count - 1]);
+            CurrentPage = CASTableObject.AllPresets.Count - 1;
+            SetTabLabel(GetNthPage(0), GetPageLabelHBox(-CASTableObject.AllPresets.Count, CASTableObject.DefaultPreset != null));
+            SetTabLabel(CurrentPageWidget, GetPageLabelHBox(CASTableObject.Presets.Count - CASTableObject.AllPresets.Count - 1));
             ShowAll();
             MainWindow.Singleton.NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
         }
@@ -287,10 +288,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
         {
             try
             {
-                var subNotebook = mIsSubNotebook ? this : new PresetNotebook(CASPart, Image, true);
+                var subNotebook = mIsSubNotebook ? this : new PresetNotebook(CASTableObject, Image, true);
                 if (!mIsSubNotebook)
                 {
-                    AppendPage(subNotebook, GetPageLabelHBox(CASPart.Presets.Count - CASPart.AllPresets.Count, isDefault));
+                    AppendPage(subNotebook, GetPageLabelHBox(CASTableObject.Presets.Count - CASTableObject.AllPresets.Count, isDefault));
                 }
                 var complates = new List<Complate>
                     {
@@ -332,10 +333,10 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                         var addPatternButton = new Button(addPatternButtonHBox);
                         addPatternButton.Clicked += (sender, e) =>
                             {
-                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.CASTableObject.ParentPackage);
+                                var choosePatternDialog = new ChoosePatternDialog(MainWindow.Singleton, complate.ParentPackage);
                                 if (choosePatternDialog.Run() == (int)ResponseType.Ok)
                                 {
-                                    complateAsPreset.AddPattern(addPatternSlotName, "CasRgbaMask");
+                                    complateAsPreset.AddPattern(addPatternSlotName, complate.CASTableObject is CASPart ? "CasRgbaMask" : "ObjectRgbaMask" );
                                     complateAsPreset.ReplacePattern(addPatternSlotName, choosePatternDialog.ResourceKey);
                                     complate[addPatternSlotName] = choosePatternDialog.PatternPath;
                                     insertComplatePage(addPatternSlotName, new Table(1, 2, false), System.Array.FindLastIndex(complateAsPreset.PatternSlotNames, x => x != "Logo"));
@@ -369,18 +370,18 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
         }
 
-        public static PresetNotebook CreateInstance(CASPart casPart, Gtk.Image imageWidget)
+        public static PresetNotebook CreateInstance(CASTableObject castableObject, Gtk.Image imageWidget)
         {
             try
             {
-                var notebook = new PresetNotebook(casPart, imageWidget);
-                if (casPart.DefaultPreset != null)
+                var notebook = new PresetNotebook(castableObject, imageWidget);
+                if (castableObject.DefaultPreset != null)
                 {
-                    notebook.AddPreset(casPart.DefaultPreset, true);
+                    notebook.AddPreset(castableObject.DefaultPreset, true);
                 }
-                casPart.Presets.ForEach(x => notebook.AddPreset(x));
+                castableObject.Presets.ForEach(x => notebook.AddPreset(x));
                 /*
-                notebook.AppendPage(new PresetNotebook(casPart, imageWidget, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
+                notebook.AppendPage(new PresetNotebook(castableObject, imageWidget, true), new Gtk.Image(Stock.Add, IconSize.SmallToolbar)
                     {
                         Xalign = Platform.IsWindows ? 1 : .5f
                     });
