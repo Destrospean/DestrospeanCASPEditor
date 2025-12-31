@@ -1,18 +1,18 @@
 #!/bin/bash
 cd "${0%/*}"
 mkdir CASDesignerToolkit
-cd ../DestrospeanCASPEditor/bin/Release
+cd ../CASDesignerToolkit/bin/Release
 mkbundle --simple --static -o ../../../tools/CASDesignerToolkit/CASDesignerToolkit --nodeps CASDesignerToolkit.exe Destrospean.CmarNYCBorrowed.dll Destrospean.S3PIExtensions.dll GDImageLibrary.dll GLWidget.dll Newtonsoft.Json.dll OpenTK.dll System.Custom.dll TeximpNet.dll /usr/lib/mono/4.5/System.dll /usr/lib/mono/4.5/System.Configuration.dll /usr/lib/mono/4.5/System.Xml.dll /usr/lib/mono/4.5/System.Security.dll /usr/lib/mono/4.5/System.Numerics.dll /usr/lib/mono/4.5/System.Core.dll /usr/lib/mono/4.5/Mono.Security.dll /usr/lib/mono/4.5/mscorlib.dll /usr/lib/cli/gtk-sharp-2.0/gtk-sharp.dll /usr/lib/cli/glib-sharp-2.0/glib-sharp.dll /usr/lib/cli/gdk-sharp-2.0/gdk-sharp.dll /usr/lib/mono/4.5/Mono.Cairo.dll /usr/lib/cli/pango-sharp-2.0/pango-sharp.dll /usr/lib/cli/atk-sharp-2.0/atk-sharp.dll /usr/lib/mono/4.5/System.Windows.Forms.dll /usr/lib/mono/4.5/System.Drawing.dll /usr/lib/mono/4.5/Mono.WebBrowser.dll /usr/lib/mono/4.5/System.Runtime.Serialization.Formatters.Soap.dll /usr/lib/mono/4.5/Accessibility.dll /usr/lib/mono/4.5/System.Data.dll /usr/lib/mono/4.5/System.Transactions.dll /usr/lib/mono/4.5/System.EnterpriseServices.dll /usr/lib/mono/4.5/System.Xml.Linq.dll /usr/lib/mono/4.5/System.Runtime.Serialization.dll /usr/lib/mono/4.5/System.ServiceModel.Internals.dll /usr/lib/mono/4.5/I18N.West.dll /usr/lib/mono/4.5/I18N.dll -L /usr/lib/mono/4.5/ -L /usr/lib/cli/gtk-sharp-2.0/ -L /usr/lib/cli/glib-sharp-2.0/ -L /usr/lib/cli/gdk-sharp-2.0/ -L /usr/lib/cli/pango-sharp-2.0/ -L /usr/lib/cli/atk-sharp-2.0/ --machine-config /etc/mono/4.5/machine.config --config ../../../tools/config --library /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libffi.so.8 --library /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libdatrie.so.1 --library /usr/lib/x86_64-linux-gnu/libthai.so.0 --library /usr/lib/x86_64-linux-gnu/libpango-1.0.so.0 --library /usr/lib/x86_64-linux-gnu/libatk-1.0.so.0 --library /usr/lib/x86_64-linux-gnu/libpixman-1.so.0 --library /lib/x86_64-linux-gnu/libz.so.1 --library /usr/lib/x86_64-linux-gnu/libpng16.so.16 --library /usr/lib/x86_64-linux-gnu/libfreetype.so.6 --library /lib/x86_64-linux-gnu/libexpat.so.1 --library /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 --library /usr/lib/x86_64-linux-gnu/libXau.so.6 --library /usr/lib/x86_64-linux-gnu/libbsd.so.0 --library /usr/lib/x86_64-linux-gnu/libXdmcp.so.6 --library /usr/lib/x86_64-linux-gnu/libxcb.so.1 --library /usr/lib/x86_64-linux-gnu/libxcb-shm.so.0 --library /usr/lib/x86_64-linux-gnu/libxcb-render.so.0 --library /usr/lib/x86_64-linux-gnu/libX11.so.6 --library /usr/lib/x86_64-linux-gnu/libXrender.so.1 --library /usr/lib/x86_64-linux-gnu/libXext.so.6 --library /usr/lib/x86_64-linux-gnu/libcairo.so.2 --library /usr/lib/x86_64-linux-gnu/libgraphite2.so.3 --library /usr/lib/x86_64-linux-gnu/libharfbuzz.so.0 --library /usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0 --library /usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0 --library /usr/lib/x86_64-linux-gnu/libgmodule-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libgio-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libXinerama.so.1 --library /usr/lib/x86_64-linux-gnu/libXi.so.6 --library /usr/lib/x86_64-linux-gnu/libXrandr.so.2 --library /usr/lib/x86_64-linux-gnu/libXfixes.so.3 --library /usr/lib/x86_64-linux-gnu/libXcursor.so.1 --library /usr/lib/x86_64-linux-gnu/libXcomposite.so.1 --library /usr/lib/x86_64-linux-gnu/libXdamage.so.1 --library /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0 --library /usr/lib/x86_64-linux-gnu/libgtk-x11-2.0.so.0 --library /usr/lib/cli/gtk-sharp-2.0/libgtksharpglue-2.so --library /usr/lib/cli/glib-sharp-2.0/libglibsharpglue-2.so --library /usr/lib/libMonoPosixHelper.so --library /usr/lib/cli/gdk-sharp-2.0/libgdksharpglue-2.so --library /usr/lib/libmono-native.so --library /lib/x86_64-linux-gnu/libc.so.6
 cd ../../../tools
-cp ../DestrospeanCASPEditor/bin/Release/Acknowledgements.txt CASDesignerToolkit
-cp ../DestrospeanCASPEditor/bin/Release/GameFolders.xml CASDesignerToolkit
-cp ../DestrospeanCASPEditor/bin/Release/LICENSE.md CASDesignerToolkit
-cp ../DestrospeanCASPEditor/bin/Release/Mono.Posix.dll CASDesignerToolkit
-cp ../DestrospeanCASPEditor/bin/Release/s3pi* CASDesignerToolkit
-cp ../DestrospeanCASPEditor/Icons/CASDesignerToolkit.svg CASDesignerToolkit
+cp ../CASDesignerToolkit/bin/Release/Acknowledgements.txt CASDesignerToolkit
+cp ../CASDesignerToolkit/bin/Release/GameFolders.xml CASDesignerToolkit
+cp ../CASDesignerToolkit/bin/Release/LICENSE.md CASDesignerToolkit
+cp ../CASDesignerToolkit/bin/Release/Mono.Posix.dll CASDesignerToolkit
+cp ../CASDesignerToolkit/bin/Release/s3pi* CASDesignerToolkit
+cp ../CASDesignerToolkit/Icons/CASDesignerToolkit.svg CASDesignerToolkit
 cp start.sh CASDesignerToolkit
 cp /lib/x86_64-linux-gnu/libgio-2.0.so.0 CASDesignerToolkit
 cp /lib/x86_64-linux-gnu/libjpeg.so.62 CASDesignerToolkit
 rar a CASDesignerToolkit-debian-amd64.rar CASDesignerToolkit/*
-mv CASDesignerToolkit-*.rar ../DestrospeanCASPEditor/bin/Release
+mv CASDesignerToolkit-*.rar ../CASDesignerToolkit/bin/Release
 rm -rf CASDesignerToolkit
