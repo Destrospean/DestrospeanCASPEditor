@@ -7,6 +7,7 @@ using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.S3PIExtensions;
 using Gtk;
 using s3pi.Interfaces;
+using s3pi.WrapperDealer;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -141,10 +142,10 @@ namespace Destrospean.DestrospeanCASPEditor
                     }
                     PatternIconView.SelectPath(new TreePath("0"));
                 };
-            addPatternsByCategory(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry));
+            addPatternsByCategory(WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry));
             foreach (var patternListResourceIndexEntry in package.FindAll(x => x.ResourceType == ResourceUtils.GetResourceType("PTRN")))
             {
-                addPatternsByCategory(s3pi.WrapperDealer.WrapperDealer.GetResource(0, package, patternListResourceIndexEntry));
+                addPatternsByCategory(WrapperDealer.GetResource(0, package, patternListResourceIndexEntry));
             }
             categories.AddRange(patternsByCategory.Keys);
             categories.Sort();
@@ -186,7 +187,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
             var patternsByCategory = new Dictionary<string, List<string>>();
             var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            xmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, gamePatternListEvaluated.Package, gamePatternListEvaluated.ResourceIndexEntry).Stream).ReadToEnd());
             foreach (XmlNode childNode in xmlDocument.SelectSingleNode("patternlist").ChildNodes)
             {
                 if (childNode.Name == "category")
@@ -279,7 +280,7 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             var evaluated = package.EvaluateResourceKey(patternKey);
             var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(new StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            xmlDocument.LoadXml(new StreamReader(WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
             var propertiesXmlNodes = new Dictionary<string, string>();
             foreach (XmlNode childNode in xmlDocument.SelectSingleNode("complate").ChildNodes)
             {
