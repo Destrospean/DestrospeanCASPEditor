@@ -111,6 +111,7 @@ namespace Destrospean.Common.Abstractions
             {
                 beforeMarkUnsaved();
             }
+            MarkUnsavedChangesCallback();
         }
     }
 }
