@@ -7,7 +7,7 @@ using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
 
-namespace Destrospean.DestrospeanCASPEditor.Abstractions
+namespace Destrospean.Common.Abstractions
 {
     public class CASPart : CASTableObject
     {

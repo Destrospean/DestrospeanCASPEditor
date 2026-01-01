@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using Destrospean.CmarNYCBorrowed;
+using Destrospean.Common;
+using Destrospean.Common.Abstractions;
 using Destrospean.DestrospeanCASPEditor;
-using Destrospean.DestrospeanCASPEditor.Abstractions;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Destrospean.S3PIExtensions;
 using Gtk;
@@ -83,6 +84,9 @@ public partial class MainWindow : Window
 
     public MainWindow() : base(WindowType.Toplevel)
     {
+        Complate.GetTextureCallback = ImageUtils.GetTexture;
+        Complate.MarkModelsNeedUpdated = () => ModelsNeedUpdated = true;
+        Complate.MarkUnsavedChangesCallback = () => NextState = NextStateOptions.UnsavedChanges;
         TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
         TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;
         HasUnsavedChanges = false;
@@ -190,7 +194,7 @@ public partial class MainWindow : Window
             flagPageButtonHBox.PackEnd(exportTextureButton, false, true, 4);
             buttonHBox.PackStart(flagPageButtonHBox, false, true, 0);
             buttonHBox.PackEnd(addPresetButtonAlignment, false, true, 0);
-            System.Action additionalToggleAction = delegate
+            Destrospean.CmarNYCBorrowed.Action additionalToggleAction = delegate
                 {
                     casPart.ClearCurrentRig();
                     NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
@@ -716,7 +720,7 @@ public partial class MainWindow : Window
                     {
                         Value = Sim.Special
                     };
-                System.Action changeOtherSlidersAndUpdateModels = delegate
+                Destrospean.CmarNYCBorrowed.Action changeOtherSlidersAndUpdateModels = delegate
                     {
                         for (var i = 0; i < casPart.LODs.Count; i++)
                         {

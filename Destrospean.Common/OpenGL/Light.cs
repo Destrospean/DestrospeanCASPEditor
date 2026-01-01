@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 
-namespace Destrospean.DestrospeanCASPEditor.OpenGL
+namespace Destrospean.Common.OpenGL
 {
     public enum LightType
     {

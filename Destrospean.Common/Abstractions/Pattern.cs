@@ -4,7 +4,7 @@ using System.Xml;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIExtensions;
 
-namespace Destrospean.DestrospeanCASPEditor.Abstractions
+namespace Destrospean.Common.Abstractions
 {
     public class Pattern : Complate
     {
@@ -35,10 +35,10 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                     switch (PatternInfo.Type)
                     {
                         case PatternType.Colored:
-                            mPatternImage = ParentPackage.GetRGBPatternImage(PatternInfo, ImageUtils.GetTexture);
+                            mPatternImage = ParentPackage.GetRGBPatternImage(PatternInfo, GetTextureCallback);
                             break;
                         case PatternType.HSV:
-                            mPatternImage = ParentPackage.GetHSVPatternImage(PatternInfo, ImageUtils.GetTexture);
+                            mPatternImage = ParentPackage.GetHSVPatternImage(PatternInfo, GetTextureCallback);
                             break;
                         case PatternType.Solid:
                             mPatternImage = PatternInfo.SolidColor;
@@ -285,7 +285,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             PatternImage = null;
         }
 
-        public override void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
+        public override void SetValue(string propertyName, string newValue, CmarNYCBorrowed.Action beforeMarkUnsaved = null)
         {
             base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
         }

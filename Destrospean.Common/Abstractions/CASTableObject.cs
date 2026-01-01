@@ -2,7 +2,7 @@
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIExtensions;
 
-namespace Destrospean.DestrospeanCASPEditor.Abstractions
+namespace Destrospean.Common.Abstractions
 {
     public abstract class CASTableObject
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
 
-namespace Destrospean.DestrospeanCASPEditor.OpenGL
+namespace Destrospean.Common.OpenGL
 {
     public class Shader
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OpenTK;
 
-namespace Destrospean.DestrospeanCASPEditor.OpenGL
+namespace Destrospean.Common.OpenGL
 {
     public abstract class VolumeBase
     {
@@ -21,7 +21,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             }
         }
 
-        public virtual List<Tuple<int, int, int>> Faces
+        public virtual List<int[]> Faces
         {
             get;
             set;
@@ -117,7 +117,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
 
         protected Vector2[] mTextureCoordinates;
 
-        protected List<Tuple<int, int, int>> mFaces = new List<Tuple<int, int, int>>();
+        protected List<int[]> mFaces = new List<int[]>();
 
         public override Vector3[] ColorData
         {
@@ -139,7 +139,7 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             }
         }
 
-        public override List<Tuple<int, int, int>> Faces
+        public override List<int[]> Faces
         {
             get
             {
@@ -211,9 +211,9 @@ namespace Destrospean.DestrospeanCASPEditor.OpenGL
             var indices = new List<int>();
             foreach (var face in mFaces)
             {
-                indices.Add(face.Item1 + offset);
-                indices.Add(face.Item2 + offset);
-                indices.Add(face.Item3 + offset);
+                indices.Add(face[0] + offset);
+                indices.Add(face[1] + offset);
+                indices.Add(face[2] + offset);
             }
             return indices.ToArray();
         }

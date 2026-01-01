@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 
-namespace Destrospean.DestrospeanCASPEditor.Abstractions
+namespace Destrospean.Common.Abstractions
 {
     public abstract class Complate
     {
@@ -15,6 +15,10 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
         {
             get;
         }
+
+        public static CmarNYCBorrowed.Action MarkModelsNeedUpdated, MarkUnsavedChangesCallback;
+
+        public static CmarNYCBorrowed.TextureUtils.GetTextureDelegate GetTextureCallback;
 
         public abstract s3pi.Interfaces.IPackage ParentPackage
         {
@@ -100,14 +104,13 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             return System.Array.ConvertAll(text.Split(','), x => float.Parse(x, System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        public virtual void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
+        public virtual void SetValue(string propertyName, string newValue, CmarNYCBorrowed.Action beforeMarkUnsaved = null)
         {
             mPropertiesXmlNodes[propertyName].Attributes["value"].Value = newValue;
             if (beforeMarkUnsaved != null)
             {
                 beforeMarkUnsaved();
             }
-            MainWindow.Singleton.NextState = NextStateOptions.UnsavedChanges;
         }
     }
 }

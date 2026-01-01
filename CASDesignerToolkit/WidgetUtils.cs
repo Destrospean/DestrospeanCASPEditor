@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Destrospean.CmarNYCBorrowed;
+using Destrospean.Common;
 using Destrospean.DestrospeanCASPEditor.Widgets;
 using Destrospean.S3PIExtensions;
 using Gdk;
@@ -367,7 +368,7 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, System.Action additionalToggleAction, object propertyHolder, params string[] propertyPathComponents)
+        public static Frame GetEnumPropertyCheckButtonsInNewFrame(string label, CmarNYCBorrowed.Action additionalToggleAction, object propertyHolder, params string[] propertyPathComponents)
         {
             try
             {

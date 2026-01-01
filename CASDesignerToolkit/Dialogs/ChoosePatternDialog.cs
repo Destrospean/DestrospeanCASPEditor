@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Destrospean.CmarNYCBorrowed;
-using Destrospean.DestrospeanCASPEditor.Abstractions;
+using Destrospean.Common;
+using Destrospean.Common.Abstractions;
 using Destrospean.S3PIExtensions;
 using Gtk;
 using s3pi.Interfaces;
@@ -84,7 +85,7 @@ namespace Destrospean.DestrospeanCASPEditor
                         }
                     }
                 };
-            System.Action<int> setPatternKeysAndPaths = (int categoryIndex) =>
+            System.Action<int> setPatternKeysAndPaths = (categoryIndex) =>
                 {
                     patternKeys.Clear();
                     patternPaths.Clear();

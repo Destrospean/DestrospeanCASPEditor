@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Destrospean.DestrospeanCASPEditor.OpenGL;
+using Destrospean.Common.OpenGL;
 
-namespace Destrospean.DestrospeanCASPEditor
+namespace Destrospean.Common
 {
     public class PreloadedData
     {
-        public readonly Dictionary<string, Abstractions.CASPart> CASParts = new Dictionary<string, Abstractions.CASPart>(StringComparer.InvariantCultureIgnoreCase);
+        public readonly Dictionary<string, Destrospean.Common.Abstractions.CASPart> CASParts = new Dictionary<string, Destrospean.Common.Abstractions.CASPart>(StringComparer.InvariantCultureIgnoreCase);
 
         public readonly Dictionary<string, CmarNYCBorrowed.GEOM> GEOMs = new Dictionary<string, CmarNYCBorrowed.GEOM>(StringComparer.InvariantCultureIgnoreCase);
 

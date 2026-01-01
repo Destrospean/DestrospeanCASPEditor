@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using Destrospean.DestrospeanCASPEditor.Abstractions;
+using Destrospean.Common.Abstractions;
 using Gdk;
 using Gtk;
 
@@ -23,6 +23,8 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             get;
             private set;
         }
+
+        public delegate void InsertComplatePageDelegate(string Label, Table Table, int index);
 
         public int LastSelectedPage
         {
@@ -307,7 +309,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                 foreach (var complate in complates)
                 {
                     var addPatternSlotName = "Pattern D";
-                    System.Action<string, Table, int> insertComplatePage = (string label, Table table, int index) =>
+                    InsertComplatePageDelegate insertComplatePage = (label, table, index) =>
                         {
                             var scrolledWindow = new ScrolledWindow();
                             scrolledWindow.AddWithViewport(table);

@@ -7,7 +7,7 @@ using Destrospean.CmarNYCBorrowed;
 using Destrospean.S3PIExtensions;
 using s3pi.Interfaces;
 
-namespace Destrospean.DestrospeanCASPEditor.Abstractions
+namespace Destrospean.Common.Abstractions
 {
     public class Preset : Complate
     {
@@ -175,14 +175,14 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                             }
                             else if (key.EndsWith("texture"))
                             {
-                                logos.Add(ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height));
+                                logos.Add(ParentPackage.GetTexture(value, GetTextureCallback, width, height));
                             }
                         }
                         else if (key.StartsWith("stencil"))
                         {
                             if (key.Length == 9)
                             {
-                                stencils.Add(ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height));
+                                stencils.Add(ParentPackage.GetTexture(value, GetTextureCallback, width, height));
                             }
                             else if (key.EndsWith("enabled"))
                             {
@@ -204,25 +204,25 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                                     SpecularMap = value;
                                     break;
                                 case "control map":
-                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, ImageUtils.GetTexture, width, height);
+                                    controlMapArray = ParentPackage.GetTextureARGBArray(value, GetTextureCallback, width, height);
                                     break;
                                 case "diffuse color":
                                     diffuseColor = ParseCommaSeparatedValues(value);
                                     break;
                                 case "diffuse map":
-                                    diffuseMap = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
+                                    diffuseMap = ParentPackage.GetTexture(value, GetTextureCallback, width, height);
                                     break;
                                 case "highlight color":
                                     highlightColor = ParseCommaSeparatedValues(value);
                                     break;
                                 case "mask":
-                                    maskArray = ParentPackage.GetTextureARGBArray(value, ImageUtils.GetTexture, width, height);
+                                    maskArray = ParentPackage.GetTextureARGBArray(value, GetTextureCallback, width, height);
                                     break;
                                 case "multiplier":
-                                    multiplier = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
+                                    multiplier = ParentPackage.GetTexture(value, GetTextureCallback, width, height);
                                     break;
                                 case "overlay":
-                                    overlay = ParentPackage.GetTexture(value, ImageUtils.GetTexture, width, height);
+                                    overlay = ParentPackage.GetTexture(value, GetTextureCallback, width, height);
                                     break;
                                 case "root color":
                                     rootColor = ParseCommaSeparatedValues(value);
@@ -541,7 +541,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
                 {
                     System.Threading.Thread.Sleep(1);
                     mInternal.Texture = mInternal.NewTexture;
-                    MainWindow.Singleton.ModelsNeedUpdated = true;
+                    MarkModelsNeedUpdated();
                 }).Start();
         }
 
@@ -593,7 +593,7 @@ namespace Destrospean.DestrospeanCASPEditor.Abstractions
             }
         }
 
-        public override void SetValue(string propertyName, string newValue, System.Action beforeMarkUnsaved = null)
+        public override void SetValue(string propertyName, string newValue, CmarNYCBorrowed.Action beforeMarkUnsaved = null)
         {
             mInternal.SetValue(propertyName, newValue, beforeMarkUnsaved ?? RegenerateTexture);
         }

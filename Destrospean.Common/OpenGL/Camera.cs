@@ -1,7 +1,7 @@
 ﻿using System;
 using OpenTK;
 
-namespace Destrospean.DestrospeanCASPEditor.OpenGL
+namespace Destrospean.Common.OpenGL
 {
     public class Camera
     {

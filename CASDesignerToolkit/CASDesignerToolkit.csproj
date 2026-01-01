@@ -174,9 +174,6 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="GLWidget">
       <HintPath>..\libs\GLWidget.dll</HintPath>
     </Reference>
@@ -189,6 +186,9 @@
     <Reference Include="s3pi.MeshChunks">
       <HintPath>..\libs\s3pi.MeshChunks.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -208,16 +208,9 @@
     <Compile Include="gtk-gui\MainWindow.cs" />
     <Compile Include="ImageUtils.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
-    <Compile Include="Platform.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
     <Compile Include="Dialogs\GameFoldersDialog.cs" />
-    <Compile Include="OpenGL\Camera.cs" />
-    <Compile Include="OpenGL\Light.cs" />
-    <Compile Include="OpenGL\Material.cs" />
-    <Compile Include="OpenGL\Volume.cs" />
-    <Compile Include="OpenGL\MainWindow.cs" />
-    <Compile Include="OpenGL\Shader.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
     <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
@@ -229,22 +222,13 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
     <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
-    <Compile Include="Abstractions\Complate.cs" />
-    <Compile Include="Abstractions\Pattern.cs" />
-    <Compile Include="Abstractions\Preset.cs" />
-    <Compile Include="Abstractions\CASPart.cs" />
-    <Compile Include="Abstractions\CASTableObject.cs" />
-    <Compile Include="OpenGL\Sim.cs" />
-    <Compile Include="ApplicationSettings.cs" />
-    <Compile Include="PreloadedData.cs" />
+    <Compile Include="Renderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Widgets\" />
     <Folder Include="Dialogs\" />
-    <Folder Include="OpenGL\" />
     <Folder Include="Icons\" />
-    <Folder Include="Abstractions\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -337,6 +321,10 @@
     <ProjectReference Include="..\Destrospean.S3PIExtensions\Destrospean.S3PIExtensions.csproj">
       <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
       <Name>Destrospean.S3PIExtensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.Common\Destrospean.Common.csproj">
+      <Project>{87A5463F-B4DF-4EB0-8970-17A07DF714B1}</Project>
+      <Name>Destrospean.Common</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

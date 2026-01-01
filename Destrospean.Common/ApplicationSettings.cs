@@ -2,7 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 
-namespace Destrospean.DestrospeanCASPEditor
+namespace Destrospean.Common
 {
     public static class ApplicationSettings
     {
