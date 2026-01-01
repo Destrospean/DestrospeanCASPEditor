@@ -33,8 +33,6 @@ public partial class MainWindow
 	
 	private global::Gtk.ToggleAction UseAdvancedShadersAction;
 	
-	private global::Gtk.HPaned MainPane;
-	
 	private global::Gtk.VBox MainVBox;
 	
 	private global::Gtk.MenuBar MainMenuBar;
@@ -116,11 +114,6 @@ public partial class MainWindow
 		this.DefaultWidth = 1080;
 		this.DefaultHeight = 540;
 		// Container child MainWindow.Gtk.Container+ContainerChild
-		this.MainPane = new global::Gtk.HPaned ();
-		this.MainPane.CanFocus = true;
-		this.MainPane.Name = "MainPane";
-		this.MainPane.Position = 10;
-		// Container child MainPane.Gtk.Paned+PanedChild
 		this.MainVBox = new global::Gtk.VBox ();
 		this.MainVBox.Name = "MainVBox";
 		this.MainVBox.Spacing = 6;
@@ -197,8 +190,7 @@ public partial class MainWindow
 		this.MainVBox.Add (this.ResourcePropertyTable);
 		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.ResourcePropertyTable]));
 		w9.Position = 2;
-		this.MainPane.Add (this.MainVBox);
-		this.Add (this.MainPane);
+		this.Add (this.MainVBox);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
 		}
