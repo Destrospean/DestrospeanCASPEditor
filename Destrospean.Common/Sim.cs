@@ -68,7 +68,6 @@ namespace Destrospean.Common
 
         void LoadGEOMs(CASPart casPart, int presetIndex, int lodIndex, Func<string, System.Drawing.Bitmap, int> loadTextureCallback)
         {
-            var preloadedData = PreloadedData.Singleton;
             if (!CASParts.ContainsValue(casPart) || casPart.LODs.Count == 0)
             {
                 return;
@@ -145,11 +144,11 @@ namespace Destrospean.Common
                                 try
                                 {
                                     var geoms = new List<GEOM>();
-                                    foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(preloadedData.VPXYs[new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).GetMeshLinks(lod))
+                                    foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedData.VPXYs[new ResourceKey(bbln.TGIList[geomMorph.TGIIndex].Type, bbln.TGIList[geomMorph.TGIIndex].Group, bbln.TGIList[geomMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).GetMeshLinks(lod))
                                     {
                                         try
                                         {
-                                            geoms.Add(preloadedData.GEOMs[new ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
+                                            geoms.Add(PreloadedData.GEOMs[new ResourceKey(link.Type, link.Group, link.Instance).ReverseEvaluateResourceKey()]);
                                         }
                                         catch (ResourceIndexEntryNotFoundException)
                                         {
@@ -168,7 +167,7 @@ namespace Destrospean.Common
                         {
                             try
                             {   
-                                foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(preloadedData.VPXYs[new ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
+                                foreach (var link in new CmarNYCBorrowed.VPXY(new BinaryReader(PreloadedData.VPXYs[new ResourceKey(bbln.TGIList[boneMorph.TGIIndex].Type, bbln.TGIList[boneMorph.TGIIndex].Group, bbln.TGIList[boneMorph.TGIIndex].Instance).ReverseEvaluateResourceKey()].Stream)).AllLinks)
                                 {
                                     try
                                     {   
@@ -217,7 +216,7 @@ namespace Destrospean.Common
                     }
                 }
                 var key = "";
-                foreach (var geometryResourceKvp in preloadedData.GEOMs)
+                foreach (var geometryResourceKvp in PreloadedData.GEOMs)
                 {
                     if (geometryResourceKvp.Value == geometryResource)
                     {
@@ -226,7 +225,7 @@ namespace Destrospean.Common
                     }
                 }
                 Material material;
-                if (!preloadedData.Materials.TryGetValue(key, out material))
+                if (!PreloadedData.Materials.TryGetValue(key, out material))
                 {
                     var materialColors = new Dictionary<FieldType, Vector3>();
                     var materialMaps = new Dictionary<FieldType, string>();
@@ -257,10 +256,10 @@ namespace Destrospean.Common
                             SpecularColor = materialColors.TryGetValue(FieldType.Specular, out color) ? color : Vector3.One,
                             SpecularMap = materialMaps.TryGetValue(FieldType.SpecularMap, out map) ? map : ""
                         };
-                    preloadedData.Materials.Add(key, material);
+                    PreloadedData.Materials.Add(key, material);
                 }
                 var currentPreset = casPart == CurrentCASPart ? casPart.AllPresets[presetIndex] : casPart.AllPresets[0];
-                preloadedData.Meshes.Add(new Volume
+                PreloadedData.Meshes.Add(new Volume
                     {
                         ColorData = colors.ToArray(),
                         Faces = faces,
