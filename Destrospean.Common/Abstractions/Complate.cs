@@ -16,9 +16,9 @@ namespace Destrospean.Common.Abstractions
             get;
         }
 
-        public static CmarNYCBorrowed.Action MarkModelsNeedUpdatedCallback, MarkUnsavedChangesCallback;
-
         public static CmarNYCBorrowed.TextureUtils.GetTextureDelegate GetTextureCallback;
+
+        public static CmarNYCBorrowed.Action MarkModelsNeedUpdatedCallback, MarkUnsavedChangesCallback;
 
         public abstract s3pi.Interfaces.IPackage ParentPackage
         {
