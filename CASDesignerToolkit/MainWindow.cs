@@ -98,7 +98,7 @@ public partial class MainWindow : Window
         ApplicationSettings.LoadSettings();
         Sim = new Sim();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
-        if (!File.Exists(ChoosePatternDialog.CacheFilePath))
+        if (!File.Exists(PatternUtils.CacheFilePath))
         {
             new CacheGenerationWindow("Please wait as caches are being generated...", this);
         }

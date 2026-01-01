@@ -83,6 +83,7 @@
     <Compile Include="OpenGL\Volume.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Sim.cs" />
+    <Compile Include="PatternUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
