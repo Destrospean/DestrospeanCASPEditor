@@ -130,8 +130,8 @@ namespace Destrospean.DestrospeanCASPEditor
                             }
                             if (patternImage != null)
                             {
-                                PatternUtils.PreloadedPatternImages[patternNameKeyPath[1]] = patternImage;
-                                pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = patternImage.ToPixbuf().ScaleSimple(64, 64, Gdk.InterpType.Bilinear);
+                                patternImage = PatternUtils.PreloadedPatternImages[patternNameKeyPath[1]] = new Bitmap(patternImage, 64, 64);
+                                pixbuf = PreloadedPatternImagePixbufs[patternNameKeyPath[1]] = patternImage.ToPixbuf();
                             }
                             uncachedPatternExists = true;
                         }
