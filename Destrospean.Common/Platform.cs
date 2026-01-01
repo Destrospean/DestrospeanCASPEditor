@@ -67,15 +67,6 @@ namespace Destrospean.Common
             }
         }
 
-        [Flags]
-        public enum OSFlags
-        {
-            Windows = 1,
-            Unix,
-            Linux = 4,
-            Darwin = 8
-        }
-
         public static OSFlags OS
         {
             get
@@ -100,6 +91,15 @@ namespace Destrospean.Common
             }
         }
 
+        [Flags]
+        public enum OSFlags
+        {
+            Windows = 1,
+            Unix,
+            Linux = 4,
+            Darwin = 8
+        }
+
         public static string GetCommandOutput(string command, string arguments = "")
         {
             var startInfo = new ProcessStartInfo
@@ -117,8 +117,8 @@ namespace Destrospean.Common
                 })
             {
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd(),
-                error = process.StandardError.ReadToEnd();
+                string error = process.StandardError.ReadToEnd(),
+                output = process.StandardOutput.ReadToEnd();
                 process.WaitForExit();
                 return string.IsNullOrEmpty(error) ? output : string.Format("Error: {0}\nOutput: {1}", error, output);
             }
