@@ -85,7 +85,7 @@ public partial class MainWindow : Window
     public MainWindow() : base(WindowType.Toplevel)
     {
         Complate.GetTextureCallback = ImageUtils.GetTexture;
-        Complate.MarkModelsNeedUpdated = () => ModelsNeedUpdated = true;
+        Complate.MarkModelsNeedUpdatedCallback = () => ModelsNeedUpdated = true;
         Complate.MarkUnsavedChangesCallback = () => NextState = NextStateOptions.UnsavedChanges;
         TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
         TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;

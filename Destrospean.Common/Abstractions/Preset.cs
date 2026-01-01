@@ -541,7 +541,7 @@ namespace Destrospean.Common.Abstractions
                 {
                     System.Threading.Thread.Sleep(1);
                     mInternal.Texture = mInternal.NewTexture;
-                    MarkModelsNeedUpdated();
+                    MarkModelsNeedUpdatedCallback();
                 }).Start();
         }
 

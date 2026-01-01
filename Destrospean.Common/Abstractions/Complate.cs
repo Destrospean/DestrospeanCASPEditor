@@ -16,7 +16,7 @@ namespace Destrospean.Common.Abstractions
             get;
         }
 
-        public static CmarNYCBorrowed.Action MarkModelsNeedUpdated, MarkUnsavedChangesCallback;
+        public static CmarNYCBorrowed.Action MarkModelsNeedUpdatedCallback, MarkUnsavedChangesCallback;
 
         public static CmarNYCBorrowed.TextureUtils.GetTextureDelegate GetTextureCallback;
 
