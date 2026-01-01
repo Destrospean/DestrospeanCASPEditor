@@ -273,7 +273,6 @@ namespace Destrospean.Common
                         Vertices = vertices.ToArray()
                     });
             }
-
         }
 
         public void LoadGEOMs(int presetIndex, int lodIndex, Func<string, System.Drawing.Bitmap, int> loadTextureCallback)
