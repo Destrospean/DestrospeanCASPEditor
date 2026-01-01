@@ -6,27 +6,6 @@ namespace Destrospean.Common
 {
     public static class Platform
     {
-        static class WineDetector
-        {
-            [DllImport("ntdll.dll", EntryPoint = "wine_get_version")]
-            static extern IntPtr WineGetVersion();
-
-            public static bool IsRunningUnderWine
-            {
-                get
-                {
-                    try
-                    {
-                        return WineGetVersion() != IntPtr.Zero;
-                    }
-                    catch (EntryPointNotFoundException)
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
-
         public static bool IsLinux
         {
             get
@@ -98,6 +77,27 @@ namespace Destrospean.Common
             Unix,
             Linux = 4,
             Darwin = 8
+        }
+
+        static class WineDetector
+        {
+            [DllImport("ntdll.dll", EntryPoint = "wine_get_version")]
+            static extern IntPtr WineGetVersion();
+
+            public static bool IsRunningUnderWine
+            {
+                get
+                {
+                    try
+                    {
+                        return WineGetVersion() != IntPtr.Zero;
+                    }
+                    catch (EntryPointNotFoundException)
+                    {
+                        return false;
+                    }
+                }
+            }
         }
 
         public static string GetCommandOutput(string command, string arguments = "")
