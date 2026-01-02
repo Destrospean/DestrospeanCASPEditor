@@ -29,7 +29,7 @@ namespace Destrospean.CmarNYCBorrowed
         {
             get
             {
-                return (float)Math.Sqrt((X * X) + (Y * Y) + (Z * Z));
+                return (float)Math.Sqrt(X * X + Y * Y + Z * Z);
             }
         }
 

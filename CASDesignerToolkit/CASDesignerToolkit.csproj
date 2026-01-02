@@ -223,6 +223,7 @@
     <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
     <Compile Include="Renderer.cs" />
+    <Compile Include="Sim.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -325,6 +326,10 @@
     <ProjectReference Include="..\Destrospean.Common\Destrospean.Common.csproj">
       <Project>{87A5463F-B4DF-4EB0-8970-17A07DF714B1}</Project>
       <Name>Destrospean.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.Graphics.OpenGL\Destrospean.Graphics.OpenGL.csproj">
+      <Project>{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}</Project>
+      <Name>Destrospean.Graphics.OpenGL</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

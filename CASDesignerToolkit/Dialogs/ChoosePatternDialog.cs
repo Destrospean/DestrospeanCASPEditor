@@ -123,7 +123,7 @@ namespace Destrospean.DestrospeanCASPEditor
                             if (patternInfo.Type == PatternType.Solid)
                             {
                                 patternImage = new Bitmap(64, 64);
-                                using (var graphics = Graphics.FromImage(patternImage))
+                                using (var graphics = System.Drawing.Graphics.FromImage(patternImage))
                                 {
                                     graphics.Clear(Color.FromArgb((byte)(patternInfo.SolidColor[0] * byte.MaxValue), (byte)(patternInfo.SolidColor[1] * byte.MaxValue), (byte)(patternInfo.SolidColor[2] * byte.MaxValue)));
                                 }

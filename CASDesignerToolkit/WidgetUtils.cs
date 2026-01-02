@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using Destrospean.CmarNYCBorrowed;
 using Destrospean.Common;
 using Destrospean.DestrospeanCASPEditor.Widgets;
+using Destrospean.Graphics.OpenGL;
 using Destrospean.S3PIExtensions;
 using Gdk;
 using Gtk;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
+using Shader = Destrospean.CmarNYCBorrowed.Shader;
 
 namespace Destrospean.DestrospeanCASPEditor
 {
@@ -159,7 +161,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                         element[1] = (float)colorButton.Color.Green / ushort.MaxValue;
                                         element[2] = (float)colorButton.Color.Blue / ushort.MaxValue;
                                         var color = new OpenTK.Vector3((float)element[0], (float)element[1], (float)element[2]);
-                                        var material = PreloadedData.Materials[geometryResourceKey];
+                                        var material = GlobalState.Materials[geometryResourceKey];
                                         switch ((FieldType)field)
                                         {
 #pragma warning disable 0618
@@ -197,7 +199,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                         element[2] = (float)colorButtonWithAlpha.Color.Blue / ushort.MaxValue;
                                         element[3] = (float)colorButtonWithAlpha.Alpha / ushort.MaxValue;
                                         var color = new OpenTK.Vector3((float)element[0], (float)element[1], (float)element[2]);
-                                        var material = PreloadedData.Materials[geometryResourceKey];
+                                        var material = GlobalState.Materials[geometryResourceKey];
                                         switch ((FieldType)field)
                                         {
 #pragma warning disable 0618
@@ -252,7 +254,7 @@ namespace Destrospean.DestrospeanCASPEditor
                                     index = geometryResource.TGIList.Length - 1;
                                 }
                                 element[0] = (uint)index;
-                                var material = PreloadedData.Materials[geometryResourceKey];
+                                var material = GlobalState.Materials[geometryResourceKey];
                                 switch ((FieldType)field)
                                 {
                                     case FieldType.AmbientOcclusionMap:

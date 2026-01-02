@@ -4,8 +4,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using Destrospean.Common;
-using Destrospean.Common.OpenGL;
 using Destrospean.DestrospeanCASPEditor;
+using Destrospean.Graphics.OpenGL;
 using Gtk;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
@@ -507,20 +507,20 @@ public partial class MainWindow : Window
     public void DeleteTexture(string key)
     {
         int textureID;
-        if (PreloadedData.TextureIDs.TryGetValue(key, out textureID))
+        if (GlobalState.TextureIDs.TryGetValue(key, out textureID))
         {
             GL.DeleteTexture(textureID);
-            PreloadedData.TextureIDs.Remove(key);
+            GlobalState.TextureIDs.Remove(key);
         }
     }
 
     public void DeleteTextures()
     {
-        foreach (var textureID in PreloadedData.TextureIDs.Values)
+        foreach (var textureID in GlobalState.TextureIDs.Values)
         {
             GL.DeleteTexture(textureID);
         }
-        PreloadedData.TextureIDs.Clear();
+        GlobalState.TextureIDs.Clear();
     }
 
     public int LoadTexture(string key, Bitmap image = null)
@@ -536,10 +536,10 @@ public partial class MainWindow : Window
                 return -1;
             }
             int textureID;
-            if (!PreloadedData.TextureIDs.TryGetValue(key, out textureID))
+            if (!GlobalState.TextureIDs.TryGetValue(key, out textureID))
             {
                 GL.GenTextures(1, out textureID);
-                PreloadedData.TextureIDs.Add(key, textureID);
+                GlobalState.TextureIDs.Add(key, textureID);
             }
             GL.BindTexture(TextureTarget.Texture2D, textureID);
             var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -590,7 +590,7 @@ public partial class MainWindow : Window
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
         mShaders[mActiveShader].EnableVertexAttribArrays();
         var indexAt = 0;
-        foreach (var mesh in PreloadedData.Meshes)
+        foreach (var mesh in GlobalState.Meshes)
         {
             GL.BindTexture(TextureTarget.Texture2D, mesh.MainTextureID);
             GL.UniformMatrix4(mShaders[mActiveShader].GetUniform("modelview"), false, ref mesh.ModelViewProjectionMatrix);
@@ -709,7 +709,7 @@ public partial class MainWindow : Window
         var indices = new List<int>();
         var textureCoordinates = new List<Vector2>();
         var vertexCount = 0;
-        foreach (var mesh in PreloadedData.Meshes)
+        foreach (var mesh in GlobalState.Meshes)
         {
             colors.AddRange(mesh.ColorData);
             indices.AddRange(mesh.GetIndices(vertexCount));
@@ -744,7 +744,7 @@ public partial class MainWindow : Window
             GL.BufferData<Vector3>(BufferTarget.ArrayBuffer, (IntPtr)(mNormalData.Length * Vector3.SizeInBytes), mNormalData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(mShaders[mActiveShader].GetAttribute("vNormal"), 3, VertexAttribPointerType.Float, true, 0, 0);
         }
-        foreach (var mesh in PreloadedData.Meshes)
+        foreach (var mesh in GlobalState.Meshes)
         {
             mesh.Rotation = mCurrentRotation;
             mesh.CalculateModelMatrix();

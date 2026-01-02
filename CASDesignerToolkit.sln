@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.S3PIExtensions"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.Common", "Destrospean.Common\Destrospean.Common.csproj", "{87A5463F-B4DF-4EB0-8970-17A07DF714B1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.Graphics.OpenGL", "Destrospean.Graphics.OpenGL\Destrospean.Graphics.OpenGL.csproj", "{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -31,5 +33,9 @@ Global
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Debug|x86.Build.0 = Debug|Any CPU
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Release|x86.ActiveCfg = Release|Any CPU
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Release|x86.Build.0 = Release|Any CPU
+		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Debug|x86.Build.0 = Debug|Any CPU
+		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Release|x86.ActiveCfg = Release|Any CPU
+		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

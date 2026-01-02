@@ -55,10 +55,6 @@
       <HintPath>..\libs\s3pi.CASPartResource.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="OpenTK">
-      <HintPath>..\libs\OpenTK.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
     <Reference Include="System" />
@@ -76,14 +72,9 @@
     <Compile Include="Abstractions\Preset.cs" />
     <Compile Include="ApplicationSettings.cs" />
     <Compile Include="PreloadedData.cs" />
-    <Compile Include="OpenGL\Camera.cs" />
-    <Compile Include="OpenGL\Light.cs" />
-    <Compile Include="OpenGL\Material.cs" />
-    <Compile Include="OpenGL\Shader.cs" />
-    <Compile Include="OpenGL\Volume.cs" />
     <Compile Include="Platform.cs" />
-    <Compile Include="Sim.cs" />
     <Compile Include="PatternUtils.cs" />
+    <Compile Include="SimBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

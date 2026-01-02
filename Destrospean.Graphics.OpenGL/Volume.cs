@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OpenTK;
 
-namespace Destrospean.Common.OpenGL
+namespace Destrospean.Graphics.OpenGL
 {
     public abstract class VolumeBase
     {
