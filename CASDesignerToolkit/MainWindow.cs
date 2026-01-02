@@ -96,7 +96,7 @@ public partial class MainWindow : Window
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSettings.LoadSettings();
-        Sim = new Sim();
+        Sim = new Destrospean.Graphics.OpenGL.Sims3.Sim();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(PatternUtils.CacheFilePath))
         {

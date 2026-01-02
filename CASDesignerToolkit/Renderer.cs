@@ -51,7 +51,7 @@ public partial class MainWindow : Window
 
     public bool ModelsNeedUpdated = false;
 
-    public readonly Sim Sim;
+    public readonly Destrospean.Graphics.OpenGL.Sims3.Sim Sim;
 
     [Flags]
     enum MouseButtonsHeld : byte
