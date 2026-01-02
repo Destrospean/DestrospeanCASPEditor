@@ -905,7 +905,8 @@ public partial class MainWindow : Window
                                 List<Gdk.Pixbuf> pixbufs;
                                 if (ImageUtils.PreloadedImagePixbufs.TryGetValue(key, out pixbufs))
                                 {
-                                    Image.Pixbuf = pixbufs[0];
+                                    var shortestDimension = Math.Min(ImageTable.Allocation.Width, ImageTable.Allocation.Height);
+                                    Image.Pixbuf = pixbufs[0].ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear);
                                 }
                                 break;
                             case "CASP":
