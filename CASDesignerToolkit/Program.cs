@@ -8,6 +8,13 @@
             {
                 Gtk.Application.Init();
                 new MainWindow();
+                if (args.Length > 0)
+                {
+                    MainWindow.Singleton.CurrentPackage = s3pi.Package.Package.OpenPackage(0, args[0], true);
+                    MainWindow.Singleton.RefreshWidgets();
+                    MainWindow.Singleton.NextState = NextStateOptions.NoUnsavedChanges;
+                    MainWindow.Singleton.AddFilePathToWindowTitle(args[0]);
+                }
                 Gtk.Application.Run();
             }
             catch (System.Exception ex)

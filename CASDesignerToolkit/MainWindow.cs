@@ -252,12 +252,6 @@ public partial class MainWindow : Window
         }
     }
 
-    void AddFilePathToWindowTitle(string path)
-    {
-        var directoryPath = System.IO.Path.GetDirectoryName(path);
-        Title = OriginalWindowTitle + " \u2013 " + (directoryPath.Length > 40 ? "..." + directoryPath.Substring(directoryPath.Length - 40) : directoryPath) + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(path);
-    }
-
     void BuildLODNotebook(CASPart casPart, int startLODPageIndex = 0, int startGEOMPageIndex = 0)
     {
         try
@@ -922,6 +916,12 @@ public partial class MainWindow : Window
             Program.WriteError(ex);
             throw;
         }
+    }
+
+    public void AddFilePathToWindowTitle(string path)
+    {
+        var directoryPath = System.IO.Path.GetDirectoryName(path);
+        Title = OriginalWindowTitle + " \u2013 " + (directoryPath.Length > 40 ? "..." + directoryPath.Substring(directoryPath.Length - 40) : directoryPath) + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(path);
     }
 
     public void ClearTemporaryData()
