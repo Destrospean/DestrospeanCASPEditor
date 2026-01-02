@@ -108,7 +108,7 @@ public partial class MainWindow : Window
         }
         UseAdvancedShadersAction.Active = ApplicationSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
-        var alphaCheckerboard = new Gtk.Image
+        var alphaCheckerboard = new Gtk.Image(((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf())
             {
                 HeightRequest = Image.HeightRequest,
                 WidthRequest = Image.WidthRequest,
