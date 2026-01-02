@@ -27,7 +27,7 @@ namespace Destrospean.DestrospeanCASPEditor
 			this.WidthRequest = 344;
 			this.HeightRequest = 240;
 			this.Name = "Destrospean.DestrospeanCASPEditor.ChoosePatternDialog";
-			this.Title = global::Mono.Unix.Catalog.GetString ("window1");
+			this.Title = global::Mono.Unix.Catalog.GetString ("Choose Pattern");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Resizable = false;
 			// Internal child Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.VBox

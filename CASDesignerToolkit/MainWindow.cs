@@ -25,6 +25,8 @@ public enum NextStateOptions : byte
 
 public partial class MainWindow : Window
 {
+    System.Drawing.Bitmap mAlphaCheckerboard;
+
     PresetNotebook mPresetNotebook;
 
     string mSaveAsPath;
@@ -69,6 +71,8 @@ public partial class MainWindow : Window
 
     public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
 
+    public SizeAllocatedHandler ResizeFlagPageButtonHBox;
+
     public static MainWindow Singleton
     {
         get;
@@ -104,16 +108,29 @@ public partial class MainWindow : Window
         }
         UseAdvancedShadersAction.Active = ApplicationSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
-        MainTable.Attach(new Gtk.Image(ImageUtils.CreateCheckerboard(Image.HeightRequest, (int)(8 * WidgetUtils.Scale), new Gdk.Color(191, 191, 191), new Gdk.Color(127, 127, 127)))
+        var alphaCheckerboard = new Gtk.Image
             {
                 HeightRequest = Image.HeightRequest,
                 WidthRequest = Image.WidthRequest,
                 Xalign = 0,
                 Yalign = 0
-            }, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+            };
+        ImageTable.Attach(alphaCheckerboard, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         PrepareGLWidget();
-        MainTable.Attach(mGLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
-        MainTable.ShowAll();
+        ImageTable.Attach(mGLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        Image.SizeAllocated += (o, args) =>
+            {
+                alphaCheckerboard.Pixbuf = ((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf();
+                List<Gdk.Pixbuf> pixbufs;
+                TreeIter iter;
+                TreeModel model;
+                var shortestDimension = Math.Min(Image.Allocation.Width, Image.Allocation.Height);
+                if (Image.Pixbuf != null && shortestDimension != Math.Min(Image.Pixbuf.Width, Image.Pixbuf.Height) && ResourceTreeView.Selection.GetSelected(out model, out iter) && ImageUtils.PreloadedImagePixbufs.TryGetValue(((IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey(), out pixbufs))
+                {
+                    new System.Threading.Thread(() => Application.Invoke((sender, e) => Image.Pixbuf = pixbufs[0].ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear))).Start();
+                }
+            };
+        MainHPaned.ShowAll();
         mGLWidget.Hide();
     }
 
@@ -130,8 +147,20 @@ public partial class MainWindow : Window
             HBox buttonHBox = new HBox(false, 0), 
             flagPageButtonHBox = new HBox(false, 0)
                 {
-                    WidthRequest = Image.WidthRequest
+                    WidthRequest = Image.Allocation.Width
                 };
+            if (ResizeFlagPageButtonHBox != null)
+            {
+                mGLWidget.SizeAllocated -= ResizeFlagPageButtonHBox;
+            }
+            ResizeFlagPageButtonHBox = (o, args) =>
+                {
+                    if (flagPageButtonHBox != null)
+                    {
+                        flagPageButtonHBox.WidthRequest = mGLWidget.Allocation.Width;
+                    }
+                };
+            mGLWidget.SizeAllocated += ResizeFlagPageButtonHBox;
             var flagPageVBox = new VBox(false, 0);
             var flagTables = new Table[2];
             for (var i = 0; i < flagTables.Length; i++)
@@ -1024,9 +1053,11 @@ public partial class MainWindow : Window
                 foreach (var widget in new Widget[]
                     {
                         Image,
-                        MainTable,
+                        ImageTable,
+                        MainHPaned,
                         ResourcePropertyNotebook,
                         ResourcePropertyTable,
+                        ResourceTreeView,
                         this
                     })
                 {
@@ -1034,6 +1065,7 @@ public partial class MainWindow : Window
                 }
                 Resize(DefaultWidth, DefaultHeight);
             }
+            mAlphaCheckerboard = ImageUtils.CreateCheckerboard(monitorGeometry.Width, monitorGeometry.Height, (int)(8 * WidgetUtils.Scale), System.Drawing.Color.FromArgb(191, 191, 191), System.Drawing.Color.FromArgb(127, 127, 127));
             Move(((int)(monitorGeometry.Width / WidgetUtils.WineScaleDenominator) - WidthRequest) >> 1, ((int)(monitorGeometry.Height / WidgetUtils.WineScaleDenominator) - HeightRequest) >> 1);
         }
         catch (Exception ex)

@@ -35,19 +35,22 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static Pixbuf CreateCheckerboard(int size, int checkSize, Gdk.Color primary, Gdk.Color secondary)
+        public static Bitmap CreateCheckerboard(int width, int height, int checkSize, System.Drawing.Color primary, System.Drawing.Color secondary)
         {
-            var checkerboard = new Pixbuf(Colorspace.Rgb, true, 8, size, size);
-            checkerboard.Fill(((uint)primary.Red >> 8 << 24) + ((uint)primary.Green >> 8 << 16) + ((uint)primary.Blue >> 8 << 8) + byte.MaxValue);
-            for (var y = 0; y < size; y += checkSize)
+            var checkerboard = new Bitmap(width, height);
+            using (var graphics = System.Drawing.Graphics.FromImage(checkerboard))
             {
-                for (var x = y / checkSize % 2 == 0 ? checkSize : 0; x < size; x += 2 * checkSize)
+                graphics.Clear(primary);
+            }
+            for (var y = 0; y < height; y += checkSize)
+            {
+                for (var x = ((y / checkSize) & 1) == 0 ? checkSize : 0; x < width; x += 2 * checkSize)
                 {
-                    for (var i = 0; i < checkSize && y + i < size; i++)
+                    for (var i = 0; i < checkSize && y + i < height; i++)
                     {
-                        for (var j = 0; j < checkSize && x + j < size; j++)
+                        for (var j = 0; j < checkSize && x + j < width; j++)
                         {
-                            checkerboard.SetPixel(x + j, y + i, (byte)(secondary.Red >> 8), (byte)(secondary.Green >> 8), (byte)(secondary.Blue >> 8), byte.MaxValue);
+                            checkerboard.SetPixel(x + j, y + i, secondary);
                         }
                     }
                 }
@@ -124,22 +127,18 @@ namespace Destrospean.DestrospeanCASPEditor
             }
         }
 
-        public static unsafe void SetPixel(this Pixbuf pixbuf, int x, int y, byte r, byte g, byte b, byte a)
+        public static Bitmap Scale(this Bitmap image, int width, int height, System.Drawing.Drawing2D.InterpolationMode interpolationMode)
         {
-            if (pixbuf == null || !pixbuf.HasAlpha || pixbuf.Colorspace != Colorspace.Rgb || pixbuf.BitsPerSample != 8)
+            var imageCopy = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            if (imageCopy != null)
             {
-                throw new ArgumentException("Pixbuf must be RGBA with 8 bits per sample.");
+                using (var graphics = System.Drawing.Graphics.FromImage(imageCopy))
+                {
+                    graphics.InterpolationMode = interpolationMode;
+                    graphics.DrawImage(image, new System.Drawing.Rectangle(0, 0, imageCopy.Width, imageCopy.Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+                }
             }
-            if (x < 0 || x >= pixbuf.Width || y < 0 || y >= pixbuf.Height)
-            {
-                throw new ArgumentOutOfRangeException("Coordinates are out of bounds.");
-            }
-            byte* pixels = (byte*)pixbuf.Pixels,
-            pixelPtr = pixels + (y * pixbuf.Rowstride) + (x * pixbuf.NChannels);
-            pixelPtr[0] = r;
-            pixelPtr[1] = g;
-            pixelPtr[2] = b;
-            pixelPtr[3] = a;
+            return imageCopy;
         }
 
         public static Bitmap ToBitmap(this Pixbuf pixbuf)

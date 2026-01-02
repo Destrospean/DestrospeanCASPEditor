@@ -37,13 +37,19 @@ public partial class MainWindow
 	
 	private global::Gtk.MenuBar MainMenuBar;
 	
-	private global::Gtk.Table MainTable;
+	private global::Gtk.VPaned MainVPaned;
 	
-	private global::Gtk.ScrolledWindow GtkScrolledWindow;
+	private global::Gtk.HPaned MainHPaned;
 	
-	private global::Gtk.TreeView ResourceTreeView;
+	private global::Gtk.Table ImageTable;
 	
 	private global::Gtk.Image Image;
+	
+	private global::Gtk.HPaned SecondHPaned;
+	
+	private global::Gtk.ScrolledWindow ScrolledWindow;
+	
+	private global::Gtk.TreeView ResourceTreeView;
 	
 	private global::Gtk.Notebook ResourcePropertyNotebook;
 	
@@ -127,69 +133,90 @@ public partial class MainWindow
 		w2.Expand = false;
 		w2.Fill = false;
 		// Container child MainVBox.Gtk.Box+BoxChild
-		this.MainTable = new global::Gtk.Table (((uint)(1)), ((uint)(3)), false);
-		this.MainTable.Name = "MainTable";
-		this.MainTable.RowSpacing = ((uint)(6));
-		this.MainTable.ColumnSpacing = ((uint)(6));
-		// Container child MainTable.Gtk.Table+TableChild
-		this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
-		this.GtkScrolledWindow.Name = "GtkScrolledWindow";
-		this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
-		// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
-		this.ResourceTreeView = new global::Gtk.TreeView ();
-		this.ResourceTreeView.CanFocus = true;
-		this.ResourceTreeView.Name = "ResourceTreeView";
-		this.GtkScrolledWindow.Add (this.ResourceTreeView);
-		this.MainTable.Add (this.GtkScrolledWindow);
-		global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.MainTable [this.GtkScrolledWindow]));
-		w4.LeftAttach = ((uint)(1));
-		w4.RightAttach = ((uint)(2));
-		w4.YOptions = ((global::Gtk.AttachOptions)(4));
-		// Container child MainTable.Gtk.Table+TableChild
+		this.MainVPaned = new global::Gtk.VPaned ();
+		this.MainVPaned.CanFocus = true;
+		this.MainVPaned.Name = "MainVPaned";
+		this.MainVPaned.Position = 270;
+		// Container child MainVPaned.Gtk.Paned+PanedChild
+		this.MainHPaned = new global::Gtk.HPaned ();
+		this.MainHPaned.CanFocus = true;
+		this.MainHPaned.Name = "MainHPaned";
+		this.MainHPaned.Position = 270;
+		// Container child MainHPaned.Gtk.Paned+PanedChild
+		this.ImageTable = new global::Gtk.Table (((uint)(1)), ((uint)(1)), false);
+		this.ImageTable.WidthRequest = 270;
+		this.ImageTable.HeightRequest = 270;
+		this.ImageTable.Name = "ImageTable";
+		this.ImageTable.RowSpacing = ((uint)(6));
+		this.ImageTable.ColumnSpacing = ((uint)(6));
+		// Container child ImageTable.Gtk.Table+TableChild
 		this.Image = new global::Gtk.Image ();
 		this.Image.WidthRequest = 270;
 		this.Image.HeightRequest = 270;
 		this.Image.Name = "Image";
 		this.Image.Xalign = 0F;
 		this.Image.Yalign = 0F;
-		this.MainTable.Add (this.Image);
-		global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.MainTable [this.Image]));
-		w5.XOptions = ((global::Gtk.AttachOptions)(4));
-		w5.YOptions = ((global::Gtk.AttachOptions)(4));
-		// Container child MainTable.Gtk.Table+TableChild
+		this.ImageTable.Add (this.Image);
+		this.MainHPaned.Add (this.ImageTable);
+		global::Gtk.Paned.PanedChild w4 = ((global::Gtk.Paned.PanedChild)(this.MainHPaned [this.ImageTable]));
+		w4.Resize = false;
+		w4.Shrink = false;
+		// Container child MainHPaned.Gtk.Paned+PanedChild
+		this.SecondHPaned = new global::Gtk.HPaned ();
+		this.SecondHPaned.CanFocus = true;
+		this.SecondHPaned.Name = "SecondHPaned";
+		this.SecondHPaned.Position = 353;
+		// Container child SecondHPaned.Gtk.Paned+PanedChild
+		this.ScrolledWindow = new global::Gtk.ScrolledWindow ();
+		this.ScrolledWindow.Name = "ScrolledWindow";
+		this.ScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child ScrolledWindow.Gtk.Container+ContainerChild
+		this.ResourceTreeView = new global::Gtk.TreeView ();
+		this.ResourceTreeView.WidthRequest = 330;
+		this.ResourceTreeView.CanFocus = true;
+		this.ResourceTreeView.Name = "ResourceTreeView";
+		this.ScrolledWindow.Add (this.ResourceTreeView);
+		this.SecondHPaned.Add (this.ScrolledWindow);
+		global::Gtk.Paned.PanedChild w6 = ((global::Gtk.Paned.PanedChild)(this.SecondHPaned [this.ScrolledWindow]));
+		w6.Resize = false;
+		w6.Shrink = false;
+		// Container child SecondHPaned.Gtk.Paned+PanedChild
 		this.ResourcePropertyNotebook = new global::Gtk.Notebook ();
 		this.ResourcePropertyNotebook.WidthRequest = 480;
 		this.ResourcePropertyNotebook.CanFocus = true;
 		this.ResourcePropertyNotebook.Name = "ResourcePropertyNotebook";
 		this.ResourcePropertyNotebook.CurrentPage = 0;
 		// Notebook tab
-		global::Gtk.Label w6 = new global::Gtk.Label ();
-		w6.Visible = true;
-		this.ResourcePropertyNotebook.Add (w6);
+		global::Gtk.Label w7 = new global::Gtk.Label ();
+		w7.Visible = true;
+		this.ResourcePropertyNotebook.Add (w7);
 		this.PresetLabel = new global::Gtk.Label ();
 		this.PresetLabel.Name = "PresetLabel";
 		this.PresetLabel.LabelProp = global::Mono.Unix.Catalog.GetString ("Page");
-		this.ResourcePropertyNotebook.SetTabLabel (w6, this.PresetLabel);
+		this.ResourcePropertyNotebook.SetTabLabel (w7, this.PresetLabel);
 		this.PresetLabel.ShowAll ();
-		this.MainTable.Add (this.ResourcePropertyNotebook);
-		global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.MainTable [this.ResourcePropertyNotebook]));
-		w7.LeftAttach = ((uint)(2));
-		w7.RightAttach = ((uint)(3));
-		w7.XOptions = ((global::Gtk.AttachOptions)(4));
-		w7.YOptions = ((global::Gtk.AttachOptions)(4));
-		this.MainVBox.Add (this.MainTable);
-		global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainTable]));
-		w8.Position = 1;
-		w8.Expand = false;
-		w8.Fill = false;
-		// Container child MainVBox.Gtk.Box+BoxChild
-		this.ResourcePropertyTable = new global::Gtk.Table (((uint)(1)), ((uint)(2)), false);
+		this.SecondHPaned.Add (this.ResourcePropertyNotebook);
+		global::Gtk.Paned.PanedChild w8 = ((global::Gtk.Paned.PanedChild)(this.SecondHPaned [this.ResourcePropertyNotebook]));
+		w8.Shrink = false;
+		this.MainHPaned.Add (this.SecondHPaned);
+		global::Gtk.Paned.PanedChild w9 = ((global::Gtk.Paned.PanedChild)(this.MainHPaned [this.SecondHPaned]));
+		w9.Shrink = false;
+		this.MainVPaned.Add (this.MainHPaned);
+		global::Gtk.Paned.PanedChild w10 = ((global::Gtk.Paned.PanedChild)(this.MainVPaned [this.MainHPaned]));
+		w10.Resize = false;
+		w10.Shrink = false;
+		// Container child MainVPaned.Gtk.Paned+PanedChild
+		this.ResourcePropertyTable = new global::Gtk.Table (((uint)(1)), ((uint)(2)), true);
+		this.ResourcePropertyTable.HeightRequest = 270;
 		this.ResourcePropertyTable.Name = "ResourcePropertyTable";
 		this.ResourcePropertyTable.RowSpacing = ((uint)(6));
 		this.ResourcePropertyTable.ColumnSpacing = ((uint)(6));
-		this.MainVBox.Add (this.ResourcePropertyTable);
-		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.ResourcePropertyTable]));
-		w9.Position = 2;
+		this.MainVPaned.Add (this.ResourcePropertyTable);
+		global::Gtk.Paned.PanedChild w11 = ((global::Gtk.Paned.PanedChild)(this.MainVPaned [this.ResourcePropertyTable]));
+		w11.Shrink = false;
+		this.MainVBox.Add (this.MainVPaned);
+		global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.MainVBox [this.MainVPaned]));
+		w12.Position = 1;
 		this.Add (this.MainVBox);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();

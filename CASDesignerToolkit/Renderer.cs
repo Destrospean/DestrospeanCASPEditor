@@ -583,7 +583,7 @@ public partial class MainWindow : Window
 
     protected void OnRenderFrame()
     {
-        GL.Viewport(0, 0, (int)(mGLWidget.WidthRequest * WidgetUtils.WineScaleDenominator), (int)(mGLWidget.HeightRequest * WidgetUtils.WineScaleDenominator));
+        GL.Viewport(0, 0, (int)(mGLWidget.Allocation.Width * WidgetUtils.WineScaleDenominator), (int)(mGLWidget.Allocation.Height * WidgetUtils.WineScaleDenominator));
         GL.ClearColor(Color.CornflowerBlue);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         GL.Enable(EnableCap.DepthTest);
@@ -748,7 +748,7 @@ public partial class MainWindow : Window
         {
             mesh.Rotation = mCurrentRotation;
             mesh.CalculateModelMatrix();
-            mesh.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(mFOV, (float)mGLWidget.WidthRequest / mGLWidget.HeightRequest, 1, 40);
+            mesh.ViewProjectionMatrix = mCamera.ViewMatrix * Matrix4.CreatePerspectiveFieldOfView(mFOV, (float)mGLWidget.Allocation.Width / mGLWidget.Allocation.Height, 1, 40);
             mesh.ModelViewProjectionMatrix = mesh.ModelMatrix * mesh.ViewProjectionMatrix;
         }
         GL.UseProgram(mShaders[mActiveShader].ProgramID);
