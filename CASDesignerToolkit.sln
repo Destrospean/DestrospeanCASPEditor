@@ -38,4 +38,7 @@ Global
 		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Release|x86.ActiveCfg = Release|Any CPU
 		{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		description = CAS Designer Toolkit
+	EndGlobalSection
 EndGlobal
