@@ -28,8 +28,12 @@
     <PlatformTarget>x86</PlatformTarget>
     <CustomCommands>
       <CustomCommands>
-        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe CASDesignerToolkit.exe --set-icon ../../Icons/CASDesignerToolkit.ico" workingdir="bin/Release" />
-        <Command type="AfterBuild" command="distrobox-host-exec ../tools/bundle_linux.sh" workingdir="" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe CASDesignerToolkit.exe --set-icon ../../Icons/CASDesignerToolkit.ico --set-version-string &quot;FileDescription&quot; &quot;CAS Designer Toolkit&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.CmarNYCBorrowed.dll --set-version-string &quot;FileDescription&quot; &quot;CmarNYC's Code Repurposed&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.Common.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's Shared Code&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.Graphics.OpenGL.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's OpenGL Code&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.S3PIExtensions.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's S3PI Extensions&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../tools/bundle_linux.sh" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
