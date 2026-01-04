@@ -67,11 +67,11 @@ public partial class MainWindow : Window
 
     public readonly string OriginalWindowTitle;
 
+    public SizeAllocatedHandler ResizeFlagPageButtonHBox;
+
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
-
-    public SizeAllocatedHandler ResizeFlagPageButtonHBox;
 
     public static MainWindow Singleton
     {
