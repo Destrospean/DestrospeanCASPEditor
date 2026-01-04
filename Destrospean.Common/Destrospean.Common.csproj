@@ -75,6 +75,7 @@
     <Compile Include="Platform.cs" />
     <Compile Include="PatternUtils.cs" />
     <Compile Include="SimBase.cs" />
+    <Compile Include="MeshFileType.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
