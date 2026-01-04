@@ -421,7 +421,7 @@ public partial class MainWindow : Window
                         {
                             ResourcePropertyNotebook.Remove(child);
                         }
-                        BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex == lodKvp.Value.Count ? selectedGEOMIndex - 1 : selectedGEOMIndex);
+                        BuildLODNotebook(casPart, selectedLODIndex, selectedGEOMIndex == 0 ? 0 : selectedGEOMIndex - 1);
                         NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
                     };
                 exportGEOMAction.Activated += (sender, e) => exportMeshGroup(MeshFileType.GEOM);
