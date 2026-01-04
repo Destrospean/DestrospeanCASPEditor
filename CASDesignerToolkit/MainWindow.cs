@@ -342,7 +342,7 @@ public partial class MainWindow : Window
                         nextButton.Sensitive = geomNotebook.CurrentPage < geomNotebook.NPages - 1;
                         prevButton.Sensitive = geomNotebook.CurrentPage > 0;
                     };
-                Action<MeshFileType> exportMesh = (MeshFileType meshFileType) =>
+                Action<MeshFileType> exportMesh = (meshFileType) =>
                     {
                         try
                         {
@@ -476,7 +476,7 @@ public partial class MainWindow : Window
                             throw;
                         }
                     },
-                importMesh = (MeshFileType meshFileType) =>
+                importMesh = (meshFileType) =>
                     {
                         try
                         {
