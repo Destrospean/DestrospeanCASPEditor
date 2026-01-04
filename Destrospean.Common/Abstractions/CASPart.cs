@@ -75,7 +75,7 @@ namespace Destrospean.Common.Abstractions
                     var geom = geometryResources[new ResourceKey(geomTGIList[geomTGIList.Count - 1].Type, geomTGIList[geomTGIList.Count - 1].Group, geomTGIList[geomTGIList.Count - 1].Instance).ReverseEvaluateResourceKey()];
                     geom.Write(new BinaryWriter(geomStream));
                     var newGEOMResourceIndexEntry = ParentPackage.AddResource(new ResourceKey(newGEOMTGI.Type, newGEOMTGI.Group, newGEOMTGI.Instance), geomStream, true);
-                    geometryResources.Add(newGEOMResourceIndexEntry.ReverseEvaluateResourceKey(), geom);
+                    geometryResources.Add(newGEOMResourceIndexEntry.ReverseEvaluateResourceKey(), new GEOM(new BinaryReader(geomStream)));
                     geomTGIList.Add(newGEOMTGI);
                 }
                 geomTGIs[i] = geomTGIList.ToArray();
@@ -315,18 +315,16 @@ namespace Destrospean.Common.Abstractions
                     newGEOMPlusMorphs[i].Write(new BinaryWriter(stream));
                     if (i == 0)
                     {
-                        int selectedGEOMIndex = groupIndex,
-                        selectedLODIndex = new List<int>(LODs.Keys).IndexOf(lod);
                         foreach (var geometryResourceKvp in geometryResources)
                         {
-                            if (geometryResourceKvp.Value == LODs[lod][selectedGEOMIndex])
+                            if (geometryResourceKvp.Value == LODs[lod][groupIndex])
                             {
                                 var evaluated = ParentPackage.EvaluateResourceKey(geometryResourceKvp.Key);
                                 ParentPackage.AddResource(evaluated.ResourceIndexEntry, stream, false);
                                 ParentPackage.DeleteResource(evaluated.ResourceIndexEntry);
                                 geometryResources[geometryResourceKvp.Key] = newGEOMPlusMorphs[i];
                                 LoadLODs(geometryResources, vpxyResources);
-                                updateUICallback(this, selectedLODIndex, selectedGEOMIndex);
+                                updateUICallback(this, new List<int>(LODs.Keys).IndexOf(lod), groupIndex);
                                 break;
                             }
                         }
