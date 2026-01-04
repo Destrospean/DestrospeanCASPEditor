@@ -56,18 +56,16 @@ namespace Destrospean.CmarNYCBorrowed
                 return new GEOM(baseMesh);
             }
             var vertexDeltas = morph.GetDeltas(entry, lod);
-            var weight = morph.Weight;
             for (var i = 0; i < morphMesh.VertexCount; i++)
             {
-                var vertexID = morphMesh.GetVertexID(i);
-                if (vertexDeltas.Exists(x => x.VertexID == vertexID))
+                var vertexDeltaIndex = vertexDeltas.FindIndex(x => x.VertexID == morphMesh.GetVertexID(i));
+                if (vertexDeltaIndex > -1)
                 {
-                    var vertexData = vertexDeltas.Find(x => x.VertexID == vertexID);
-                    Vector3 delta = vertexData.Position,
+                    Vector3 delta = vertexDeltas[vertexDeltaIndex].Position,
                     normal = new Vector3(morphMesh.GetNormal(i)),
                     position = new Vector3(morphMesh.GetPosition(i));
-                    morphMesh.SetPosition(i, (position + delta * weight).Coordinates);
-                    morphMesh.SetNormal(i, (normal + delta * weight).Coordinates);
+                    morphMesh.SetPosition(i, (position + delta * morph.Weight).Coordinates);
+                    morphMesh.SetNormal(i, (normal + delta * morph.Weight).Coordinates);
                 }
             }
             return morphMesh;
@@ -86,7 +84,6 @@ namespace Destrospean.CmarNYCBorrowed
             var missingBones = "";
             var morphMesh = new GEOM(baseMesh);
             var unit = new Vector3(1, 1, 1);
-            var weight = boneDelta.Weight;
             morphMesh.SetupDeltas();
             foreach (var delta in boneDelta.Adjustments)
             {
@@ -107,7 +104,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     localRotation.Balance();
                 }           
-                morphMesh.BoneMorpher(bone, weight, (bone.MorphRotation * localOffset * bone.MorphRotation.Conjugate()).ToVector3(), (bone.MorphRotation.ToMatrix3D() * Matrix3D.FromScale(localScale + unit)).Scale - unit, bone.MorphRotation * localRotation * bone.MorphRotation.Conjugate());
+                morphMesh.BoneMorpher(bone, boneDelta.Weight, (bone.MorphRotation * localOffset * bone.MorphRotation.Conjugate()).ToVector3(), (bone.MorphRotation.ToMatrix3D() * Matrix3D.FromScale(localScale + unit)).Scale - unit, bone.MorphRotation * localRotation * bone.MorphRotation.Conjugate());
             }
             morphMesh.UpdatePositions();
             foreach (var delta in boneDelta.Adjustments)
@@ -128,7 +125,7 @@ namespace Destrospean.CmarNYCBorrowed
                 {
                     localRotation.Balance();
                 }
-                rig.BoneMorpher(bone, weight, localScale, localOffset, localRotation);
+                rig.BoneMorpher(bone, boneDelta.Weight, localScale, localOffset, localRotation);
             }
             return morphMesh;
         }
@@ -157,22 +154,22 @@ namespace Destrospean.CmarNYCBorrowed
             {
                 for (var j = 0; j < morphs[i].VertexCount; j++)
                 {
-                    int id;
+                    int vertexID;
                     try
                     {
-                        id = morphs[i].GetVertexID(j);
+                        vertexID = morphs[i].GetVertexID(j);
                     }
                     catch (System.NullReferenceException)
                     {
                         continue;
                     }
-                    if (!deltaNormals.ContainsKey(id))
+                    if (!deltaNormals.ContainsKey(vertexID))
                     {
-                        deltaNormals.Add(id, new Vector3(morphs[i].GetNormal(j)));
+                        deltaNormals.Add(vertexID, new Vector3(morphs[i].GetNormal(j)));
                     }
-                    if (!deltaPositions.ContainsKey(id))
+                    if (!deltaPositions.ContainsKey(vertexID))
                     {
-                        deltaPositions.Add(id, new Vector3(morphs[i].GetPosition(j)));
+                        deltaPositions.Add(vertexID, new Vector3(morphs[i].GetPosition(j)));
                     }
                 }
             }
