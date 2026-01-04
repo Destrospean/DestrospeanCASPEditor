@@ -27,7 +27,11 @@ public partial class MainWindow : Window
 {
     System.Drawing.Bitmap mAlphaCheckerboard;
 
+    SizeAllocatedHandler mGLWidgetSizeAllocatedHandler;
+
     PresetNotebook mPresetNotebook;
+
+    SwitchPageHandler mResourcePropertyNotebookSwitchPageHandler;
 
     string mSaveAsPath;
 
@@ -67,11 +71,7 @@ public partial class MainWindow : Window
 
     public readonly string OriginalWindowTitle;
 
-    public SizeAllocatedHandler ResizeFlagPageButtonHBox;
-
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
-
-    public readonly List<SwitchPageHandler> ResourcePropertyNotebookSwitchPageHandlers = new List<SwitchPageHandler>();
 
     public static MainWindow Singleton
     {
@@ -108,19 +108,19 @@ public partial class MainWindow : Window
         }
         UseAdvancedShadersAction.Active = ApplicationSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
-        var alphaCheckerboard = new Gtk.Image(((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf())
+        var alphaCheckerboardImageWidget = new Gtk.Image(((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf())
             {
                 HeightRequest = Image.HeightRequest,
                 WidthRequest = Image.WidthRequest,
                 Xalign = 0,
                 Yalign = 0
             };
-        ImageTable.Attach(alphaCheckerboard, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        ImageTable.Attach(alphaCheckerboardImageWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         PrepareGLWidget();
         ImageTable.Attach(mGLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         Image.SizeAllocated += (o, args) =>
             {
-                alphaCheckerboard.Pixbuf = ((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf();
+                alphaCheckerboardImageWidget.Pixbuf = ((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf();
                 List<Gdk.Pixbuf> pixbufs;
                 TreeIter iter;
                 TreeModel model;
@@ -149,18 +149,18 @@ public partial class MainWindow : Window
                 {
                     WidthRequest = Image.Allocation.Width
                 };
-            if (ResizeFlagPageButtonHBox != null)
+            if (mGLWidgetSizeAllocatedHandler != null)
             {
-                mGLWidget.SizeAllocated -= ResizeFlagPageButtonHBox;
+                mGLWidget.SizeAllocated -= mGLWidgetSizeAllocatedHandler;
             }
-            ResizeFlagPageButtonHBox = (o, args) =>
+            mGLWidgetSizeAllocatedHandler = (o, args) =>
                 {
                     if (flagPageButtonHBox != null)
                     {
                         flagPageButtonHBox.WidthRequest = mGLWidget.Allocation.Width;
                     }
                 };
-            mGLWidget.SizeAllocated += ResizeFlagPageButtonHBox;
+            mGLWidget.SizeAllocated += mGLWidgetSizeAllocatedHandler;
             var flagPageVBox = new VBox(false, 0);
             var flagTables = new Table[2];
             for (var i = 0; i < flagTables.Length; i++)
@@ -256,17 +256,16 @@ public partial class MainWindow : Window
     {
         try
         {
-            foreach (var switchPageHandler in ResourcePropertyNotebookSwitchPageHandlers)
+            if (mResourcePropertyNotebookSwitchPageHandler != null)
             {
-                ResourcePropertyNotebook.SwitchPage -= switchPageHandler;
+                ResourcePropertyNotebook.SwitchPage -= mResourcePropertyNotebookSwitchPageHandler;
             }
-            ResourcePropertyNotebookSwitchPageHandlers.Clear();
-            ResourcePropertyNotebookSwitchPageHandlers.Insert(0, (o, args) =>
+            mResourcePropertyNotebookSwitchPageHandler = (o, args) =>
                 {
                     Sim.PreloadedLODsMorphed.Clear();
                     NextState = NextStateOptions.UpdateModels;
-                });
-            ResourcePropertyNotebook.SwitchPage += ResourcePropertyNotebookSwitchPageHandlers[0];
+                };
+            ResourcePropertyNotebook.SwitchPage += mResourcePropertyNotebookSwitchPageHandler;
             foreach (var lodKvp in casPart.LODs)
             {
                 var geomNotebook = new Notebook
