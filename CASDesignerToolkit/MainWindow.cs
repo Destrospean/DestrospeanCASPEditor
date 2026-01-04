@@ -362,9 +362,9 @@ public partial class MainWindow : Window
                                 };
                             fileFilter.AddPattern(meshFileType == MeshFileType.GEOM ? "*.simgeom" : meshFileType == MeshFileType.OBJ ? "*.obj" : meshFileType == MeshFileType.WSO ? "*.wso" : null);
                             fileChooserDialog.AddFilter(fileFilter);
-                            var geom = lodKvp.Value[geomNotebook.CurrentPage];
                             if (fileChooserDialog.Run() == (int)ResponseType.Accept)
                             {
+                                var geom = lodKvp.Value[geomNotebook.CurrentPage];
                                 byte[] bblnIndices =
                                     {
                                         casPart.CASPartResource.BlendInfoFatIndex,
