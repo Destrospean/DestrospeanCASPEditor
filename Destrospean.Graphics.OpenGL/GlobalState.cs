@@ -56,38 +56,6 @@ namespace Destrospean.Graphics.OpenGL
             TextureIDs.Clear();
         }
 
-        public static int LoadTexture(string key, System.Drawing.Bitmap image = null)
-        {
-            if (image == null)
-            {
-                return CmarNYCBorrowed.TextureUtils.PreloadedGameImages.TryGetValue(key, out image) || CmarNYCBorrowed.TextureUtils.PreloadedImages.TryGetValue(key, out image) ? LoadTexture(key, image) : -1;
-            }
-            try
-            {
-                if (!GLInitialized)
-                {
-                    return -1;
-                }
-                int textureID;
-                if (!TextureIDs.TryGetValue(key, out textureID))
-                {
-                    GL.GenTextures(1, out textureID);
-                    TextureIDs.Add(key, textureID);
-                }
-                GL.BindTexture(TextureTarget.Texture2D, textureID);
-                var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
-                image.UnlockBits(bitmapData);
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                return textureID;
-            }
-            catch (Exception ex)
-            {
-                Common.ProgramUtils.WriteError(ex);
-                throw;
-            }
-        }
-
         public static void InitProgram()
         {
             GL.GenBuffers(1, out IBOElements);
@@ -408,6 +376,38 @@ namespace Destrospean.Graphics.OpenGL
                     QuadraticAttenuation = .05f
                 });
             Camera.Position = new Vector3(0, 1, 4);
+        }
+
+        public static int LoadTexture(string key, System.Drawing.Bitmap image = null)
+        {
+            if (image == null)
+            {
+                return CmarNYCBorrowed.TextureUtils.PreloadedGameImages.TryGetValue(key, out image) || CmarNYCBorrowed.TextureUtils.PreloadedImages.TryGetValue(key, out image) ? LoadTexture(key, image) : -1;
+            }
+            try
+            {
+                if (!GLInitialized)
+                {
+                    return -1;
+                }
+                int textureID;
+                if (!TextureIDs.TryGetValue(key, out textureID))
+                {
+                    GL.GenTextures(1, out textureID);
+                    TextureIDs.Add(key, textureID);
+                }
+                GL.BindTexture(TextureTarget.Texture2D, textureID);
+                var bitmapData = image.LockBits(new System.Drawing.Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+                image.UnlockBits(bitmapData);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                return textureID;
+            }
+            catch (Exception ex)
+            {
+                Common.ProgramUtils.WriteError(ex);
+                throw;
+            }
         }
 
         public static void OnRenderFrame(int width, int height)
