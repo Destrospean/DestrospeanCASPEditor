@@ -48,7 +48,7 @@ namespace Destrospean.DestrospeanCASPEditor
             patternListStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             var gamePatternListEvaluated = package.EvaluateResourceKey("key:D4D9FBE5:00000000:1BDE14D18B416FEC");
             var patternsByCategory = new Dictionary<string, List<string>>();
-            System.Action<IResource> addPatternsByCategory = (IResource patternListResource) =>
+            System.Action<IResource> addPatternsByCategory = (patternListResource) =>
                 {
                     var xmlDocument = new XmlDocument();
                     xmlDocument.LoadXml(new StreamReader(patternListResource.Stream).ReadToEnd());
