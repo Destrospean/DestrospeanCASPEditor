@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Destrospean.DestrospeanCASPEditor</RootNamespace>
+    <AssemblyName>Destrospean.UI.GTKSharp</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glade-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="s3pi.CASPartResource">
+      <HintPath>..\libs\s3pi.CASPartResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Package">
+      <HintPath>..\libs\s3pi.Package.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.CatalogResource">
+      <HintPath>..\libs\s3pi.CatalogResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ObjKeyResource">
+      <HintPath>..\libs\s3pi.ObjKeyResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Filetable">
+      <HintPath>..\libs\s3pi.Filetable.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ComplateResource">
+      <HintPath>..\libs\s3pi.ComplateResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Controls">
+      <HintPath>..\libs\s3pi.Controls.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.CustomForms">
+      <HintPath>..\libs\s3pi.CustomForms.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.DefaultResource">
+      <HintPath>..\libs\s3pi.DefaultResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Extensions">
+      <HintPath>..\libs\s3pi.Extensions.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.GenericRCOLResource">
+      <HintPath>..\libs\s3pi.GenericRCOLResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Helpers">
+      <HintPath>..\libs\s3pi.Helpers.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Interfaces">
+      <HintPath>..\libs\s3pi.Interfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.Settings">
+      <HintPath>..\libs\s3pi.Settings.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ModularResource">
+      <HintPath>..\libs\s3pi.ModularResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.RCOLChunks">
+      <HintPath>..\libs\s3pi.RCOLChunks.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ImageResource">
+      <HintPath>..\libs\s3pi.ImageResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.JazzResource">
+      <HintPath>..\libs\s3pi.JazzResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.NameMapResource">
+      <HintPath>..\libs\s3pi.NameMapResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.NGMPHashMapResource">
+      <HintPath>..\libs\s3pi.NGMPHashMapResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.RigResource">
+      <HintPath>..\libs\s3pi.RigResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ScriptResource">
+      <HintPath>..\libs\s3pi.ScriptResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.StblResource">
+      <HintPath>..\libs\s3pi.StblResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.TextResource">
+      <HintPath>..\libs\s3pi.TextResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.TxtcResource">
+      <HintPath>..\libs\s3pi.TxtcResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.UserCAStPreset">
+      <HintPath>..\libs\s3pi.UserCAStPreset.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.WrapperDealer">
+      <HintPath>..\libs\s3pi.WrapperDealer.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Custom">
+      <HintPath>..\libs\System.Custom.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="GDImageLibrary">
+      <HintPath>..\libs\GDImageLibrary.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>glib-sharp-2.0</Package>
+    </Reference>
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-dotnet-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="GLWidget">
+      <HintPath>..\libs\GLWidget.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="OpenTK">
+      <HintPath>..\libs\OpenTK.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="TeximpNet">
+      <HintPath>..\libs\TeximpNet.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.MeshChunks">
+      <HintPath>..\libs\s3pi.MeshChunks.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="ImageUtils.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
+    <Compile Include="WidgetUtils.cs" />
+    <Compile Include="Widgets\PresetNotebook.cs" />
+    <Compile Include="Dialogs\GameFoldersDialog.cs" />
+    <Compile Include="Widgets\ImageResourceComboBox.cs" />
+    <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
+    <Compile Include="Dialogs\TextEntryDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
+    <Compile Include="Dialogs\ChoosePatternDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
+    <Compile Include="Dialogs\CacheGenerationWindow.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
+    <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
+    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
+    <Compile Include="MainWindowBase.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Widgets\" />
+    <Folder Include="Dialogs\" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <NameConventionPolicy>
+            <Rules>
+              <NamingRule Name="Namespaces" AffectedEntity="Namespace" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Types" AffectedEntity="Class, Struct, Enum, Delegate" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Interfaces" AffectedEntity="Interface" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>I</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Attributes" AffectedEntity="CustomAttributes" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>Attribute</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Event Arguments" AffectedEntity="CustomEventArgs" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>EventArgs</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Exceptions" AffectedEntity="CustomExceptions" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredSuffixes>
+                  <String>Exception</String>
+                </RequiredSuffixes>
+              </NamingRule>
+              <NamingRule Name="Methods" AffectedEntity="Methods" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Static Readonly Fields" AffectedEntity="ReadonlyField" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="False" IncludeStaticEntities="True" />
+              <NamingRule Name="Fields (Non Private)" AffectedEntity="Field" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="ReadOnly Fields (Non Private)" AffectedEntity="ReadonlyField" VisibilityMask="Internal, Protected, Public" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False" />
+              <NamingRule Name="Fields (Private)" AffectedEntity="Field, ReadonlyField" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False">
+                <RequiredPrefixes>
+                  <String>m</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Static Fields (Private)" AffectedEntity="Field" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="False" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>s</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="ReadOnly Fields (Private)" AffectedEntity="ReadonlyField" VisibilityMask="Private" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="False">
+                <RequiredPrefixes>
+                  <String>m</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Constant Fields" AffectedEntity="ConstantField" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>k</String>
+                </RequiredPrefixes>
+              </NamingRule>
+              <NamingRule Name="Properties" AffectedEntity="Property" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Events" AffectedEntity="Event" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Enum Members" AffectedEntity="EnumMember" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Parameters" AffectedEntity="Parameter" VisibilityMask="VisibilityMask" NamingStyle="CamelCase" IncludeInstanceMembers="True" IncludeStaticEntities="True" />
+              <NamingRule Name="Type Parameters" AffectedEntity="TypeParameter" VisibilityMask="VisibilityMask" NamingStyle="PascalCase" IncludeInstanceMembers="True" IncludeStaticEntities="True">
+                <RequiredPrefixes>
+                  <String>T</String>
+                </RequiredPrefixes>
+              </NamingRule>
+            </Rules>
+          </NameConventionPolicy>
+        </Policies>
+        <Deployment.LinuxDeployData scriptName="CASDesignerToolkit" />
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <ProjectReference Include="..\Destrospean.CmarNYCBorrowed\Destrospean.CmarNYCBorrowed.csproj">
+      <Project>{1DAE5711-35BA-4DF3-B392-68DAAAC3A5FD}</Project>
+      <Name>Destrospean.CmarNYCBorrowed</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.S3PIExtensions\Destrospean.S3PIExtensions.csproj">
+      <Project>{27A16A39-0FCB-4861-A86A-EE354EAE90F0}</Project>
+      <Name>Destrospean.S3PIExtensions</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.Common\Destrospean.Common.csproj">
+      <Project>{87A5463F-B4DF-4EB0-8970-17A07DF714B1}</Project>
+      <Name>Destrospean.Common</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.Graphics.OpenGL\Destrospean.Graphics.OpenGL.csproj">
+      <Project>{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}</Project>
+      <Name>Destrospean.Graphics.OpenGL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
