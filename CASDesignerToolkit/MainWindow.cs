@@ -54,7 +54,6 @@ public partial class MainWindow : RendererMainWindow
         }
     }
 
-
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public MainWindow() : base(WindowType.Toplevel)
