@@ -33,6 +33,7 @@
         <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.Common.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's Shared Code&quot;" workingdir="bin/Release" />
         <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.Graphics.OpenGL.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's OpenGL Code&quot;" workingdir="bin/Release" />
         <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.S3PIExtensions.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's S3PI Extensions&quot;" workingdir="bin/Release" />
+        <Command type="AfterBuild" command="distrobox-host-exec ../../../tools/rcedit.exe Destrospean.UI.GTKSharp.dll --set-version-string &quot;FileDescription&quot; &quot;Destrospean's GTK# Code&quot;" workingdir="bin/Release" />
         <Command type="AfterBuild" command="distrobox-host-exec ../tools/bundle_linux.sh" />
       </CustomCommands>
     </CustomCommands>
@@ -208,28 +209,10 @@
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\MainWindow.cs" />
-    <Compile Include="ImageUtils.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
-    <Compile Include="WidgetUtils.cs" />
-    <Compile Include="Widgets\PresetNotebook.cs" />
-    <Compile Include="Dialogs\GameFoldersDialog.cs" />
-    <Compile Include="Widgets\ImageResourceComboBox.cs" />
-    <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
-    <Compile Include="Dialogs\TextEntryDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
-    <Compile Include="Dialogs\ChoosePatternDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
-    <Compile Include="Dialogs\CacheGenerationWindow.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
-    <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
-    <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
     <Compile Include="Renderer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Widgets\" />
-    <Folder Include="Dialogs\" />
     <Folder Include="Icons\" />
   </ItemGroup>
   <ProjectExtensions>
@@ -331,6 +314,10 @@
     <ProjectReference Include="..\Destrospean.Graphics.OpenGL\Destrospean.Graphics.OpenGL.csproj">
       <Project>{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}</Project>
       <Name>Destrospean.Graphics.OpenGL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Destrospean.UI.GTKSharp\Destrospean.UI.GTKSharp.csproj">
+      <Project>{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}</Project>
+      <Name>Destrospean.UI.GTKSharp</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

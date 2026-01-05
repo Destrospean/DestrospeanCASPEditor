@@ -62,6 +62,22 @@
       <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="s3pi.ModularResource">
+      <HintPath>..\libs\s3pi.ModularResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ObjKeyResource">
+      <HintPath>..\libs\s3pi.ObjKeyResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.CatalogResource">
+      <HintPath>..\libs\s3pi.CatalogResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="s3pi.ComplateResource">
+      <HintPath>..\libs\s3pi.ComplateResource.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -76,6 +92,7 @@
     <Compile Include="PatternUtils.cs" />
     <Compile Include="SimBase.cs" />
     <Compile Include="MeshFileType.cs" />
+    <Compile Include="ProgramUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

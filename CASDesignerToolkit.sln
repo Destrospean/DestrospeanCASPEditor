@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.Common", "Destr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.Graphics.OpenGL", "Destrospean.Graphics.OpenGL\Destrospean.Graphics.OpenGL.csproj", "{C57F798A-17AB-41FF-99D3-7C8D651F3C3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Destrospean.UI.GTKSharp", "Destrospean.UI.GTKSharp\Destrospean.UI.GTKSharp.csproj", "{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -26,9 +28,13 @@ Global
 		{27A16A39-0FCB-4861-A86A-EE354EAE90F0}.Release|x86.ActiveCfg = Release|Any CPU
 		{27A16A39-0FCB-4861-A86A-EE354EAE90F0}.Release|x86.Build.0 = Release|Any CPU
 		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF24}.Debug|x86.ActiveCfg = Debug|x86
+		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}.Debug|x86.ActiveCfg = Debug|x86
 		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF24}.Debug|x86.Build.0 = Debug|x86
+		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}.Debug|x86.Build.0 = Debug|x86
 		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF24}.Release|x86.ActiveCfg = Release|x86
+		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}.Release|x86.ActiveCfg = Release|x86
 		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF24}.Release|x86.Build.0 = Release|x86
+		{6D08DD91-7AE1-4A4C-B81D-DC9DEE93CF25}.Release|x86.Build.0 = Release|x86
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Debug|x86.Build.0 = Debug|Any CPU
 		{87A5463F-B4DF-4EB0-8970-17A07DF714B1}.Release|x86.ActiveCfg = Release|Any CPU

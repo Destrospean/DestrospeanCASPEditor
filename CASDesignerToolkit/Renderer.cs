@@ -10,7 +10,7 @@ using Gtk;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
-public partial class MainWindow : Window
+public partial class MainWindow : MainWindowBase
 {
     const int kMaxLights = 5;
 
@@ -444,7 +444,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -499,7 +499,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -550,7 +550,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }

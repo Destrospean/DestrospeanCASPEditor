@@ -14,16 +14,7 @@ using s3pi.Interfaces;
 using s3pi.WrapperDealer;
 using VPXY = Destrospean.CmarNYCBorrowed.VPXY;
 
-[Flags]
-public enum NextStateOptions : byte
-{
-    NoUnsavedChanges,
-    UnsavedChanges,
-    UpdateModels,
-    UnsavedChangesAndUpdateModels
-}
-
-public partial class MainWindow : Window
+public partial class MainWindow : MainWindowBase
 {
     System.Drawing.Bitmap mAlphaCheckerboard;
 
@@ -43,7 +34,7 @@ public partial class MainWindow : Window
         private set;
     }
 
-    public NextStateOptions NextState
+    public override NextStateOptions NextState
     {
         set
         {
@@ -73,12 +64,6 @@ public partial class MainWindow : Window
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
-    public static MainWindow Singleton
-    {
-        get;
-        private set;
-    }
-
     public MainWindow() : base(WindowType.Toplevel)
     {
         Complate.GetTextureCallback = ImageUtils.GetTexture;
@@ -87,7 +72,6 @@ public partial class MainWindow : Window
         TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
         TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;
         HasUnsavedChanges = false;
-        Singleton = this;
         Build();
         OriginalWindowTitle = Title;
         RescaleAndReposition();
@@ -97,7 +81,7 @@ public partial class MainWindow : Window
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(PatternUtils.CacheFilePath))
         {
-            new CacheGenerationWindow("Please wait as caches are being generated...", this);
+            new CacheGenerationWindow("Please wait as caches are being generated...", this, new Gdk.Pixbuf(System.Reflection.Assembly.GetExecutingAssembly(), "Destrospean.DestrospeanCASPEditor.Icons.CASDesignerToolkit.png"));
         }
         UseAdvancedShadersAction.Active = ApplicationSettings.UseAdvancedOpenGLShaders;
         ResourcePropertyNotebook.RemovePage(0);
@@ -240,7 +224,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -363,7 +347,7 @@ public partial class MainWindow : Window
                         }
                         catch (Exception ex)
                         {
-                            Program.WriteError(ex);
+                            ProgramUtils.WriteError(ex);
                             throw;
                         }
                     },
@@ -394,7 +378,7 @@ public partial class MainWindow : Window
                         }
                         catch (Exception ex)
                         {
-                            Program.WriteError(ex);
+                            ProgramUtils.WriteError(ex);
                             throw;
                         }
                     };
@@ -444,7 +428,7 @@ public partial class MainWindow : Window
                             }
                             catch (Exception ex)
                             {
-                                Program.WriteError(ex);
+                                ProgramUtils.WriteError(ex);
                                 throw;
                             }
                         }
@@ -538,7 +522,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -619,7 +603,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -751,12 +735,12 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
 
-    public void RescaleAndReposition(bool skipRescale = false)
+    public override void RescaleAndReposition(bool skipRescale = false)
     {
         try
         {
@@ -787,7 +771,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -834,7 +818,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            Program.WriteError(ex);
+            ProgramUtils.WriteError(ex);
             throw;
         }
     }
@@ -911,7 +895,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                Program.WriteError(ex);
+                ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -954,7 +938,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                Program.WriteError(ex);
+                ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -1004,7 +988,7 @@ public partial class MainWindow : Window
             }
             catch (Exception ex)
             {
-                Program.WriteError(ex);
+                ProgramUtils.WriteError(ex);
                 throw;
             }
         }
