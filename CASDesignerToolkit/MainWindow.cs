@@ -20,6 +20,8 @@ public partial class MainWindow : RendererMainWindow
 
     SizeAllocatedHandler mGLWidgetSizeAllocatedHandler;
 
+    readonly string mOriginalWindowTitle;
+
     PresetNotebook mPresetNotebook;
 
     SwitchPageHandler mResourcePropertyNotebookSwitchPageHandler;
@@ -27,6 +29,14 @@ public partial class MainWindow : RendererMainWindow
     string mSaveAsPath;
 
     public IPackage CurrentPackage;
+
+    public override string OriginalWindowTitle
+    {
+        get
+        {
+            return mOriginalWindowTitle;
+        }
+    }
 
     public override NextStateOptions NextState
     {
@@ -59,6 +69,7 @@ public partial class MainWindow : RendererMainWindow
     public MainWindow() : base(WindowType.Toplevel)
     {
         Build();
+        mOriginalWindowTitle = Title;
         RescaleAndReposition();
         BuildResourceTable();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();

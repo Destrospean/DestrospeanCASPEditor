@@ -22,7 +22,10 @@
             set;
         }
 
-        public readonly string OriginalWindowTitle;
+        public abstract string OriginalWindowTitle
+        {
+            get;
+        }
 
         public static MainWindowBase Singleton
         {
@@ -38,7 +41,6 @@
             CmarNYCBorrowed.TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
             CmarNYCBorrowed.TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;
             HasUnsavedChanges = false;
-            OriginalWindowTitle = Title;
             Common.ApplicationSettings.LoadSettings();
         }
 
