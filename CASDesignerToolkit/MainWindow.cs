@@ -30,14 +30,6 @@ public partial class MainWindow : RendererMainWindow
 
     public IPackage CurrentPackage;
 
-    public override string OriginalWindowTitle
-    {
-        get
-        {
-            return mOriginalWindowTitle;
-        }
-    }
-
     public override NextStateOptions NextState
     {
         set
@@ -61,6 +53,14 @@ public partial class MainWindow : RendererMainWindow
                 Title = Title.Substring(0, HasUnsavedChanges && Title.EndsWith(" *") ? Title.Length - 2 : Title.Length);
                 HasUnsavedChanges = false;
             }
+        }
+    }
+
+    public override string OriginalWindowTitle
+    {
+        get
+        {
+            return mOriginalWindowTitle;
         }
     }
 
