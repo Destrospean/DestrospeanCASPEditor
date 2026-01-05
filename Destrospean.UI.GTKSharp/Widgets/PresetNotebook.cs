@@ -66,7 +66,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
             catch (System.Exception ex)
             {
-                ProgramUtils.WriteError(ex);
+                Common.ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -216,7 +216,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
             catch (System.Exception ex)
             {
-                ProgramUtils.WriteError(ex);
+                Common.ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -268,7 +268,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
             catch (System.Exception ex)
             {
-                ProgramUtils.WriteError(ex);
+                Common.ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -357,7 +357,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
             catch (System.Exception ex)
             {
-                ProgramUtils.WriteError(ex);
+                Common.ProgramUtils.WriteError(ex);
                 throw;
             }
         }
@@ -383,7 +383,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
             }
             catch (System.Exception ex)
             {
-                ProgramUtils.WriteError(ex);
+                Common.ProgramUtils.WriteError(ex);
                 throw;
             }
         }

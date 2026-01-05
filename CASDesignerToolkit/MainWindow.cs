@@ -39,7 +39,7 @@ public partial class MainWindow : RendererMainWindow
             if (value.HasFlag(NextStateOptions.UpdateModels))
             {
                 GlobalState.Meshes.Clear();
-                Sim.LoadGEOMs(mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage, ResourcePropertyNotebook.CurrentPage, LoadTexture);
+                Sim.LoadGEOMs(mPresetNotebook.CurrentPage == -1 ? 0 : mPresetNotebook.CurrentPage, ResourcePropertyNotebook.CurrentPage, GlobalState.LoadTexture);
             }
             if (value.HasFlag(NextStateOptions.UnsavedChanges))
             {
@@ -162,9 +162,9 @@ public partial class MainWindow : RendererMainWindow
             prevButton.Clicked += (sender, e) => flagNotebook.PrevPage();
             resetViewButton.Clicked += (sender, e) =>
                 {
-                    mCamera.Orientation = new OpenTK.Vector3((float)Math.PI, 0, 0);
-                    mCamera.Position = new OpenTK.Vector3(0, 1, 4);
-                    mCurrentRotation = OpenTK.Vector3.Zero;
+                    GlobalState.Camera.Orientation = new OpenTK.Vector3((float)Math.PI, 0, 0);
+                    GlobalState.Camera.Position = new OpenTK.Vector3(0, 1, 4);
+                    GlobalState.CurrentRotation = OpenTK.Vector3.Zero;
                     mFOV = OpenTK.MathHelper.DegreesToRadians(30);
                 };
             flagNotebook.SwitchPage += (o, args) =>
@@ -612,7 +612,7 @@ public partial class MainWindow : RendererMainWindow
         GlobalState.Materials.Clear();
         PreloadedData.VPXYs.Clear();
         Sim.PreloadedLODsMorphed.Clear();
-        DeleteTextures();
+        GlobalState.DeleteTextures();
         ImageUtils.PreloadedGameImagePixbufs.Clear();
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImagePixbufs.Clear();
@@ -1015,6 +1015,6 @@ public partial class MainWindow : RendererMainWindow
     protected void OnUseAdvancedShadersActionToggled(object sender, EventArgs e)
     {
         ApplicationSettings.UseAdvancedOpenGLShaders = UseAdvancedShadersAction.Active;
-        mActiveShader = UseAdvancedShadersAction.Active ? "lit_advanced" : "textured";
+        GlobalState.ActiveShader = UseAdvancedShadersAction.Active ? "lit_advanced" : "textured";
     }
 }
