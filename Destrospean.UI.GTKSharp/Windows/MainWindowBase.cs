@@ -11,15 +11,15 @@
 
     public abstract class MainWindowBase : Gtk.Window
     {
-        public abstract NextStateOptions NextState
-        {
-            set;
-        }
-
         public bool HasUnsavedChanges
         {
             get;
             protected set;
+        }
+
+        public abstract NextStateOptions NextState
+        {
+            set;
         }
 
         public readonly string OriginalWindowTitle;
