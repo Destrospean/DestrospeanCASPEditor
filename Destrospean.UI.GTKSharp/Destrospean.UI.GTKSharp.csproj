@@ -209,25 +209,25 @@
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.GameFoldersDialog.cs" />
     <Compile Include="WidgetUtils.cs" />
     <Compile Include="Widgets\PresetNotebook.cs" />
-    <Compile Include="Dialogs\GameFoldersDialog.cs" />
     <Compile Include="Widgets\ImageResourceComboBox.cs" />
-    <Compile Include="Dialogs\UnsavedChangesDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.UnsavedChangesDialog.cs" />
-    <Compile Include="Dialogs\TextEntryDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.TextEntryDialog.cs" />
-    <Compile Include="Dialogs\ChoosePatternDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.ChoosePatternDialog.cs" />
-    <Compile Include="Dialogs\CacheGenerationWindow.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.CacheGenerationWindow.cs" />
-    <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
-    <Compile Include="MainWindowBase.cs" />
-    <Compile Include="RendererMainWindow.cs" />
+    <Compile Include="Windows\GameFoldersDialog.cs" />
+    <Compile Include="Windows\UnsavedChangesDialog.cs" />
+    <Compile Include="Windows\TextEntryDialog.cs" />
+    <Compile Include="Windows\ChoosePatternDialog.cs" />
+    <Compile Include="Windows\CacheGenerationWindow.cs" />
+    <Compile Include="Windows\AddMaterialPropertyDialog.cs" />
+    <Compile Include="Windows\MainWindowBase.cs" />
+    <Compile Include="Windows\RendererMainWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Widgets\" />
-    <Folder Include="Dialogs\" />
+    <Folder Include="Windows\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
