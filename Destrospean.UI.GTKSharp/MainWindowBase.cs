@@ -21,7 +21,7 @@
             get;
             private set;
         }
-    
+
         public MainWindowBase(Gtk.WindowType windowType) : base(windowType)
         {
             Singleton = this;

@@ -14,7 +14,7 @@ using s3pi.Interfaces;
 using s3pi.WrapperDealer;
 using VPXY = Destrospean.CmarNYCBorrowed.VPXY;
 
-public partial class MainWindow : MainWindowBase
+public partial class MainWindow : RendererMainWindow
 {
     System.Drawing.Bitmap mAlphaCheckerboard;
 
@@ -77,7 +77,6 @@ public partial class MainWindow : MainWindowBase
         RescaleAndReposition();
         BuildResourceTable();
         ApplicationSettings.LoadSettings();
-        Sim = new Destrospean.Graphics.OpenGL.Sims3.Sim();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(PatternUtils.CacheFilePath))
         {
@@ -94,7 +93,8 @@ public partial class MainWindow : MainWindowBase
             };
         ImageTable.Attach(alphaCheckerboardImageWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         PrepareGLWidget();
-        ImageTable.Attach(mGLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
+        GLWidget.SetSizeRequest(Image.WidthRequest, Image.HeightRequest);
+        ImageTable.Attach(GLWidget, 0, 1, 0, 1, AttachOptions.Fill, AttachOptions.Fill, 0, 0);
         Image.SizeAllocated += (o, args) =>
             {
                 alphaCheckerboardImageWidget.Pixbuf = ((System.Drawing.Bitmap)mAlphaCheckerboard.Clone(new System.Drawing.Rectangle(0, 0, Image.Allocation.Width, Image.Allocation.Height), mAlphaCheckerboard.PixelFormat)).ToPixbuf();
@@ -108,7 +108,7 @@ public partial class MainWindow : MainWindowBase
                 }
             };
         MainHPaned.ShowAll();
-        mGLWidget.Hide();
+        GLWidget.Hide();
     }
 
     void AddCASPartWidgets(CASPart casPart)
@@ -128,16 +128,16 @@ public partial class MainWindow : MainWindowBase
                 };
             if (mGLWidgetSizeAllocatedHandler != null)
             {
-                mGLWidget.SizeAllocated -= mGLWidgetSizeAllocatedHandler;
+                GLWidget.SizeAllocated -= mGLWidgetSizeAllocatedHandler;
             }
             mGLWidgetSizeAllocatedHandler = (o, args) =>
                 {
                     if (flagPageButtonHBox != null)
                     {
-                        flagPageButtonHBox.WidthRequest = mGLWidget.Allocation.Width;
+                        flagPageButtonHBox.WidthRequest = GLWidget.Allocation.Width;
                     }
                 };
-            mGLWidget.SizeAllocated += mGLWidgetSizeAllocatedHandler;
+            GLWidget.SizeAllocated += mGLWidgetSizeAllocatedHandler;
             var flagPageVBox = new VBox(false, 0);
             var flagTables = new Table[2];
             for (var i = 0; i < flagTables.Length; i++)
@@ -568,7 +568,7 @@ public partial class MainWindow : MainWindowBase
             ResourceTreeView.Selection.Changed += (sender, e) => 
                 {
                     GlobalState.Meshes.Clear();
-                    mGLWidget.Hide();
+                    GLWidget.Hide();
                     Image.Clear();
                     foreach (var child in ResourcePropertyTable.Children)
                     {
@@ -594,7 +594,7 @@ public partial class MainWindow : MainWindowBase
                                 }
                                 break;
                             case "CASP":
-                                mGLWidget.Show();
+                                GLWidget.Show();
                                 AddCASPartWidgets(PreloadedData.CASParts[key]);
                                 break;
                         }

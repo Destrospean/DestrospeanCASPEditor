@@ -222,6 +222,7 @@
     <Compile Include="Dialogs\AddMaterialPropertyDialog.cs" />
     <Compile Include="gtk-gui\Destrospean.DestrospeanCASPEditor.AddMaterialPropertyDialog.cs" />
     <Compile Include="MainWindowBase.cs" />
+    <Compile Include="RendererMainWindow.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
