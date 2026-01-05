@@ -284,9 +284,6 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <None Include="GameFolders.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Icons\CASDesignerToolkit.svg" />
     <None Include="Icons\CASDesignerToolkit.ico" />
     <None Include="..\LICENSE.md">
@@ -295,6 +292,10 @@
     </None>
     <None Include="..\Acknowledgements.txt">
       <Link>Acknowledgements.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\GameFolders.xml">
+      <Link>GameFolders.xml</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
