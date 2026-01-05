@@ -50,7 +50,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public GLWidget GLWidget
         {
             get;
-            private set;
+            protected set;
         }
 
         public bool ModelsNeedUpdated = false;
@@ -68,10 +68,62 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public RendererMainWindow(WindowType windowType) : base(windowType)
         {
-            Sim = new Destrospean.Graphics.OpenGL.Sims3.Sim();
+            Common.Abstractions.Complate.MarkModelsNeedUpdatedCallback = () => ModelsNeedUpdated = true;
+            Sim = new Graphics.OpenGL.Sims3.Sim();
         }
 
-        void InitProgram()
+        public void DeleteTexture(string key)
+        {
+            int textureID;
+            if (GlobalState.TextureIDs.TryGetValue(key, out textureID))
+            {
+                GL.DeleteTexture(textureID);
+                GlobalState.TextureIDs.Remove(key);
+            }
+        }
+
+        public void DeleteTextures()
+        {
+            foreach (var textureID in GlobalState.TextureIDs.Values)
+            {
+                GL.DeleteTexture(textureID);
+            }
+            GlobalState.TextureIDs.Clear();
+        }
+
+        public int LoadTexture(string key, Bitmap image = null)
+        {
+            if (image == null)
+            {
+                return ImageUtils.PreloadedGameImages.TryGetValue(key, out image) || ImageUtils.PreloadedImages.TryGetValue(key, out image) ? LoadTexture(key, image) : -1;
+            }
+            try
+            {
+                if (!mGLInitialized)
+                {
+                    return -1;
+                }
+                int textureID;
+                if (!GlobalState.TextureIDs.TryGetValue(key, out textureID))
+                {
+                    GL.GenTextures(1, out textureID);
+                    GlobalState.TextureIDs.Add(key, textureID);
+                }
+                GL.BindTexture(TextureTarget.Texture2D, textureID);
+                var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+                image.UnlockBits(bitmapData);
+                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                return textureID;
+            }
+            catch (Exception ex)
+            {
+                ProgramUtils.WriteError(ex);
+                throw;
+            }
+        }
+
+        protected void InitProgram()
         {
             GL.GenBuffers(1, out mIBOElements);
             string backportedFunctions = @"
@@ -393,112 +445,6 @@ namespace Destrospean.DestrospeanCASPEditor
             mCamera.Position = new Vector3(0, 1, 4);
         }
 
-        void ProcessInput()
-        {
-            try
-            {
-                var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
-                mLastMousePosition += delta;
-                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
-                {
-                    if (mKeysHeld.Contains(Gdk.Key.Control_L))
-                    {
-                        if (mKeysHeld.Contains(Gdk.Key.Alt_L))
-                        {
-                            mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
-                            mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
-                        }
-                        else
-                        {
-                            mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
-                        }
-                    }
-                    else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
-                    {
-                        mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
-                    }
-                    else
-                    {
-                        mCamera.AddTranslation(delta.X, -delta.Y, 0);
-                    }
-                }
-                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
-                {
-                    mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
-                    mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
-                }
-                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
-                {
-                    if (mKeysHeld.Contains(Gdk.Key.Alt_L))
-                    {
-                        mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
-                        mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
-                    }
-                    else
-                    {
-                        mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
-                    }
-                }
-                mLastMousePosition = new Vector2(mMouseX, mMouseY);
-            }
-            catch (Exception ex)
-            {
-                ProgramUtils.WriteError(ex);
-                throw;
-            }
-        }
-
-        public void DeleteTexture(string key)
-        {
-            int textureID;
-            if (GlobalState.TextureIDs.TryGetValue(key, out textureID))
-            {
-                GL.DeleteTexture(textureID);
-                GlobalState.TextureIDs.Remove(key);
-            }
-        }
-
-        public void DeleteTextures()
-        {
-            foreach (var textureID in GlobalState.TextureIDs.Values)
-            {
-                GL.DeleteTexture(textureID);
-            }
-            GlobalState.TextureIDs.Clear();
-        }
-
-        public int LoadTexture(string key, Bitmap image = null)
-        {
-            if (image == null)
-            {
-                return ImageUtils.PreloadedGameImages.TryGetValue(key, out image) || ImageUtils.PreloadedImages.TryGetValue(key, out image) ? LoadTexture(key, image) : -1;
-            }
-            try
-            {
-                if (!mGLInitialized)
-                {
-                    return -1;
-                }
-                int textureID;
-                if (!GlobalState.TextureIDs.TryGetValue(key, out textureID))
-                {
-                    GL.GenTextures(1, out textureID);
-                    GlobalState.TextureIDs.Add(key, textureID);
-                }
-                GL.BindTexture(TextureTarget.Texture2D, textureID);
-                var bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
-                image.UnlockBits(bitmapData);
-                GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                return textureID;
-            }
-            catch (Exception ex)
-            {
-                ProgramUtils.WriteError(ex);
-                throw;
-            }
-        }
-
         protected bool OnIdleProcessMain()
         {
             if (ModelsNeedUpdated)
@@ -756,6 +702,61 @@ namespace Destrospean.DestrospeanCASPEditor
                     };
                 KeyPressEvent += OnKeyPress;
                 KeyReleaseEvent += (o, args) => mKeysHeld.RemoveAll(x => x == args.Event.Key);
+            }
+            catch (Exception ex)
+            {
+                ProgramUtils.WriteError(ex);
+                throw;
+            }
+        }
+
+        protected void ProcessInput()
+        {
+            try
+            {
+                var delta = mLastMousePosition - new Vector2(mMouseX, mMouseY);
+                mLastMousePosition += delta;
+                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Left))
+                {
+                    if (mKeysHeld.Contains(Gdk.Key.Control_L))
+                    {
+                        if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                        {
+                            mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                            mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+                        }
+                        else
+                        {
+                            mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+                        }
+                    }
+                    else if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                    {
+                        mFOV += delta.Y > 0 && mFOV + delta.Y * mCamera.MouseSensitivity <= MathHelper.DegreesToRadians(110) || delta.Y < 0 && mFOV + delta.Y * mCamera.MouseSensitivity > 0 ? delta.Y * mCamera.MouseSensitivity : 0;
+                    }
+                    else
+                    {
+                        mCamera.AddTranslation(delta.X, -delta.Y, 0);
+                    }
+                }
+                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Middle))
+                {
+                    mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                    mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+                }
+                if (mMouseButtonsHeld.HasFlag(MouseButtonsHeld.Right))
+                {
+                    if (mKeysHeld.Contains(Gdk.Key.Alt_L))
+                    {
+                        mCurrentRotation.X -= delta.Y * mCamera.MouseSensitivity;
+                        mCurrentRotation.Z += delta.X * mCamera.MouseSensitivity;
+                    }
+                    else
+                    {
+                        mCurrentRotation.Y += delta.X * mCamera.MouseSensitivity;
+                    }
+                }
+                mLastMousePosition = new Vector2(mMouseX, mMouseY);
             }
             catch (Exception ex)
             {

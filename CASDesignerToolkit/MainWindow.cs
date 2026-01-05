@@ -28,12 +28,6 @@ public partial class MainWindow : RendererMainWindow
 
     public IPackage CurrentPackage;
 
-    public bool HasUnsavedChanges
-    {
-        get;
-        private set;
-    }
-
     public override NextStateOptions NextState
     {
         set
@@ -60,23 +54,14 @@ public partial class MainWindow : RendererMainWindow
         }
     }
 
-    public readonly string OriginalWindowTitle;
 
     public readonly ListStore ResourceListStore = new ListStore(typeof(string), typeof(string), typeof(string), typeof(string), typeof(IResourceIndexEntry));
 
     public MainWindow() : base(WindowType.Toplevel)
     {
-        Complate.GetTextureCallback = ImageUtils.GetTexture;
-        Complate.MarkModelsNeedUpdatedCallback = () => ModelsNeedUpdated = true;
-        Complate.MarkUnsavedChangesCallback = () => NextState = NextStateOptions.UnsavedChanges;
-        TextureUtils.PreloadedGameImages = ImageUtils.PreloadedGameImages;
-        TextureUtils.PreloadedImages = ImageUtils.PreloadedImages;
-        HasUnsavedChanges = false;
         Build();
-        OriginalWindowTitle = Title;
         RescaleAndReposition();
         BuildResourceTable();
-        ApplicationSettings.LoadSettings();
         new System.Threading.Thread(ChoosePatternDialog.LoadCache).Start();
         if (!File.Exists(PatternUtils.CacheFilePath))
         {
@@ -618,12 +603,6 @@ public partial class MainWindow : RendererMainWindow
         NextState = NextStateOptions.UnsavedChangesAndUpdateModels;
     }
 
-    public void AddFilePathToWindowTitle(string path)
-    {
-        var directoryPath = System.IO.Path.GetDirectoryName(path);
-        Title = OriginalWindowTitle + " \u2013 " + (directoryPath.Length > 40 ? "..." + directoryPath.Substring(directoryPath.Length - 40) : directoryPath) + System.IO.Path.DirectorySeparatorChar + System.IO.Path.GetFileName(path);
-    }
-
     public void ClearTemporaryData()
     {
         Sim.CurrentCASPart = null;
@@ -639,14 +618,6 @@ public partial class MainWindow : RendererMainWindow
         ImageUtils.PreloadedGameImages.Clear();
         ImageUtils.PreloadedImagePixbufs.Clear();
         ImageUtils.PreloadedImages.Clear();
-    }
-
-    public ResponseType GetUnsavedChangesDialogResponseType()
-    {
-        var unsavedChangesDialog = new UnsavedChangesDialog(this);
-        var responseType = (ResponseType)unsavedChangesDialog.Run();
-        unsavedChangesDialog.Destroy();
-        return responseType;
     }
 
     public void RefreshWidgets(bool clearTemporaryData = true)
