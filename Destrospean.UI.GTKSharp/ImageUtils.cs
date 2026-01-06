@@ -17,14 +17,24 @@ namespace Destrospean.DestrospeanCASPEditor
         public static readonly Dictionary<string, Bitmap> PreloadedGameImages = new Dictionary<string, Bitmap>(StringComparer.InvariantCultureIgnoreCase),
         PreloadedImages = new Dictionary<string, Bitmap>(StringComparer.InvariantCultureIgnoreCase);
 
-        static Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget)
+        struct PreloadVariables
         {
-            return package.GetPreloadVariables(resourceIndexEntry, imageWidget.WidthRequest, imageWidget.HeightRequest);
-        }
+            public Bitmap Image;
 
-        static Tuple<string, Bitmap, int> GetPreloadVariables(this IPackage package, IResourceIndexEntry resourceIndexEntry, int width, int height)
-        {
-            return new Tuple<string, Bitmap, int>(resourceIndexEntry.ReverseEvaluateResourceKey(), package.GetTexture(resourceIndexEntry), Math.Min(width, height));
+            public string ResourceKey;
+
+            public float Scale;
+
+            public PreloadVariables(IPackage package, IResourceIndexEntry resourceIndexEntry, Gtk.Image imageWidget) : this(package, resourceIndexEntry, imageWidget.WidthRequest, imageWidget.HeightRequest)
+            {
+            }
+
+            public PreloadVariables(IPackage package, IResourceIndexEntry resourceIndexEntry, int width, int height)
+            {
+                Image = package.GetTexture(resourceIndexEntry);
+                ResourceKey = resourceIndexEntry.ReverseEvaluateResourceKey();
+                Scale = (float)Math.Min(width, height) / Math.Min(Image.Width, Image.Height);
+            }
         }
 
         public static Bitmap Base64StringToBitmap(string base64String)
@@ -56,6 +66,21 @@ namespace Destrospean.DestrospeanCASPEditor
                 }
             }
             return checkerboard;
+        }
+
+        public static Bitmap GetInSquareCanvas(this Bitmap image)
+        {
+            if (image.Width == image.Height)
+            {
+                return image;
+            }
+            var longestDimension = Math.Max(image.Width, image.Height);
+            var squareCanvasImage = new Bitmap(longestDimension, longestDimension);
+            using (var graphics = System.Drawing.Graphics.FromImage(squareCanvasImage))
+            {
+                graphics.DrawImage(image, new System.Drawing.Rectangle((squareCanvasImage.Width >> 1) - (image.Width >> 1), (squareCanvasImage.Height >> 1) - (image.Height >> 1), image.Width, image.Height));
+            }
+            return squareCanvasImage;
         }
 
         public static Bitmap GetTexture(this IPackage package, IResourceIndexEntry resourceIndexEntry)
@@ -95,11 +120,12 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             try
             {
-                var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
-                PreloadedGameImages[variables.Item1] = variables.Item2;
-                PreloadedGameImagePixbufs[variables.Item1] = new List<Pixbuf>
+                var preloadVariables = new PreloadVariables(package, resourceIndexEntry, imageWidget);
+                PreloadedGameImages[preloadVariables.ResourceKey] = preloadVariables.Image;
+                var squareCanvasImage = preloadVariables.Image.GetInSquareCanvas();
+                PreloadedGameImagePixbufs[preloadVariables.ResourceKey] = new List<Pixbuf>
                     {
-                        variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                        squareCanvasImage.ToPixbuf().ScaleSimple((int)(squareCanvasImage.Width * preloadVariables.Scale), (int)(squareCanvasImage.Height * preloadVariables.Scale), InterpType.Bilinear)
                     };
                 return true;
             }
@@ -113,11 +139,12 @@ namespace Destrospean.DestrospeanCASPEditor
         {
             try
             {
-                var variables = package.GetPreloadVariables(resourceIndexEntry, imageWidget);
-                PreloadedImages[variables.Item1] = variables.Item2;
-                PreloadedImagePixbufs[variables.Item1] = new List<Pixbuf>
+                var preloadVariables = new PreloadVariables(package, resourceIndexEntry, imageWidget);
+                PreloadedImages[preloadVariables.ResourceKey] = preloadVariables.Image;
+                var squareCanvasImage = preloadVariables.Image.GetInSquareCanvas();
+                PreloadedImagePixbufs[preloadVariables.ResourceKey] = new List<Pixbuf>
                     {
-                        variables.Item2.ToPixbuf().ScaleSimple(variables.Item3, variables.Item3, InterpType.Bilinear)
+                        squareCanvasImage.ToPixbuf().ScaleSimple((int)(squareCanvasImage.Width * preloadVariables.Scale), (int)(squareCanvasImage.Height * preloadVariables.Scale), InterpType.Bilinear)
                     };
                 return true;
             }

@@ -96,10 +96,10 @@ public partial class MainWindow : RendererMainWindow
                 List<Gdk.Pixbuf> pixbufs;
                 TreeIter iter;
                 TreeModel model;
-                var shortestDimension = Math.Min(Image.Allocation.Width, Image.Allocation.Height);
-                if (Image.Pixbuf != null && shortestDimension != Math.Min(Image.Pixbuf.Width, Image.Pixbuf.Height) && ResourceTreeView.Selection.GetSelected(out model, out iter) && ImageUtils.PreloadedImagePixbufs.TryGetValue(((IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey(), out pixbufs))
+                var scale = Image.Pixbuf == null ? 1 : (float)Math.Min(Image.Allocation.Width, Image.Allocation.Height) / Math.Min(Image.Pixbuf.Width, Image.Pixbuf.Height);
+                if (scale != 1 && ResourceTreeView.Selection.GetSelected(out model, out iter) && ImageUtils.PreloadedImagePixbufs.TryGetValue(((IResourceIndexEntry)model.GetValue(iter, 4)).ReverseEvaluateResourceKey(), out pixbufs))
                 {
-                    new System.Threading.Thread(() => Application.Invoke((sender, e) => Image.Pixbuf = pixbufs[0].ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear))).Start();
+                    new System.Threading.Thread(() => Application.Invoke((sender, e) => Image.Pixbuf = pixbufs[0].ScaleSimple((int)(Image.Pixbuf.Width * scale), (int)(Image.Pixbuf.Height * scale), Gdk.InterpType.Bilinear))).Start();
                 }
             };
         MainHPaned.ShowAll();
@@ -584,8 +584,8 @@ public partial class MainWindow : RendererMainWindow
                                 List<Gdk.Pixbuf> pixbufs;
                                 if (ImageUtils.PreloadedImagePixbufs.TryGetValue(key, out pixbufs))
                                 {
-                                    var shortestDimension = Math.Min(ImageTable.Allocation.Width, ImageTable.Allocation.Height);
-                                    Image.Pixbuf = pixbufs[0].ScaleSimple(shortestDimension, shortestDimension, Gdk.InterpType.Bilinear);
+                                    var scale = (float)Math.Min(ImageTable.Allocation.Width, ImageTable.Allocation.Height) / Math.Min(pixbufs[0].Width, pixbufs[0].Height);
+                                    Image.Pixbuf = pixbufs[0].ScaleSimple((int)(pixbufs[0].Width * scale), (int)(pixbufs[0].Height * scale), Gdk.InterpType.Bilinear);
                                 }
                                 break;
                             case "CASP":
