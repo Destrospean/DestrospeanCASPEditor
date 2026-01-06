@@ -1,3 +1,4 @@
 #!/bin/bash
 cd "${0%/*}"
-LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./CASDesignerToolkit
+mkdir registry
+MONO_REGISTRY_PATH=`pwd`/registry LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./CASDesignerToolkit
