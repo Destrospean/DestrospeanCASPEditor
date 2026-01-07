@@ -12,7 +12,6 @@ using Gtk;
 using s3pi.GenericRCOLResource;
 using s3pi.Interfaces;
 using s3pi.WrapperDealer;
-using VPXY = Destrospean.CmarNYCBorrowed.VPXY;
 
 public partial class MainWindow : RendererMainWindow
 {
