@@ -488,9 +488,15 @@ namespace Destrospean.DestrospeanCASPEditor
 
         public static void RescaleAndReposition(this Gtk.Window self, Gtk.Window parent)
         {
+            RescaleAndReposition(self, parent, Scale);
+        }
+
+        public static void RescaleAndReposition(this Gtk.Window self, Gtk.Window parent, float minScale)
+        {
             try
             {
-                self.SetSizeRequest(self.WidthRequest == -1 ? -1 : (int)(self.WidthRequest * Scale), self.HeightRequest == -1 ? -1 : (int)(self.HeightRequest * Scale));
+                var scale = WidgetUtils.Scale > minScale || Platform.IsWindows ? WidgetUtils.Scale : minScale;
+                self.SetSizeRequest(self.WidthRequest == -1 ? -1 : (int)(self.WidthRequest * scale), self.HeightRequest == -1 ? -1 : (int)(self.HeightRequest * scale));
                 int parentHeight, parentWidth, parentX, parentY;
                 parent.GetPosition(out parentX, out parentY);
                 parent.GetSize(out parentWidth, out parentHeight);

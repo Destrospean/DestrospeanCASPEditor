@@ -5,7 +5,7 @@
         public UnsavedChangesDialog(Gtk.Window parent) : base("Unsaved Changes", parent, Gtk.DialogFlags.Modal)
         {
             Build();
-            this.RescaleAndReposition(parent);
+            this.RescaleAndReposition(parent, 1.25f);
             WarningIconAlignment.LeftPadding = (uint)WidgetUtils.SmallImageSize >> 1;
         }
     }

@@ -31,7 +31,7 @@ namespace Destrospean.DestrospeanCASPEditor
         public AddMaterialPropertyDialog(string title, Window parent) : base(title, parent, DialogFlags.Modal)
         {
             Build();
-            this.RescaleAndReposition(parent);
+            this.RescaleAndReposition(parent, 8f / 7);
             Alignment.LeftPadding = (uint)WidgetUtils.SmallImageSize;
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(ShaderData));
             CellRendererText dataTypeCell = new CellRendererText(),

@@ -11,7 +11,7 @@
         public TextEntryDialog(string title, string message, Gtk.Window parent) : base(title, parent, Gtk.DialogFlags.Modal)
         {
             Build();
-            this.RescaleAndReposition(parent);
+            this.RescaleAndReposition(parent, 1.25f);
             Label.Text = message;
             Response += (o, args) =>
                 {
