@@ -10,17 +10,12 @@ wine rcedit.exe $RELEASE_DIR/Destrospean.S3PIExtensions.dll --set-version-string
 wine rcedit.exe $RELEASE_DIR/Destrospean.UI.GTKSharp.dll --set-version-string "FileDescription" "Destrospean's GTK# Code"
 rm $RELEASE_DIR/CASDesignerToolkit-*.rar
 rm $RELEASE_DIR/CASDesignerToolkit-Self-Extractor.exe
-cp $RELEASE_DIR/Acknowledgements.txt CASDesignerToolkit
-cp $RELEASE_DIR/GameFolders.xml CASDesignerToolkit
-cp $RELEASE_DIR/LICENSE.md CASDesignerToolkit
-cp $RELEASE_DIR/Mono.Posix.dll CASDesignerToolkit
-cp $RELEASE_DIR/s3pi* CASDesignerToolkit
 cp ../CASDesignerToolkit/Icons/CASDesignerToolkit.svg CASDesignerToolkit
 cp $RELEASE_DIR/* CASDesignerToolkit
 rm CASDesignerToolkit/*.log
 rar a -sfxwindows.sfx "CASDesignerToolkit-Self-Extractor.exe" CASDesignerToolkit/*
-mv CASDesignerToolkit-Self-Extractor.exe $RELEASE_DIR
 rar a CASDesignerToolkit-win32-i386.rar CASDesignerToolkit/*
-mv CASDesignerToolkit-*.rar $RELEASE_DIR
+mv CASDesignerToolkit-Self-Extractor.exe $RELEASE_DIR
+mv CASDesignerToolkit-win32-i386.rar $RELEASE_DIR
 rm -rf CASDesignerToolkit
 distrobox enter debian-bookworm -- ./bundle_debian.sh
