@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
+using System.Drawing;
 
 namespace Destrospean.Common.Abstractions
 {
@@ -102,6 +103,31 @@ namespace Destrospean.Common.Abstractions
         public static float[] ParseCommaSeparatedValues(string text)
         {
             return System.Array.ConvertAll(text.Split(','), x => float.Parse(x, System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        public static Bitmap QuadrupleCanvasSize(Bitmap image)
+        {
+            var imageCopy = new Bitmap(image.Width << 1, image.Height << 1); 
+            using (var graphics = Graphics.FromImage(imageCopy))
+            {
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage(image, image.Width >> 1, image.Height >> 1);
+            }
+            return imageCopy;
+        }
+
+        public static Bitmap RotateImage(Bitmap image, float angle)
+        {
+            var imageCopy = new Bitmap(image.Width, image.Height); 
+            using (var graphics = Graphics.FromImage(imageCopy))
+            {
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.TranslateTransform(image.Width >> 1, image.Height >> 1);
+                graphics.RotateTransform(angle);
+                graphics.TranslateTransform(-image.Width >> 1, -image.Height >> 1);
+                graphics.DrawImage(image, 0, 0);
+            }
+            return imageCopy;
         }
 
         public virtual void SetValue(string propertyName, string newValue, CmarNYCBorrowed.Action beforeMarkUnsaved = null)

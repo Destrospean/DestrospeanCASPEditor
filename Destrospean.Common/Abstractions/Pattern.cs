@@ -10,6 +10,8 @@ namespace Destrospean.Common.Abstractions
     {
         protected object mPatternImage;
 
+        protected readonly IDictionary<string, object> mProperties = new SortedDictionary<string, object>(new PropertyNameComparer());
+
         public override CASTableObject CASTableObject
         {
             get
@@ -59,9 +61,40 @@ namespace Destrospean.Common.Abstractions
             private set;
         }
 
-        public readonly Preset Preset;
+        public readonly IPreset Preset;
 
         public readonly string SlotName;
+
+        public Pattern(Material material, object patternMaterialBlock) : base()
+        {
+            var patternMaterialBlockCast = (CatalogResource.CatalogResource.MaterialBlock)patternMaterialBlock;
+            SlotName = patternMaterialBlockCast.Pattern;
+            PatternInfo = new PatternInfo
+                {
+                    Name = patternMaterialBlockCast.Name
+                };
+            Preset = material;
+            var evaluated = ParentPackage.EvaluateResourceKey(patternMaterialBlockCast.ParentTGIBlocks[patternMaterialBlockCast.ComplateXMLIndex]);
+            mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
+            foreach (var complateOverride in patternMaterialBlockCast.ComplateOverrides)
+            {
+                mProperties.Add(complateOverride.VariableName, complateOverride);
+            }
+            foreach (XmlNode childNode in mXmlDocument.SelectSingleNode("complate").ChildNodes)
+            {
+                if (childNode.Name == "variables")
+                {
+                    foreach (XmlNode grandchildNode in childNode.ChildNodes)
+                    {
+                        if (grandchildNode.Name == "param")
+                        {
+                            PropertiesTyped.Add(grandchildNode.Attributes["name"].Value, grandchildNode.Attributes["type"].Value);
+                        }
+                    }
+                }
+            }
+            RefreshPatternInfo(false);
+        }
 
         public Pattern(Preset preset, XmlNode patternXmlNode) : base()
         {
@@ -96,6 +129,143 @@ namespace Destrospean.Common.Abstractions
             RefreshPatternInfo(false);
         }
 
+        void PopulateVariablesForMaterialPatterns(ref string background, ref string rgbMask, List<string> channels, List<bool> channelsEnabled, ref float baseHueBackground, ref float baseSaturationBackground, ref float baseValueBackground, ref float hueBackground, ref float saturationBackground, ref float valueBackground, List<float> baseHues, List<float> baseSaturations, List<float> baseValues, List<float> hues, List<float> saturations, List<float> values, ref float[] hsvShiftBackground, List<float[]> hsvShift, List<float[]> rgbColors)
+        {
+            foreach (var propertyKvp in mProperties)
+            {
+                var key = propertyKvp.Key.ToLowerInvariant();
+                var value = propertyKvp.Value;
+                if (key.StartsWith("channel"))
+                {
+                    if (key.EndsWith("enabled"))
+                    {
+                        channelsEnabled.Add(((CatalogResource.CatalogResource.TC07_Boolean)value).Unknown1);
+                    }
+                    else
+                    {
+
+                        channels.Add(((Material)Preset).MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey());
+                    }
+                }
+                else if (key.StartsWith("color"))
+                {
+                    var color = System.Array.ConvertAll(System.BitConverter.GetBytes(((CatalogResource.CatalogResource.TC02_ARGB)value).ARGB), x => (float)x / byte.MaxValue);
+                    rgbColors.Add(new float[]
+                        {
+                            color[1],
+                            color[2],
+                            color[3]
+                        });
+                }
+                else if (key.StartsWith("base h"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseHueBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        baseHues.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else if (key.StartsWith("base s"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseSaturationBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        baseSaturations.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else if (key.StartsWith("base v"))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        baseValueBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        baseValues.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else if (key.StartsWith("h "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        hueBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        hues.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else if (key.StartsWith("hsvshift"))
+                {
+                    var color = (CatalogResource.CatalogResource.TC06_XYZ)value;
+                    if (key.EndsWith("bg"))
+                    {
+                        hsvShiftBackground = new float[]
+                            {
+                                color.Unknown1,
+                                color.Unknown2,
+                                color.Unknown3
+                            };
+                    }
+                    else
+                    {
+                        hsvShift.Add(new float[]
+                            {
+                                color.Unknown1,
+                                color.Unknown2,
+                                color.Unknown3
+                            });
+                    }
+                }
+                else if (key.StartsWith("s "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        saturationBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        saturations.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else if (key.StartsWith("v "))
+                {
+                    if (key.EndsWith("bg"))
+                    {
+                        valueBackground = ((CatalogResource.CatalogResource.TC04_Single)value).Unknown1;
+                    }
+                    else
+                    {
+                        values.Add(((CatalogResource.CatalogResource.TC04_Single)value).Unknown1);
+                    }
+                }
+                else
+                {
+                    switch (key)
+                    {
+                        case "background image":
+                            background = ((Material)Preset).MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
+                            break;
+                        case "rgbmask":
+                            rgbMask = ((Material)Preset).MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
+                            break;
+                    }
+                }
+            }
+        }
+
+        public override string GetValue(string propertyName)
+        {
+            var material = Preset as Material;
+            return material == null ? base.GetValue(propertyName) : Material.GetValue(material, propertyName, PropertiesTyped[propertyName], mProperties);
+        }
+
         public void RefreshPatternInfo(bool regeneratePresetTexture = true)
         {
             string background = null,
@@ -119,6 +289,10 @@ namespace Destrospean.Common.Abstractions
             hsvShift = new List<float[]>(),
             rgbColors = new List<float[]>();
             float[] hsvShiftBackground = null;
+            if (mProperties.Count > 0)
+            {
+                PopulateVariablesForMaterialPatterns(ref background, ref rgbMask, channels, channelsEnabled, ref baseHueBackground, ref baseSaturationBackground, ref baseValueBackground, ref hueBackground, ref saturationBackground, ref valueBackground, baseHues, baseSaturations, baseValues, hues, saturations, values, ref hsvShiftBackground, hsvShift, rgbColors);
+            }
             foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
             {
                 string key = propertyXmlNodeKvp.Key.ToLowerInvariant(),
@@ -287,7 +461,13 @@ namespace Destrospean.Common.Abstractions
 
         public override void SetValue(string propertyName, string newValue, CmarNYCBorrowed.Action beforeMarkUnsaved = null)
         {
-            base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
+            var material = Preset as Material;
+            if (material == null)
+            {
+                base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
+                return;
+            }
+            Material.SetValue(material, propertyName, newValue, PropertiesTyped[propertyName], mProperties, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
         }
     }
 }

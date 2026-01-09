@@ -93,6 +93,9 @@
     <Compile Include="SimBase.cs" />
     <Compile Include="MeshFileType.cs" />
     <Compile Include="ProgramUtils.cs" />
+    <Compile Include="Abstractions\GameObject.cs" />
+    <Compile Include="Abstractions\Material.cs" />
+    <Compile Include="Abstractions\IPreset.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

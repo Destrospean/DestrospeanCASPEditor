@@ -9,7 +9,7 @@ using s3pi.Interfaces;
 
 namespace Destrospean.Common.Abstractions
 {
-    public class Preset : Complate
+    public class Preset : Complate, IPreset
     {
         protected readonly CASTableObject mCASTableObject;
 
@@ -447,17 +447,6 @@ namespace Destrospean.Common.Abstractions
                 }
             }
 
-            public static Bitmap QuadrupleCanvasSize(Bitmap image)
-            {
-                var imageCopy = new Bitmap(image.Width << 1, image.Height << 1); 
-                using (var graphics = Graphics.FromImage(imageCopy))
-                {
-                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(image, image.Width >> 1, image.Height >> 1);
-                }
-                return imageCopy;
-            }
-
             public void ReplacePresetComplate()
             {
                 PropertiesTyped.Clear();
@@ -477,24 +466,6 @@ namespace Destrospean.Common.Abstractions
                     }
                 }
             }
-
-            public static Bitmap RotateImage(Bitmap image, float angle)
-            {
-                var imageCopy = new Bitmap(image.Width, image.Height); 
-                using (var graphics = Graphics.FromImage(imageCopy))
-                {
-                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    graphics.TranslateTransform(image.Width >> 1, image.Height >> 1);
-                    graphics.RotateTransform(angle);
-                    graphics.TranslateTransform(-image.Width >> 1, -image.Height >> 1);
-                    graphics.DrawImage(image, 0, 0);
-                }
-                return imageCopy;
-            }
-        }
-
-        public Preset(CASTableObject CASTableObject, CASPartResource.CASPartResource.Preset preset) : this(CASTableObject, preset.XmlFile)
-        {
         }
 
         public Preset(CASTableObject CASTableObject, TextReader xmlFile)
