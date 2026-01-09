@@ -63,9 +63,21 @@ namespace Destrospean.Common.Abstractions
 
         public readonly IPreset Preset;
 
+        public override string[] PropertyNames
+        {
+            get
+            {
+                if (Preset is Material)
+                {
+                    return new List<string>(mProperties.Keys).ToArray();
+                }
+                return base.PropertyNames;
+            }
+        }
+
         public readonly string SlotName;
 
-        public Pattern(Material material, object patternMaterialBlock) : base()
+        public Pattern(Material material, object patternMaterialBlock, object presetMaterialBlock) : base()
         {
             var patternMaterialBlockCast = (CatalogResource.CatalogResource.MaterialBlock)patternMaterialBlock;
             SlotName = patternMaterialBlockCast.Pattern;
@@ -74,7 +86,7 @@ namespace Destrospean.Common.Abstractions
                     Name = patternMaterialBlockCast.Name
                 };
             Preset = material;
-            var evaluated = ParentPackage.EvaluateResourceKey(patternMaterialBlockCast.ParentTGIBlocks[patternMaterialBlockCast.ComplateXMLIndex]);
+            var evaluated = ParentPackage.EvaluateResourceKey(patternMaterialBlockCast.ParentTGIBlocks[patternMaterialBlockCast.ComplateXMLIndex].ReverseEvaluateResourceKey());
             mXmlDocument.LoadXml(new System.IO.StreamReader(s3pi.WrapperDealer.WrapperDealer.GetResource(0, evaluated.Package, evaluated.ResourceIndexEntry).Stream).ReadToEnd());
             foreach (var complateOverride in patternMaterialBlockCast.ComplateOverrides)
             {
@@ -93,7 +105,7 @@ namespace Destrospean.Common.Abstractions
                     }
                 }
             }
-            RefreshPatternInfo(false);
+            RefreshPatternInfo(false, presetMaterialBlock);
         }
 
         public Pattern(Preset preset, XmlNode patternXmlNode) : base()
@@ -129,7 +141,7 @@ namespace Destrospean.Common.Abstractions
             RefreshPatternInfo(false);
         }
 
-        void PopulateVariablesForMaterialPatterns(ref string background, ref string rgbMask, List<string> channels, List<bool> channelsEnabled, ref float baseHueBackground, ref float baseSaturationBackground, ref float baseValueBackground, ref float hueBackground, ref float saturationBackground, ref float valueBackground, List<float> baseHues, List<float> baseSaturations, List<float> baseValues, List<float> hues, List<float> saturations, List<float> values, ref float[] hsvShiftBackground, List<float[]> hsvShift, List<float[]> rgbColors)
+        void PopulateVariablesForMaterialPatterns(object presetMaterialBlock, ref string background, ref string rgbMask, List<string> channels, List<bool> channelsEnabled, ref float baseHueBackground, ref float baseSaturationBackground, ref float baseValueBackground, ref float hueBackground, ref float saturationBackground, ref float valueBackground, List<float> baseHues, List<float> baseSaturations, List<float> baseValues, List<float> hues, List<float> saturations, List<float> values, ref float[] hsvShiftBackground, List<float[]> hsvShift, List<float[]> rgbColors)
         {
             foreach (var propertyKvp in mProperties)
             {
@@ -250,10 +262,10 @@ namespace Destrospean.Common.Abstractions
                     switch (key)
                     {
                         case "background image":
-                            background = ((Material)Preset).MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
+                            background = ((CatalogResource.CatalogResource.MaterialBlock)presetMaterialBlock).ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
                             break;
                         case "rgbmask":
-                            rgbMask = ((Material)Preset).MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
+                            rgbMask = ((CatalogResource.CatalogResource.MaterialBlock)presetMaterialBlock).ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)value).TGIIndex].ReverseEvaluateResourceKey();
                             break;
                     }
                 }
@@ -266,7 +278,7 @@ namespace Destrospean.Common.Abstractions
             return material == null ? base.GetValue(propertyName) : Material.GetValue(material, propertyName, PropertiesTyped[propertyName], mProperties);
         }
 
-        public void RefreshPatternInfo(bool regeneratePresetTexture = true)
+        public void RefreshPatternInfo(bool regeneratePresetTexture = true, object presetMaterialBlock = null)
         {
             string background = null,
             rgbMask = null;
@@ -291,7 +303,7 @@ namespace Destrospean.Common.Abstractions
             float[] hsvShiftBackground = null;
             if (mProperties.Count > 0)
             {
-                PopulateVariablesForMaterialPatterns(ref background, ref rgbMask, channels, channelsEnabled, ref baseHueBackground, ref baseSaturationBackground, ref baseValueBackground, ref hueBackground, ref saturationBackground, ref valueBackground, baseHues, baseSaturations, baseValues, hues, saturations, values, ref hsvShiftBackground, hsvShift, rgbColors);
+                PopulateVariablesForMaterialPatterns(presetMaterialBlock, ref background, ref rgbMask, channels, channelsEnabled, ref baseHueBackground, ref baseSaturationBackground, ref baseValueBackground, ref hueBackground, ref saturationBackground, ref valueBackground, baseHues, baseSaturations, baseValues, hues, saturations, values, ref hsvShiftBackground, hsvShift, rgbColors);
             }
             foreach (var propertyXmlNodeKvp in mPropertiesXmlNodes)
             {
@@ -467,7 +479,7 @@ namespace Destrospean.Common.Abstractions
                 base.SetValue(propertyName, newValue, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
                 return;
             }
-            Material.SetValue(material, propertyName, newValue, PropertiesTyped[propertyName], mProperties, beforeMarkUnsaved ?? (() => RefreshPatternInfo()));
+            Material.SetValue(material, propertyName, newValue, PropertiesTyped[propertyName], mProperties, beforeMarkUnsaved ?? (() => RefreshPatternInfo(true, material.MaterialBlock)));
         }
     }
 }

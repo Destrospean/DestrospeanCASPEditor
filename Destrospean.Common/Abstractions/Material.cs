@@ -290,6 +290,14 @@ namespace Destrospean.Common.Abstractions
                 }
             }
 
+            public override string[] PropertyNames
+            {
+                get
+                {
+                    return new List<string>(Properties.Keys).ToArray();
+                }
+            }
+
             public string SpecularMap
             {
                 get;
@@ -319,6 +327,10 @@ namespace Destrospean.Common.Abstractions
                 var evaluated = ParentPackage.EvaluateResourceKey(MaterialBlock.ParentTGIBlocks[MaterialBlock.ComplateXMLIndex].ReverseEvaluateResourceKey());
                 mXmlDocument.LoadXml(new StreamReader(((APackage)evaluated.Package).GetResource(evaluated.ResourceIndexEntry)).ReadToEnd());
                 Patterns = new List<Pattern>();
+                foreach (var patternMaterialBlock in MaterialBlock.MaterialBlocks)
+                {
+                    Patterns.Add(new Pattern(material, patternMaterialBlock, MaterialBlock));
+                }
                 foreach (var complateElement in MaterialBlock.ComplateOverrides)
                 {
                     Properties.Add(complateElement.VariableName, complateElement);
@@ -397,7 +409,7 @@ namespace Destrospean.Common.Abstractions
                     var clonedMaterialBlock = (CatalogResource.CatalogResource.MaterialBlock)materialBlock.Clone(null);
                     clonedMaterialBlock.Pattern = patternSlotName;
                     MaterialBlock.MaterialBlocks.Add(clonedMaterialBlock);
-                    Patterns.Add(new Pattern(this, clonedMaterialBlock));
+                    Patterns.Add(new Pattern(this, clonedMaterialBlock, MaterialBlock));
                 }
             }
             mInternal.ReplaceMaterialComplate();
@@ -408,49 +420,23 @@ namespace Destrospean.Common.Abstractions
             switch (type)
             {
                 case "bool":
-                    return new CatalogResource.CatalogResource.TC07_Boolean(0, null)
-                    {
-                        Unknown1 = bool.Parse(value),
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC07_Boolean(0, null, 0, name, bool.Parse(value));
                 case "color":
                     var rgba = System.Array.ConvertAll(ParseCommaSeparatedValues(value), x => (byte)(x * byte.MaxValue));
-                    return new CatalogResource.CatalogResource.TC02_ARGB(0, null)
-                    {
-                        ARGB = ((uint)rgba[3] << 24) + ((uint)rgba[0] << 16) + ((uint)rgba[1] << 8) + rgba[2],
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC02_ARGB(0, null, 0, name, ((uint)rgba[3] << 24) + ((uint)rgba[0] << 16) + ((uint)rgba[1] << 8) + rgba[2]);
                 case "float":
-                    return new CatalogResource.CatalogResource.TC04_Single(0, null)
-                    {
-                        Unknown1 = float.Parse(value),
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC04_Single(0, null, 0, name, float.Parse(value));
                 case "pattern":
-                    return new CatalogResource.CatalogResource.TC01_String(0, null)
-                    {
-                        Data = value,
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC01_String(0, null, 0, name, value);
                 case "string":
                     try
                     {
                         var commaSeparatedValues = ParseCommaSeparatedValues(value);
-                        return new CatalogResource.CatalogResource.TC06_XYZ(0, null)
-                        {
-                            Unknown1 = commaSeparatedValues[0],
-                            Unknown2 = commaSeparatedValues[1],
-                            Unknown3 = commaSeparatedValues[2],
-                            VariableName = name
-                        };
+                        return new CatalogResource.CatalogResource.TC06_XYZ(0, null, 0, name, commaSeparatedValues[0], commaSeparatedValues[1], commaSeparatedValues[2]);
                     }
                     catch
                     {
-                        return new CatalogResource.CatalogResource.TC01_String(0, null)
-                        {
-                            Data = value,
-                            VariableName = name
-                        };
+                        return new CatalogResource.CatalogResource.TC01_String(0, null, 0, name, value);
                     }
                 case "texture":
                     var key = value.StartsWith("($assetRoot)") ? "key:00B2D882:00000000:" + System.Security.Cryptography.FNV64.GetHash(value.Substring(value.LastIndexOf("\\") + 1, value.LastIndexOf(".") - value.LastIndexOf("\\") - 1)).ToString("X16") : value;
@@ -459,25 +445,12 @@ namespace Destrospean.Common.Abstractions
                     {
                         var evaluated = package.EvaluateImageResourceKey(key);
                         materialBlock.ParentTGIBlocks.Add(new TGIBlock(0, null, evaluated.ResourceIndexEntry.ResourceType, evaluated.ResourceIndexEntry.ResourceGroup, evaluated.ResourceIndexEntry.Instance));
-                        return new CatalogResource.CatalogResource.TC03_TGIIndex(0, null)
-                        {
-                            TGIIndex = (byte)(materialBlock.ParentTGIBlocks.Count - 1),
-                            VariableName = name
-                        };
+                        return new CatalogResource.CatalogResource.TC03_TGIIndex(0, null, 0, name, (byte)(materialBlock.ParentTGIBlocks.Count - 1));
                     }
-                    return new CatalogResource.CatalogResource.TC03_TGIIndex(0, null)
-                    {
-                        TGIIndex = (byte)index,
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC03_TGIIndex(0, null, 0, name, (byte)index);
                 case "vec2":
                     var coordinates = ParseCommaSeparatedValues(value);
-                    return new CatalogResource.CatalogResource.TC05_XY(0, null)
-                    {
-                        Unknown1 = coordinates[0],
-                        Unknown2 = coordinates[1],
-                        VariableName = name
-                    };
+                    return new CatalogResource.CatalogResource.TC05_XY(0, null, 0, name, coordinates[0], coordinates[1]);
                 default:
                     return null;
             }
@@ -501,7 +474,7 @@ namespace Destrospean.Common.Abstractions
                 case "float":
                     return ((CatalogResource.CatalogResource.TC04_Single)properties[propertyName]).Unknown1.ToString();
                 case "pattern":
-                    return ((CatalogResource.CatalogResource.TC01_String)properties).Data;
+                    return ((CatalogResource.CatalogResource.TC01_String)properties[propertyName]).Data;
                 case "string":
                     try
                     {
@@ -515,7 +488,7 @@ namespace Destrospean.Common.Abstractions
                     }
                     catch
                     {
-                        return ((CatalogResource.CatalogResource.TC01_String)properties).Data;
+                        return ((CatalogResource.CatalogResource.TC01_String)properties[propertyName]).Data;
                     }
                 case "texture":
                     return material.MaterialBlock.ParentTGIBlocks[((CatalogResource.CatalogResource.TC03_TGIIndex)properties[propertyName]).TGIIndex].ReverseEvaluateResourceKey();
@@ -588,7 +561,7 @@ namespace Destrospean.Common.Abstractions
                             }
                         }
                     }
-                    Patterns[patternIndex] = new Pattern(this, patternMaterialBlock);
+                    Patterns[patternIndex] = new Pattern(this, patternMaterialBlock, MaterialBlock);
                     break;
                 }
             }
@@ -609,7 +582,7 @@ namespace Destrospean.Common.Abstractions
                     ((CatalogResource.CatalogResource.TC04_Single)properties[propertyName]).Unknown1 = float.Parse(newValue);
                     break;
                 case "pattern":
-                    ((CatalogResource.CatalogResource.TC01_String)properties).Data = newValue;
+                    ((CatalogResource.CatalogResource.TC01_String)properties[propertyName]).Data = newValue;
                     break;
                 case "string":
                     try
@@ -622,7 +595,7 @@ namespace Destrospean.Common.Abstractions
                     }
                     catch
                     {
-                        ((CatalogResource.CatalogResource.TC01_String)properties).Data = newValue;
+                        ((CatalogResource.CatalogResource.TC01_String)properties[propertyName]).Data = newValue;
                     }
                     break;
                 case "texture":
