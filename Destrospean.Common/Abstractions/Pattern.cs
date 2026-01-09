@@ -164,9 +164,9 @@ namespace Destrospean.Common.Abstractions
                     var color = System.Array.ConvertAll(System.BitConverter.GetBytes(((CatalogResource.CatalogResource.TC02_ARGB)value).ARGB), x => (float)x / byte.MaxValue);
                     rgbColors.Add(new float[]
                         {
-                            color[1],
                             color[2],
-                            color[3]
+                            color[1],
+                            color[0]
                         });
                 }
                 else if (key.StartsWith("base h"))

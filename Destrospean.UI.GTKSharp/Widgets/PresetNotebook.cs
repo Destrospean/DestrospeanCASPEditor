@@ -121,7 +121,7 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             break;
                         case "float":
                             alignment.Xscale = 0;
-                            var spinButton = new SpinButton(new Adjustment(float.Parse(value, CultureInfo.InvariantCulture), -1, 1, .0001, 10, 0), 0, 4);
+                            var spinButton = new SpinButton(new Adjustment(float.Parse(value, CultureInfo.InvariantCulture), float.MinValue, float.MaxValue, .0001, 10, 0), 0, 4);
                             spinButton.ValueChanged += (sender, e) => complate[propertyName] = spinButton.Value.ToString("F4");
                             valueWidget = spinButton;
                             break;
@@ -180,8 +180,8 @@ namespace Destrospean.DestrospeanCASPEditor.Widgets
                             var coordinates = System.Array.ConvertAll(value.Split(','), x => float.Parse(x, CultureInfo.InvariantCulture));
                             var spinButtons = new List<SpinButton>
                                 {
-                                    new SpinButton(new Adjustment(coordinates[0], -1, 1, .0001, 10, 0), 0, 4),
-                                    new SpinButton(new Adjustment(coordinates[1], -1, 1, .0001, 10, 0), 0, 4)
+                                    new SpinButton(new Adjustment(coordinates[0], float.MinValue, float.MaxValue, .0001, 10, 0), 0, 4),
+                                    new SpinButton(new Adjustment(coordinates[1], float.MinValue, float.MaxValue, .0001, 10, 0), 0, 4)
                                 };
                             spinButtons.ForEach(x =>
                                 {

@@ -466,10 +466,10 @@ namespace Destrospean.Common.Abstractions
                     var argb = System.Array.ConvertAll(System.BitConverter.GetBytes(((CatalogResource.CatalogResource.TC02_ARGB)properties[propertyName]).ARGB), x => ((float)x / byte.MaxValue).ToString());
                     return string.Join(",", new string[]
                         {
-                            argb[1],
                             argb[2],
-                            argb[3],
-                            argb[0]
+                            argb[1],
+                            argb[0],
+                            argb[3]
                         });
                 case "float":
                     return ((CatalogResource.CatalogResource.TC04_Single)properties[propertyName]).Unknown1.ToString();
